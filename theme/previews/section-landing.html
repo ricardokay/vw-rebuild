@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vancouver Weekly — Design Preview</title>
+<style>
+
+/* ── Self-hosted fonts ──────────────────────────────────────── */
+
+@font-face {
+  font-family: 'PT Serif';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/pt-serif-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+                 U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF,
+                 U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+                 U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'PT Serif';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/pt-serif-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+                 U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F,
+                 U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+                 U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'PT Serif';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/pt-serif-bold-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+                 U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF,
+                 U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+                 U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'PT Serif';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/pt-serif-bold-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+                 U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F,
+                 U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+                 U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+                 U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF,
+                 U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+                 U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+                 U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F,
+                 U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+                 U+FEFF, U+FFFD;
+}
+
+/* ── Reset + palette ────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --vw-bg:        #FFFFFF;
+  --vw-bg-subtle: #F7F6F4;
+  --vw-ink:       #1A161E;
+  --vw-ink-muted: #767676;
+  --vw-border:    #E8E8E8;
+  --vw-red:       #C41230;
+}
+
+html { background: var(--vw-bg-subtle); }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--vw-ink);
+}
+a { text-decoration: none; color: inherit; }
+img { display: block; max-width: 100%; }
+
+/* ── Preview chrome ─────────────────────────────────────────── */
+
+.pv-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ccc;
+  text-align: center;
+  padding: 28px 0 0;
+}
+.pv-sep {
+  border: none;
+  border-top: 1px dashed #e0e0e0;
+  margin: 80px auto 0;
+  max-width: 1100px;
+}
+
+/* ── Nav ────────────────────────────────────────────────────────
+   Off-white background — matches the body, no visible separation.
+   No border-bottom. Taller, with more generous padding.
+   ─────────────────────────────────────────────────────────── */
+
+.nav {
+  background: var(--vw-bg-subtle);   /* blends into off-white body */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 76px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  /* No border-bottom — nav and body are one continuous surface */
+}
+.nav-logo {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--vw-ink);
+}
+.nav-links {
+  display: flex;
+  list-style: none;
+}
+.nav-links a {
+  display: block;
+  padding: 0 22px;
+  height: 76px;
+  line-height: 76px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vw-ink-muted);
+  transition: color .12s;
+}
+.nav-links a.active { color: var(--vw-red); }
+.nav-links a:hover  { color: var(--vw-ink); }
+
+/* ── Shared ─────────────────────────────────────────────────── */
+
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+
+.cat {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  margin-bottom: 14px;
+}
+
+.byline {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--vw-ink-muted);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION LANDING
+   ══════════════════════════════════════════════════════════════ */
+
+.landing { background: var(--vw-bg-subtle); padding-bottom: 100px; }
+
+/* Section header */
+.sec-hdr { padding: 52px 0 48px; }
+
+.sec-kicker {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  margin-bottom: 20px;
+}
+
+/* Section title — PT Serif Bold */
+.sec-title {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(64px, 9vw, 116px);
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  color: var(--vw-ink);
+}
+
+.sec-desc {
+  margin-top: 22px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--vw-ink-muted);
+  letter-spacing: 0.02em;
+}
+
+/* Feature story — image left, text right */
+.feature {
+  display: grid;
+  grid-template-columns: 58% 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+/* Placeholder — natural full color, no duotone */
+.feat-img {
+  width: 100%;
+  aspect-ratio: 3/2;
+  display: block;
+  background: linear-gradient(155deg,
+    #8b5e3c 0%, #c49a6c 25%, #e8c99a 50%, #b8a080 70%, #6b4a28 100%);
+}
+
+.feat-body { padding: 8px 0; }
+
+/* Feature headline — PT Serif Bold */
+.feat-hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--vw-ink);
+  margin-bottom: 18px;
+}
+
+.feat-dek {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--vw-ink-muted);
+  margin-bottom: 20px;
+}
+
+/* Grid */
+.grid-section { padding-top: 56px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 24px;
+  row-gap: 52px;
+}
+
+/* Card — subtle border and radius to define edges */
+.card {
+  background: var(--vw-bg);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--vw-border);
+  border-radius: 4px;
+  overflow: hidden;   /* clips image corners to match the radius */
+}
+
+.card-img {
+  width: 100%;
+  aspect-ratio: 3/2;
+  display: block;
+  /* No bottom margin — body padding handles the gap */
+}
+/* Natural-color placeholder images */
+.pi-1 { background: linear-gradient(148deg, #2c4a8a 0%, #5a7ac0 40%, #a8c0e8 75%, #d4e4f8 100%); }
+.pi-2 { background: linear-gradient(140deg, #3a6b3a 0%, #6a9e6a 42%, #aed4ae 75%, #d8eed8 100%); }
+.pi-3 { background: linear-gradient(152deg, #7a4a1e 0%, #b8804a 40%, #e0b888 75%, #f4d8b8 100%); }
+.pi-4 { background: linear-gradient(145deg, #5a2a6a 0%, #8e5a9e 42%, #c4a0d4 75%, #e8d4f0 100%); }
+.pi-5 { background: linear-gradient(155deg, #1a5a7a 0%, #4a8aaa 40%, #90c0d8 75%, #c8e4f0 100%); }
+
+/* Card body — breathing room on all sides */
+.card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 16px 18px 20px;
+}
+
+/* Card headline — PT Serif Bold */
+.card-hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 21px;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: var(--vw-ink);
+  margin-bottom: 14px;
+  flex: 1;
+}
+
+/* Byline — muted "By" and date, near-black bold author name */
+.card-byline {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: var(--vw-ink-muted);
+  margin-top: auto;
+}
+.card-author {
+  font-weight: 600;
+  color: var(--vw-ink);
+}
+
+/* Type-forward card — italic headline, padding all sides */
+.card--txt .card-body { padding: 20px 18px 20px; }
+.card--txt .card-hed  { font-style: italic; font-size: 23px; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   ARTICLE VIEW
+   ══════════════════════════════════════════════════════════════ */
+
+.article-page { background: var(--vw-bg-subtle); padding-bottom: 100px; }
+
+/* Article header — narrow */
+.art-hdr {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 48px 44px;
+}
+
+.art-kicker {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  margin-bottom: 24px;
+}
+
+/* Article headline — PT Serif Bold italic */
+.art-hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(40px, 5.5vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--vw-ink);
+  margin-bottom: 30px;
+}
+
+.art-byline {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--vw-ink-muted);
+}
+.art-byline strong { font-weight: 600; color: var(--vw-ink); }
+
+/* Article image — wider than the text column */
+.art-img-wrap {
+  max-width: 1000px;
+  margin: 0 auto 52px;
+  padding: 0 48px;
+}
+.art-img {
+  width: 100%;
+  aspect-ratio: 16/7;
+  display: block;
+  /* Concert-photo warm tones, full natural color */
+  background: linear-gradient(158deg,
+    #0a0808 0%, #3a1a10 18%, #7a4010 35%,
+    #c07028 50%, #e0a060 65%, #f8d890 80%, #fffbe8 100%);
+}
+.art-caption {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--vw-ink-muted);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+/* Review card */
+.review-wrap {
+  max-width: 760px;
+  margin: 0 auto 52px;
+  padding: 0 48px;
+}
+.review-card {
+  background: var(--vw-bg);
+  padding: 28px 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+.review-info { flex: 1; min-width: 0; }
+
+.review-artist {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vw-ink-muted);
+  margin-bottom: 6px;
+}
+
+/* Album name — PT Serif Bold italic */
+.review-album {
+  font-family: 'PT Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.08;
+  color: var(--vw-ink);
+  margin-bottom: 8px;
+}
+
+.review-meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--vw-ink-muted);
+  margin-bottom: 18px;
+}
+
+/* Filled badge — white on red, 6.0:1 ✓ */
+.badge {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: var(--vw-red);
+  padding: 4px 9px 3px;
+}
+
+.review-score {
+  flex-shrink: 0;
+  text-align: right;
+  margin-left: auto;
+}
+
+/* Score — PT Serif Bold in red */
+.score-num {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 68px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--vw-red);
+}
+.score-denom {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--vw-ink-muted);
+  margin-top: 4px;
+  display: block;
+}
+
+/* Body text */
+.art-body {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 48px 80px;
+}
+.art-body p {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  line-height: 1.78;
+  color: var(--vw-ink);
+  max-width: 640px;
+  margin: 0 auto 28px;
+}
+.art-body a {
+  color: var(--vw-red);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .nav { padding: 0 24px; }
+  .wrap { padding-left: 24px; padding-right: 24px; }
+  .feature { grid-template-columns: 1fr; gap: 28px; }
+  .grid    { grid-template-columns: repeat(2, 1fr); }
+  .nav-links { display: none; }
+}
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
+  .art-hdr, .art-img-wrap, .review-wrap, .art-body {
+    padding-left: 20px; padding-right: 20px;
+  }
+  .review-card { flex-direction: column; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ── Nav ────────────────────────────────────────────────────── -->
+<nav class="nav">
+  <span class="nav-logo">Vancouver Weekly</span>
+  <ul class="nav-links">
+    <li><a href="#landing" class="active">A La Music</a></li>
+    <li><a href="#">Photography</a></li>
+    <li><a href="#">Food &amp; Drink</a></li>
+    <li><a href="#">Out N About</a></li>
+  </ul>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION LANDING — A La Music
+     ══════════════════════════════════════════════════════════ -->
+<p class="pv-label" id="landing">Section Landing — A La Music</p>
+
+<div class="landing">
+
+  <header class="sec-hdr">
+    <div class="wrap">
+      <span class="sec-kicker">A La Music</span>
+      <h1 class="sec-title">A La<br>Music</h1>
+      <p class="sec-desc">Reviews &middot; Interviews &middot; Live &middot; Videos</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <article class="feature">
+      <div class="feat-img"></div>
+      <div class="feat-body">
+        <span class="cat">Feature</span>
+        <h2 class="feat-hed">The Commodore Ballroom at 95: How Vancouver's Greatest Venue Became the Heartbeat of the City's Cultural Soul</h2>
+        <p class="feat-dek">Ninety-five years of concerts, dances, and something close to magic — and the room still hasn't given up its secrets.</p>
+        <p class="byline">By <span class="card-author">Sarah Chen</span> &nbsp;&middot;&nbsp; June 13, 2026</p>
+      </div>
+    </article>
+
+    <div class="grid-section">
+      <div class="grid">
+
+        <article class="card">
+          <div class="card-img pi-1"></div>
+          <div class="card-body">
+            <span class="cat">Album Review</span>
+            <h3 class="card-hed">Alvvays — Blue Rev</h3>
+            <p class="card-byline">By <span class="card-author">Marcus Reid</span> &nbsp;&middot;&nbsp; June 10</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-img pi-2"></div>
+          <div class="card-body">
+            <span class="cat">Interview</span>
+            <h3 class="card-hed">Yukon Blonde on Staying Indie for Fifteen Years and Still Loving It</h3>
+            <p class="card-byline">By <span class="card-author">Ryan Johnson</span> &nbsp;&middot;&nbsp; June 9</p>
+          </div>
+        </article>
+
+        <article class="card card--txt">
+          <div class="card-body">
+            <span class="cat">Essay</span>
+            <h3 class="card-hed">Why Vancouver's All-Ages Scene Is the Best It's Been in Twenty Years</h3>
+            <p class="card-byline">By <span class="card-author">Sarah Chen</span> &nbsp;&middot;&nbsp; June 8</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-img pi-3"></div>
+          <div class="card-body">
+            <span class="cat">Live</span>
+            <h3 class="card-hed">Japandroids Play Their Final Vancouver Show at the Commodore</h3>
+            <p class="card-byline">By <span class="card-author">Jennifer McInnis</span> &nbsp;&middot;&nbsp; June 6</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-img pi-4"></div>
+          <div class="card-body">
+            <span class="cat">Album Review</span>
+            <h3 class="card-hed">Said the Whale — As Long as Your Eyes Are Wide</h3>
+            <p class="card-byline">By <span class="card-author">Marcus Reid</span> &nbsp;&middot;&nbsp; June 5</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-img pi-5"></div>
+          <div class="card-body">
+            <span class="cat">Interview</span>
+            <h3 class="card-hed">Zolas on Making Their Most Personal Record</h3>
+            <p class="card-byline">By <span class="card-author">Ryan Johnson</span> &nbsp;&middot;&nbsp; June 4</p>
+          </div>
+        </article>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     ARTICLE VIEW — Album Review
+     ══════════════════════════════════════════════════════════ -->
+<hr class="pv-sep">
+<p class="pv-label">Article View — A La Music &middot; Album Review</p>
+
+<div class="article-page" id="article">
+
+  <div class="art-hdr">
+    <span class="art-kicker">Album Review</span>
+    <h1 class="art-hed">Alvvays Compress an Entire Architecture of Feeling Into Four Perfect Minutes</h1>
+    <p class="art-byline">Review by <strong>Marcus Reid</strong> &nbsp;&middot;&nbsp; June 10, 2026</p>
+  </div>
+
+  <div class="art-img-wrap">
+    <div class="art-img"></div>
+    <p class="art-caption">Alvvays performing at the Rickshaw Theatre, Vancouver. Photo: Jennifer McInnis</p>
+  </div>
+
+  <div class="review-wrap">
+    <div class="review-card">
+      <div class="review-info">
+        <p class="review-artist">Alvvays</p>
+        <p class="review-album">Blue Rev</p>
+        <p class="review-meta">Polyvinyl &nbsp;&middot;&nbsp; 2022 &nbsp;&middot;&nbsp; Dream pop</p>
+        <span class="badge">Essential</span>
+      </div>
+      <div class="review-score">
+        <span class="score-num">8.8</span>
+        <span class="score-denom">/ 10</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="art-body">
+    <p>There's a particular kind of efficiency to the best Alvvays songs — the feeling that they've arrived from somewhere else fully formed, that no revision was needed, that Molly Rankin just opened a door and let them in. <em>Blue Rev</em> is full of this feeling: twelve tracks that shimmer and careen and ache in equal measure, none of them overstaying their welcome, all of them leaving you wanting another three minutes of exactly that.</p>
+    <p>Recorded with production from Shawn Everett and John Agnello, the album finds the Toronto band expanding their sonic palette without betraying what makes them essential. The guitars are fuzzier, the synths more saturated, the tempos more varied — but the melodies are still those melodies, each one a small miracle of compression, the kind that lodges immediately and refuses to leave for days.</p>
+    <p>"Pharmacist" opens the record at a sprint, Rankin's voice cutting through a wall of distortion to deliver what might be the year's most indelible opening couplet. From there the album moves with the logic of a great mixtape: confident, slightly restless, always <a href="#">moving toward something</a>.</p>
+  </div>
+
+</div>
+
+</body>
+</html>

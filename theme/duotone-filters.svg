@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute">
+  <!--
+    Vancouver Weekly — Duotone SVG Filters
+    ========================================
+    Four per-section duotone filters for archive image treatment.
+    Apply via CSS: filter: url(#vw-dt-music)  etc.
+
+    How each filter works:
+      1. feColorMatrix desaturates the source image to luminance
+         (converts colour pixels to a grey value representing brightness).
+      2. feComponentTransfer remaps each channel with a linear function:
+         output = slope × input + intercept
+         where input 0 = pure black (shadow), input 1 = pure white (highlight).
+         slope  = highlight_channel − shadow_channel
+         intercept = shadow_channel
+
+    Photography gallery images are EXEMPT — apply no filter there.
+    Full original colour and native aspect ratio only in that section.
+
+    These filters are output as inline SVG in the page <body> via PHP
+    (functions.php, wp_body_open hook). This file is the source of
+    truth; the PHP simply echoes it. Do not duplicate filter values
+    in PHP — update here and regenerate.
+
+    All channel values are normalised 0–1 (divide hex byte by 255).
+    Derivations shown in comments for each section.
+  -->
+
+  <defs>
+
+    <!-- ============================================================
+         A LA MUSIC
+         Shadow:    #641B5F  →  R 0.392  G 0.106  B 0.373
+         Highlight: #FDBADD  →  R 0.992  G 0.729  B 0.867
+         R: slope 0.600  intercept 0.392
+         G: slope 0.623  intercept 0.106
+         B: slope 0.494  intercept 0.373
+         ============================================================ -->
+    <filter id="vw-dt-music" color-interpolation-filters="sRGB">
+      <!-- Step 1: desaturate to luminance -->
+      <feColorMatrix type="saturate" values="0" result="grey"/>
+      <!-- Step 2: remap luminance to shadow→highlight ramp -->
+      <feComponentTransfer in="grey">
+        <feFuncR type="linear" slope="0.600" intercept="0.392"/>
+        <feFuncG type="linear" slope="0.623" intercept="0.106"/>
+        <feFuncB type="linear" slope="0.494" intercept="0.373"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- ============================================================
+         PHOTOGRAPHY  (section chrome only — never on gallery images)
+         Shadow:    #474212  →  R 0.278  G 0.259  B 0.071
+         Highlight: #F3F8A7  →  R 0.953  G 0.973  B 0.655
+         R: slope 0.675  intercept 0.278
+         G: slope 0.714  intercept 0.259
+         B: slope 0.584  intercept 0.071
+         ============================================================ -->
+    <filter id="vw-dt-photo" color-interpolation-filters="sRGB">
+      <feColorMatrix type="saturate" values="0" result="grey"/>
+      <feComponentTransfer in="grey">
+        <feFuncR type="linear" slope="0.675" intercept="0.278"/>
+        <feFuncG type="linear" slope="0.714" intercept="0.259"/>
+        <feFuncB type="linear" slope="0.584" intercept="0.071"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- ============================================================
+         FOOD & DRINK
+         Shadow:    #743118  →  R 0.455  G 0.192  B 0.094
+         Highlight: #FEC3A8  →  R 0.996  G 0.765  B 0.659
+         R: slope 0.541  intercept 0.455
+         G: slope 0.573  intercept 0.192
+         B: slope 0.565  intercept 0.094
+         ============================================================ -->
+    <filter id="vw-dt-food" color-interpolation-filters="sRGB">
+      <feColorMatrix type="saturate" values="0" result="grey"/>
+      <feComponentTransfer in="grey">
+        <feFuncR type="linear" slope="0.541" intercept="0.455"/>
+        <feFuncG type="linear" slope="0.573" intercept="0.192"/>
+        <feFuncB type="linear" slope="0.565" intercept="0.094"/>
+      </feComponentTransfer>
+    </filter>
+
+    <!-- ============================================================
+         OUT N ABOUT
+         Shadow:    #3D197C  →  R 0.239  G 0.098  B 0.486
+         Highlight: #CBB3F2  →  R 0.796  G 0.702  B 0.949
+         R: slope 0.557  intercept 0.239
+         G: slope 0.604  intercept 0.098
+         B: slope 0.463  intercept 0.486
+         ============================================================ -->
+    <filter id="vw-dt-about" color-interpolation-filters="sRGB">
+      <feColorMatrix type="saturate" values="0" result="grey"/>
+      <feComponentTransfer in="grey">
+        <feFuncR type="linear" slope="0.557" intercept="0.239"/>
+        <feFuncG type="linear" slope="0.604" intercept="0.098"/>
+        <feFuncB type="linear" slope="0.463" intercept="0.486"/>
+      </feComponentTransfer>
+    </filter>
+
+  </defs>
+</svg>

@@ -1,0 +1,406 @@
+/* ================================================================
+   Vancouver Weekly — Section Landing + Article view
+   Depends on: fonts.css, palette.css
+
+   Design rules:
+   - Grounds: off-white page, white cards — contrast without lines
+   - Headlines: PT Serif Bold (700), near-black
+   - Body / UI: Inter
+   - Accent: --vw-red for kickers, tags, links, score, badges only
+   - No section-color variables, no duotone, no thick structural lines
+   ================================================================ */
+
+
+/* ── Page ground ─────────────────────────────────────────────── */
+
+.vw-section-landing,
+.vw-article-page {
+  background: var(--vw-bg-subtle);
+  min-height: 100vh;
+  color: var(--vw-ink);
+}
+
+
+/* ── Section header ──────────────────────────────────────────── */
+
+.vw-section-header {
+  padding: 60px 0 52px;
+}
+
+.vw-section-header__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* Red kicker — the section's only color element in the header */
+.vw-section-header__kicker {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  margin-bottom: 16px;
+}
+
+/* Section title — large, bold, near-black */
+.vw-section-header__title {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(56px, 7.5vw, 100px);
+  line-height: 0.93;
+  letter-spacing: -0.02em;
+  color: var(--vw-ink);
+}
+
+.vw-section-header__desc {
+  margin-top: 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--vw-ink-muted);
+}
+
+
+/* ── Feature story ───────────────────────────────────────────── */
+
+.vw-feature {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 58% 1fr;
+  gap: 44px;
+  align-items: center;
+}
+
+.vw-feature__img {
+  width: 100%;
+  aspect-ratio: 3/2;
+  overflow: hidden;
+  display: block;
+}
+
+.vw-feature__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vw-feature__cat {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  margin-bottom: 14px;
+}
+
+.vw-feature__hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  color: var(--vw-ink);
+  margin-bottom: 18px;
+}
+
+.vw-feature__dek {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--vw-ink-muted);
+  margin-bottom: 20px;
+}
+
+.vw-feature__byline {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--vw-ink-muted);
+}
+
+
+/* ── Article grid ────────────────────────────────────────────── */
+
+.vw-grid-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 52px 40px 100px;
+}
+
+.vw-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 24px;
+  row-gap: 48px;
+}
+
+
+/* ── Card ────────────────────────────────────────────────────── */
+
+.vw-card {
+  background: var(--vw-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.vw-card__img {
+  width: 100%;
+  aspect-ratio: 3/2;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 18px;
+  background: #ddd;
+}
+
+.vw-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.vw-card__cat {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  margin-bottom: 10px;
+  text-decoration: none;
+}
+.vw-card__cat:hover { text-decoration: underline; }
+
+.vw-card__hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  color: var(--vw-ink);
+  margin-bottom: 12px;
+  flex: 1;
+  text-decoration: none;
+  display: block;
+}
+.vw-card__hed:hover { color: var(--vw-red); }
+
+.vw-card__byline {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: var(--vw-ink-muted);
+  margin-top: auto;
+}
+
+
+/* ── Type-forward card (no usable image) ─────────────────────── */
+
+.vw-card--text {
+  padding: 0;
+}
+
+.vw-card--text .vw-card__body {
+  padding: 24px 24px 24px 0;
+}
+
+.vw-card--text .vw-card__hed {
+  font-style: italic;
+  font-size: 24px;
+}
+
+
+/* ── Article page ────────────────────────────────────────────── */
+
+/* Narrow article header */
+.vw-art-header {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 60px 40px 40px;
+}
+
+.vw-art-header__kicker {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  margin-bottom: 20px;
+}
+
+.vw-art-header__hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(36px, 5vw, 60px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--vw-ink);
+  margin-bottom: 28px;
+}
+
+.vw-art-header__byline {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--vw-ink-muted);
+}
+
+.vw-art-header__byline strong {
+  font-weight: 600;
+  color: var(--vw-ink);
+}
+
+/* Article image — wider than text column */
+.vw-art-image {
+  max-width: 1000px;
+  margin: 0 auto 48px;
+  padding: 0 40px;
+}
+
+.vw-art-image img,
+.vw-art-image__ph {
+  width: 100%;
+  aspect-ratio: 16/7;
+  object-fit: cover;
+  display: block;
+}
+
+.vw-art-image__caption {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--vw-ink-muted);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+/* Review card */
+.vw-review-card {
+  max-width: 760px;
+  margin: 0 auto 48px;
+  padding: 0 40px;
+}
+
+.vw-review-card__inner {
+  background: var(--vw-bg);
+  padding: 28px 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.vw-review-card__artist {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vw-ink-muted);
+  margin-bottom: 6px;
+}
+
+.vw-review-card__album {
+  font-family: 'PT Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--vw-ink);
+  margin-bottom: 8px;
+}
+
+.vw-review-card__meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--vw-ink-muted);
+  margin-bottom: 18px;
+}
+
+/* Filled red badge — white text on red, 6.0:1 ✓ */
+.vw-badge {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: var(--vw-red);
+  padding: 4px 9px 3px;
+}
+
+.vw-review-card__score {
+  flex-shrink: 0;
+  text-align: right;
+  margin-left: auto;
+}
+
+.vw-review-card__num {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 60px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--vw-red);
+}
+
+.vw-review-card__denom {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--vw-ink-muted);
+  margin-top: 4px;
+}
+
+/* Article body */
+.vw-art-body {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 40px 100px;
+}
+
+.vw-art-body p {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  line-height: 1.78;
+  color: var(--vw-ink);
+  max-width: 640px;
+  margin: 0 auto 28px;
+}
+
+.vw-art-body a {
+  color: var(--vw-red);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+
+/* ── Responsive ──────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .vw-feature,
+  .vw-grid-wrap { padding-left: 24px; padding-right: 24px; }
+  .vw-feature { grid-template-columns: 1fr; gap: 24px; }
+  .vw-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .vw-section-header__inner,
+  .vw-feature,
+  .vw-grid-wrap,
+  .vw-art-header,
+  .vw-art-image,
+  .vw-review-card,
+  .vw-art-body { padding-left: 20px; padding-right: 20px; }
+  .vw-grid { grid-template-columns: 1fr; }
+  .vw-review-card__inner { flex-direction: column; gap: 20px; }
+}

@@ -1,0 +1,48 @@
+/* ================================================================
+   Vancouver Weekly — Palette
+   All site colors defined here as CSS custom properties.
+   Edit only this file to retheme the entire site.
+   Network sites override only this file.
+
+   Color system (simplified):
+   - Two neutral grounds: white and warm off-white
+   - One accent: a single editorial red used for kickers, labels,
+     links, and filled badges. Chosen to pass WCAG AA in both roles:
+     red text on white (6.0:1) and white text on red badge (6.0:1).
+   - No section colors, no cyan. One red.
+   ================================================================ */
+
+:root {
+
+  /* ── Grounds ─────────────────────────────────────────────── */
+
+  --vw-bg:         #FFFFFF;   /* page white */
+  --vw-bg-subtle:  #F7F6F4;   /* off-white — page ground, subtle fills */
+
+
+  /* ── Ink ─────────────────────────────────────────────────── */
+
+  --vw-ink:        #1A161E;   /* near-black — headlines, body, UI text */
+  --vw-ink-muted:  #767676;   /* bylines, dates, captions — 4.5:1 on white ✓ AA */
+
+
+  /* ── Structural ──────────────────────────────────────────── */
+
+  --vw-border:     #E8E8E8;   /* nav underline and any rare hairline needed */
+
+
+  /* ── Red accent ──────────────────────────────────────────── */
+
+  --vw-red:        #C41230;
+  /*
+     The single editorial accent.
+     Contrast on white (#FFF):      6.0 : 1  ✓ AA (text and links)
+     Contrast on off-white (#F7F6F4): 5.6 : 1  ✓ AA (text and links)
+     White text on red badge:       6.0 : 1  ✓ AA (filled badge/flag)
+
+     Use for: kicker labels, category tags, section nav indicators,
+              article links, "Featured" / "Breaking" filled badges.
+     Never use as a large background — accent only, not a ground.
+  */
+
+}
