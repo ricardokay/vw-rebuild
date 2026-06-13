@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vancouver Weekly — Design Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   CSS CUSTOM PROPERTIES — Edit this block to retheme the site.
+   One file, one edit, entire palette updates.
+   ============================================================ */
+:root {
+  /* Base */
+  --color-bg:             #FFFFFF;   /* page background */
+  --color-bg-subtle:      #F7F6F4;   /* cards, review panels, code blocks */
+  --color-text-headline:  #1A1A1A;   /* all headings */
+  --color-text-body:      #2D2D2D;   /* article body copy */
+  --color-text-muted:     #767676;   /* byline dates, captions, meta */
+  --color-border:         #E8E8E8;   /* dividers, card edges, nav border */
+
+  /* Section identities — change these to retheme any section */
+  --color-section-music:        #A31621;   /* A La Music — deep crimson        7.8:1 on white */
+  --color-section-photography:  #1B6B4A;   /* Photography — deep emerald       6.5:1 on white */
+  --color-section-food:         #9C4A0C;   /* Food & Drink — burnt amber       6.2:1 on white */
+  --color-section-about:        #3D2B8E;   /* Out N About — deep indigo       10.9:1 on white */
+
+  /* Nav */
+  --color-nav-bg:         #FFFFFF;
+  --color-nav-text:       #767676;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-body);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { display: block; max-width: 100%; }
+
+/* ============================================================
+   PALETTE DISPLAY (top of page)
+   ============================================================ */
+.palette-section {
+  background: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border);
+  padding: 48px 40px 52px;
+}
+
+.palette-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.palette-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.palette-swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.swatch {}
+.swatch-color {
+  height: 100px;
+  margin-bottom: 16px;
+}
+.swatch-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-headline);
+  margin-bottom: 5px;
+}
+.swatch-hex {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+  font-feature-settings: 'tnum';
+}
+.swatch-ratio {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2a7a2a;
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--color-nav-bg);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 0 rgba(0,0,0,.04);
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+}
+
+.nav-logo {
+  font-family: 'Cormorant Garant', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-headline);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+}
+
+.nav-links li a {
+  display: block;
+  padding: 0 20px;
+  height: 58px;
+  line-height: 58px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-nav-text);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.nav-links li.music a:hover     { color: var(--color-section-music);       border-bottom-color: var(--color-section-music); }
+.nav-links li.photo a:hover     { color: var(--color-section-photography); border-bottom-color: var(--color-section-photography); }
+.nav-links li.food a:hover      { color: var(--color-section-food);        border-bottom-color: var(--color-section-food); }
+.nav-links li.about a:hover     { color: var(--color-section-about);       border-bottom-color: var(--color-section-about); }
+
+/* Hamburger (mobile only) */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px;
+  background: none;
+  border: none;
+}
+.nav-hamburger span {
+  display: block;
+  width: 24px;
+  height: 1.5px;
+  background: var(--color-text-headline);
+}
+
+/* Mobile dropdown */
+.nav-mobile-menu {
+  display: none;
+  position: fixed;
+  top: 58px;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-bottom: 1px solid var(--color-border);
+  z-index: 99;
+}
+.nav-mobile-menu.open { display: block; }
+.nav-mobile-menu a {
+  display: block;
+  padding: 18px 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--color-text-headline);
+  border-bottom: 1px solid var(--color-border);
+}
+.nav-mobile-menu a.music    { border-left: 4px solid var(--color-section-music); }
+.nav-mobile-menu a.photo    { border-left: 4px solid var(--color-section-photography); }
+.nav-mobile-menu a.food     { border-left: 4px solid var(--color-section-food); }
+.nav-mobile-menu a.about    { border-left: 4px solid var(--color-section-about); }
+
+/* ============================================================
+   SHARED LAYOUT
+   ============================================================ */
+.content-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.section-marker {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 80px 0 52px;
+}
+.section-marker::before,
+.section-marker::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 80px 0;
+}
+
+/* Category tag */
+.cat-tag {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  text-decoration: none;
+}
+.cat-tag.music  { color: var(--color-section-music); }
+.cat-tag.photo  { color: var(--color-section-photography); }
+.cat-tag.food   { color: var(--color-section-food); }
+.cat-tag.about  { color: var(--color-section-about); }
+
+/* Byline */
+.byline {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.byline .author-music  { color: var(--color-section-music);       font-weight: 600; }
+.byline .author-photo  { color: var(--color-section-photography); font-weight: 600; }
+.byline .author-food   { color: var(--color-section-food);        font-weight: 600; }
+.byline .author-about  { color: var(--color-section-about);       font-weight: 600; }
+.byline .sep { color: var(--color-border); }
+
+/* Image placeholders */
+.img-placeholder {
+  background: linear-gradient(135deg, #252525 0%, #383838 50%, #252525 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.img-placeholder span {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #555;
+  text-align: center;
+  padding: 8px;
+}
+.img-cinematic { aspect-ratio: 16 / 6; }
+.img-card      { aspect-ratio: 3 / 2; }
+.img-square    { aspect-ratio: 1 / 1; }
+
+/* Format annotation labels */
+.format-label {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #444;
+  padding: 4px 10px;
+  margin-top: 8px;
+}
+
+/* ============================================================
+   HOMEPAGE
+   ============================================================ */
+.lead-story {}
+
+.lead-story h1 {
+  font-family: 'Cormorant Garant', serif;
+  font-size: 54px;
+  font-weight: 700;
+  line-height: 1.07;
+  letter-spacing: -0.015em;
+  color: var(--color-text-headline);
+  margin-top: 16px;
+  max-width: 820px;
+}
+
+.lead-excerpt {
+  font-family: 'Inter', sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--color-text-body);
+  margin-top: 18px;
+  max-width: 680px;
+}
+
+/* Article grid */
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  margin-top: 52px;
+}
+
+.card {}
+
+.card-body {
+  padding: 18px 0 0;
+}
+
+.card h2 {
+  font-family: 'Cormorant Garant', serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.22;
+  color: var(--color-text-headline);
+  margin-top: 8px;
+}
+
+/* Text-only card */
+.card-text-only {
+  border-left: 3px solid var(--color-section-about);
+  padding: 24px 24px;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 180px;
+  border-top: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.card-text-only h2 {
+  font-family: 'Cormorant Garant', serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.22;
+  color: var(--color-text-headline);
+  margin-top: 8px;
+}
+
+/* ============================================================
+   ARTICLE PAGES (review + feature)
+   ============================================================ */
+.article-wrap {
+  max-width: 740px;
+  margin: 0 auto;
+}
+
+.article-wrap h1 {
+  font-family: 'Cormorant Garant', serif;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--color-text-headline);
+  margin-top: 12px;
+}
+.article-wrap h1.italic-hed {
+  font-style: italic;
+  font-weight: 600;
+}
+
+.article-wrap p {
+  font-family: 'Inter', sans-serif;
+  font-size: 17px;
+  line-height: 1.72;
+  color: var(--color-text-body);
+  margin-top: 24px;
+}
+
+/* Album cover floated right */
+.review-image-wrap {
+  float: right;
+  margin: 0 0 24px 32px;
+  max-width: 260px;
+  width: 100%;
+}
+.review-image-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #888;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.clearfix::after { content: ''; display: table; clear: both; }
+
+/* Review card */
+.review-card {
+  border-top: 3px solid var(--color-section-music);
+  background: var(--color-bg-subtle);
+  padding: 24px 28px;
+  margin: 28px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  clear: both;
+}
+.review-card-meta {}
+.review-artist-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+.review-album-title {
+  font-family: 'Cormorant Garant', serif;
+  font-size: 26px;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-text-headline);
+  margin-bottom: 12px;
+}
+.verdict-badge {
+  display: inline-block;
+  background: var(--color-section-music);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+}
+.review-score {
+  font-family: 'Inter', sans-serif;
+  font-size: 52px;
+  font-weight: 700;
+  color: var(--color-section-music);
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+.review-score span {
+  font-size: 20px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* Feature article full-width image */
+.feature-image-wrap {
+  margin: 32px 0;
+}
+.feature-image-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #888;
+  margin-top: 8px;
+}
+
+/* ============================================================
+   SECTION FRONT — Photography
+   ============================================================ */
+.section-front-header {
+  background: var(--color-section-photography);
+  padding: 52px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.section-front-header h2 {
+  font-family: 'Cormorant Garant', serif;
+  font-size: 52px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.section-front-header p {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+}
+
+/* Masonry grid */
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  background: #eee;
+}
+.masonry-cell {
+  background: linear-gradient(160deg, #252525 0%, #3a3a3a 60%, #252525 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+}
+.masonry-cell span {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #555;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  body { font-size: 16px; }
+
+  .palette-section { padding: 36px 20px 40px; }
+  .palette-swatches { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  .site-nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+
+  .content-wrap { padding: 0 20px; }
+
+  .lead-story h1 { font-size: 34px; }
+  .article-grid { grid-template-columns: 1fr; gap: 40px; }
+  .card-text-only { min-height: 0; }
+
+  .article-wrap h1 { font-size: 32px; }
+  .review-image-wrap { float: none; max-width: 200px; margin: 0 auto 28px; }
+  .review-card { flex-direction: column; align-items: flex-start; }
+  .review-score { font-size: 40px; }
+
+  .section-front-header { padding: 36px 20px; }
+  .section-front-header h2 { font-size: 36px; }
+  .masonry-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     PALETTE DISPLAY
+     ============================================================ -->
+<div class="palette-section">
+  <div class="palette-title">Section Color Palette — WCAG 2.1 AA Verified</div>
+  <div class="palette-swatches">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#A31621;"></div>
+      <div class="swatch-name">A La Music</div>
+      <div class="swatch-hex">#A31621</div>
+      <div class="swatch-ratio">7.8 : 1 on white ✓</div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#1B6B4A;"></div>
+      <div class="swatch-name">Photography</div>
+      <div class="swatch-hex">#1B6B4A</div>
+      <div class="swatch-ratio">6.5 : 1 on white ✓</div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#9C4A0C;"></div>
+      <div class="swatch-name">Food &amp; Drink</div>
+      <div class="swatch-hex">#9C4A0C</div>
+      <div class="swatch-ratio">6.2 : 1 on white ✓</div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#3D2B8E;"></div>
+      <div class="swatch-name">Out N About</div>
+      <div class="swatch-hex">#3D2B8E</div>
+      <div class="swatch-ratio">10.9 : 1 on white ✓</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     NAVIGATION
+     ============================================================ -->
+<nav class="site-nav">
+  <a href="#" class="nav-logo">Vancouver Weekly</a>
+  <ul class="nav-links">
+    <li class="music"><a href="#">A La Music</a></li>
+    <li class="photo"><a href="#">Photography</a></li>
+    <li class="food"><a href="#">Food &amp; Drink</a></li>
+    <li class="about"><a href="#">Out N About</a></li>
+  </ul>
+  <button class="nav-hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="nav-mobile-menu" id="mobileMenu">
+  <a href="#" class="music">A La Music</a>
+  <a href="#" class="photo">Photography</a>
+  <a href="#" class="food">Food &amp; Drink</a>
+  <a href="#" class="about">Out N About</a>
+</div>
+
+<!-- ============================================================
+     HOME PAGE
+     ============================================================ -->
+<div class="content-wrap">
+  <div class="section-marker">Home Page</div>
+
+  <!-- Lead story -->
+  <div class="lead-story">
+    <div class="img-placeholder img-cinematic">
+      <span>Lead Story Image — 16:6 Cinematic</span>
+    </div>
+    <div class="format-label">Cinematic format (features &amp; leads)</div>
+    <div style="margin-top:28px;">
+      <span class="cat-tag music">A La Music</span>
+    </div>
+    <h1>The Commodore Ballroom at 95: How Vancouver's Greatest Venue Became the Heartbeat of the City's Cultural Soul</h1>
+    <div class="byline">
+      <span>By <span class="author-music">Sarah Chen</span></span>
+      <span class="sep">·</span>
+      <span>June 13, 2026</span>
+    </div>
+    <p class="lead-excerpt">There is a particular kind of magic that only old rooms possess — the accumulated resonance of ten thousand nights, the invisible weight of every band that ever tuned up on the low stage and looked out at the sprung dance floor below.</p>
+  </div>
+
+  <!-- Article grid -->
+  <div class="article-grid">
+
+    <!-- Card 1: Photography (image) -->
+    <div class="card">
+      <div class="img-placeholder img-card"><span>Photography</span></div>
+      <div class="card-body">
+        <span class="cat-tag photo">Photography</span>
+        <h2>24 Photos From Japandroids' Final Vancouver Show at the Commodore</h2>
+        <div class="byline" style="margin-top:10px;">
+          <span>By <span class="author-photo">Ryan Johnson</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Food & Drink (image) -->
+    <div class="card">
+      <div class="img-placeholder img-card"><span>Food &amp; Drink</span></div>
+      <div class="card-body">
+        <span class="cat-tag food">Food &amp; Drink</span>
+        <h2>The Best New Restaurant Openings in Vancouver This Month</h2>
+        <div class="byline" style="margin-top:10px;">
+          <span>By <span class="author-food">Erica Gordon</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Out N About (text only) -->
+    <div class="card">
+      <div class="card-text-only">
+        <span class="cat-tag about">Out N About</span>
+        <h2>Everything Happening in East Van This Weekend</h2>
+        <div class="byline" style="margin-top:10px;">
+          <span>By <span class="author-about">Marcus Reid</span></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     ALBUM REVIEW — Article Format
+     ============================================================ -->
+<div class="content-wrap">
+  <div class="section-marker">Album Review — Article Format</div>
+
+  <div class="article-wrap">
+
+    <!-- Album cover floated right -->
+    <div class="review-image-wrap">
+      <div class="img-placeholder img-square"><span>Album Cover<br>Square</span></div>
+      <div class="review-image-label">Square format (reviews)</div>
+    </div>
+
+    <span class="cat-tag music">A La Music</span>
+    <h1 class="italic-hed">Alvvays Compress an Entire Architecture of Feeling Into Four Perfect Minutes</h1>
+    <div class="byline">
+      <span>Review by <span class="author-music">Marcus Reid</span></span>
+      <span class="sep">·</span>
+      <span>June 10, 2026</span>
+    </div>
+
+    <!-- Review card -->
+    <div class="review-card">
+      <div class="review-card-meta">
+        <div class="review-artist-label">Alvvays</div>
+        <div class="review-album-title">Blue Rev</div>
+        <span class="verdict-badge">Essential</span>
+      </div>
+      <div class="review-score">8.8<span> / 10</span></div>
+    </div>
+
+    <div class="clearfix">
+      <p>On their third album, Alvvays compress an entire architecture of feeling into four minutes at a time — jangling guitar runs that cascade like rain on a skylight, Molly Rankin's voice suspended somewhere between heartbreak and irony, the whole thing mixed loud enough to fill your chest but detailed enough to reward headphones at midnight.</p>
+
+      <p>Blue Rev is the rare album that sounds effortless because every effort has been hidden. The hooks land exactly when you stop expecting them. The production choices — the reverb dialled to the edge of wash without losing definition, the drums compressed into a tight, satisfying thump — are invisible in exactly the way great production should be.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     FEATURE ARTICLE — Article Format
+     ============================================================ -->
+<div class="content-wrap">
+  <div class="section-marker">Feature Article — Article Format</div>
+
+  <div class="article-wrap">
+    <span class="cat-tag photo">Photography</span>
+    <h1>24 Photos: Japandroids' Final Vancouver Show at the Commodore Ballroom</h1>
+    <div class="byline">
+      <span>By <span class="author-photo">Jennifer McInnis</span></span>
+      <span class="sep">·</span>
+      <span>May 28, 2026</span>
+    </div>
+  </div>
+
+  <!-- Full-width cinematic image (breaks out of article-wrap intentionally) -->
+  <div class="feature-image-wrap">
+    <div class="img-placeholder img-cinematic">
+      <span>Feature Image — 16:6 Cinematic</span>
+    </div>
+    <div class="feature-image-label">Cinematic format (features)</div>
+  </div>
+
+  <div class="article-wrap">
+    <p>The last thing Brian King did before walking offstage for the final time in Vancouver was crouch at the edge of the Commodore's low stage and hold his guitar pick out to the crowd. A woman in the front row took it. He nodded once, stood up, and disappeared into the dark behind the drum riser. The house lights came up. Nobody moved for a long time.</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     SECTION FRONT — Photography
+     ============================================================ -->
+<div class="content-wrap">
+  <div class="section-marker">Section Front — Photography</div>
+</div>
+
+<div class="section-front-header">
+  <h2>Photography</h2>
+  <p>Vancouver through a lens</p>
+</div>
+
+<div class="masonry-grid">
+  <div class="masonry-cell" style="height:260px;"><span>Photo 1</span></div>
+  <div class="masonry-cell" style="height:200px; background: linear-gradient(160deg,#1e1e1e,#2e2e2e);"><span>Photo 2</span></div>
+  <div class="masonry-cell" style="height:280px; background: linear-gradient(200deg,#222,#333);"><span>Photo 3</span></div>
+  <div class="masonry-cell" style="height:210px; background: linear-gradient(140deg,#242424,#353535);"><span>Photo 4</span></div>
+  <div class="masonry-cell" style="height:270px;"><span>Photo 5</span></div>
+  <div class="masonry-cell" style="height:190px; background: linear-gradient(180deg,#1e1e1e,#2f2f2f);"><span>Photo 6</span></div>
+</div>
+
+<div style="height:80px;"></div>
+
+<script>
+function toggleMenu() {
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+</script>
+
+</body>
+</html>

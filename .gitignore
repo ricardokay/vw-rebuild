@@ -1,0 +1,75 @@
+# ================================================================
+# Vancouver Weekly — .gitignore
+# ================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# ----------------------------------------------------------------
+# SOURCE MATERIAL — never commit
+# Contains: database export (user emails, hashed passwords),
+# wp-content uploads, original-backup. Personal data risk.
+# ----------------------------------------------------------------
+source-material*/
+
+# ----------------------------------------------------------------
+# RECOVERY RUNTIME DATA — large, regeneratable, or runtime state
+# ----------------------------------------------------------------
+
+# 2,789 recovered post JSON files (~large, not source code)
+recovered_posts/
+
+# Downloaded images from Wayback
+recovered_images/
+
+# Large cached data files (regeneratable by re-running scripts)
+cdx_all_urls.json
+missing_urls.json
+existing_slugs.txt
+audit_clean.txt
+
+# Runtime state (checkpoint files — local to this machine)
+checkpoint.json
+import_checkpoint.json
+
+# Log files
+recovery_run.log
+import_run.log
+
+# Spam audit output
+quarantine.csv
+
+# ----------------------------------------------------------------
+# CREDENTIALS & SECRETS — must never appear in any commit
+# ----------------------------------------------------------------
+.env
+.env.*
+*.pem
+*.key
+wp-config.php
+
+# ----------------------------------------------------------------
+# ARCHIVES (large binaries, not useful in git)
+# ----------------------------------------------------------------
+*.zip
+
+# ----------------------------------------------------------------
+# PYTHON
+# ----------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+
+# ----------------------------------------------------------------
+# NODE (for future theme build tooling)
+# ----------------------------------------------------------------
+node_modules/
+npm-debug.log*
+
+# ----------------------------------------------------------------
+# EDITORS
+# ----------------------------------------------------------------
+.vscode/
+.idea/
+*.swp

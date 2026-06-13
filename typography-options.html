@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vancouver Weekly — Typography Options</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=DM+Sans:wght@400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  /* --- Reset & base --- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --accent: #C0392B;      /* placeholder — will be pulled from VW logo */
+    --dark:   #1a1a1a;
+    --body-text: #2d2d2d;
+    --muted:  #888;
+    --rule:   #e5e5e5;
+    --bg:     #fff;
+  }
+
+  body {
+    background: #f0ede8;
+    padding: 48px 24px 80px;
+  }
+
+  /* --- Chooser bar --- */
+  .chooser {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 16px;
+    margin: -48px -24px 48px;
+  }
+  .chooser button {
+    background: none;
+    border: 1px solid #555;
+    color: #ccc;
+    font-family: sans-serif;
+    font-size: 13px;
+    letter-spacing: .04em;
+    padding: 6px 18px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .chooser button.active,
+  .chooser button:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .chooser .label {
+    color: #666;
+    font-family: sans-serif;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+  }
+
+  /* --- Option panels --- */
+  .option {
+    display: none;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+  .option.visible { display: block; }
+
+  /* --- Option label --- */
+  .option-label {
+    font-family: sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .option-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #ccc;
+  }
+
+  /* --- Shared structural pieces --- */
+  .nav-mock {
+    background: #fff;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    height: 56px;
+    margin-bottom: 48px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .nav-logo {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: var(--dark);
+  }
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #444;
+  }
+  .nav-links li.active { color: var(--accent); }
+
+  .category-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .byline {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 14px;
+    display: flex;
+    gap: 16px;
+  }
+  .byline strong { color: var(--body-text); font-weight: 600; }
+
+  .hero-image {
+    width: 100%;
+    aspect-ratio: 16/7;
+    background: linear-gradient(135deg, #2c2c2c 0%, #444 50%, #2c2c2c 100%);
+    margin: 28px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-family: sans-serif;
+    font-size: 12px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 48px 0;
+  }
+
+  /* album review card */
+  .review-card {
+    border-top: 3px solid var(--accent);
+    background: #f8f7f5;
+    padding: 24px 28px;
+    margin: 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .review-meta {}
+  .review-artist { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .review-score {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .review-score span { font-size: 18px; color: var(--muted); }
+
+  /* mini grid */
+  .mini-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-top: 40px;
+  }
+  .card {
+    background: #fff;
+  }
+  .card-img {
+    width: 100%;
+    aspect-ratio: 3/2;
+    background: linear-gradient(135deg, #3a3a3a 0%, #555 100%);
+  }
+  .card-body { padding: 16px; }
+  .card-cat { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .text-card {
+    background: #fff;
+    padding: 22px;
+    border-left: 3px solid var(--accent);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* ============================================================
+     OPTION A — Cormorant Garant + Inter
+  ============================================================ */
+
+  #opt-a .nav-logo,
+  #opt-a .nav-links  { font-family: 'Inter', sans-serif; }
+
+  #opt-a .category-tag,
+  #opt-a .byline,
+  #opt-a .review-artist,
+  #opt-a .card-cat   { font-family: 'Inter', sans-serif; }
+
+  #opt-a h1 {
+    font-family: 'Cormorant Garant', serif;
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -.01em;
+    color: var(--dark);
+  }
+  #opt-a h2 {
+    font-family: 'Cormorant Garant', serif;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--dark);
+  }
+  #opt-a .review-album {
+    font-family: 'Cormorant Garant', serif;
+    font-size: 20px;
+    font-style: italic;
+    font-weight: 600;
+    color: var(--dark);
+    margin-top: 4px;
+  }
+  #opt-a p {
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    line-height: 1.72;
+    color: var(--body-text);
+  }
+  #opt-a .card-title {
+    font-family: 'Cormorant Garant', serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--dark);
+  }
+  #opt-a .review-score { font-family: 'Inter', sans-serif; }
+
+  /* ============================================================
+     OPTION B — Playfair Display + DM Sans
+  ============================================================ */
+
+  #opt-b .nav-logo,
+  #opt-b .nav-links  { font-family: 'DM Sans', sans-serif; }
+
+  #opt-b .category-tag,
+  #opt-b .byline,
+  #opt-b .review-artist,
+  #opt-b .card-cat   { font-family: 'DM Sans', sans-serif; }
+
+  #opt-b h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -.015em;
+    color: var(--dark);
+  }
+  #opt-b h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--dark);
+  }
+  #opt-b .review-album {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--dark);
+    margin-top: 4px;
+  }
+  #opt-b p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.68;
+    color: var(--body-text);
+  }
+  #opt-b .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.22;
+    color: var(--dark);
+  }
+  #opt-b .review-score { font-family: 'DM Sans', sans-serif; }
+
+  /* ============================================================
+     OPTION C — Libre Baskerville + Source Sans 3
+  ============================================================ */
+
+  #opt-c .nav-logo,
+  #opt-c .nav-links  { font-family: 'Source Sans 3', sans-serif; }
+
+  #opt-c .category-tag,
+  #opt-c .byline,
+  #opt-c .review-artist,
+  #opt-c .card-cat   { font-family: 'Source Sans 3', sans-serif; }
+
+  #opt-c h1 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -.01em;
+    color: var(--dark);
+  }
+  #opt-c h2 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.28;
+    color: var(--dark);
+  }
+  #opt-c .review-album {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--dark);
+    margin-top: 4px;
+  }
+  #opt-c p {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 17.5px;
+    line-height: 1.7;
+    color: var(--body-text);
+  }
+  #opt-c .card-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--dark);
+  }
+  #opt-c .review-score { font-family: 'Source Sans 3', sans-serif; }
+
+  /* --- note at bottom --- */
+  .note {
+    max-width: 780px;
+    margin: 48px auto 0;
+    font-family: sans-serif;
+    font-size: 12px;
+    color: #999;
+    border-top: 1px solid #ccc;
+    padding-top: 16px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- sticky option switcher -->
+<nav class="chooser">
+  <span class="label">Pick a pairing →</span>
+  <button class="active" onclick="show('a')">A &nbsp;·&nbsp; Cormorant + Inter</button>
+  <button onclick="show('b')">B &nbsp;·&nbsp; Playfair + DM Sans</button>
+  <button onclick="show('c')">C &nbsp;·&nbsp; Baskerville + Source Sans</button>
+</nav>
+
+
+<!-- ===== OPTION A ===== -->
+<div class="option visible" id="opt-a">
+  <div class="option-label">Option A &nbsp;·&nbsp; Cormorant Garant (headlines) + Inter (body)</div>
+
+  <!-- nav mock -->
+  <div class="nav-mock">
+    <div class="nav-logo">Vancouver Weekly</div>
+    <ul class="nav-links">
+      <li class="active">A La Music</li>
+      <li>Photography</li>
+      <li>Food &amp; Drink</li>
+      <li>Out N About</li>
+    </ul>
+  </div>
+
+  <!-- hero article -->
+  <span class="category-tag">A La Music</span>
+  <h1>The Commodore Ballroom at 95: How Vancouver's Greatest Venue Became the Heartbeat of the City's Cultural Soul</h1>
+  <div class="byline"><strong>By Sarah Chen</strong> <span>June 13, 2026</span></div>
+  <div class="hero-image">[ featured image ]</div>
+
+  <p>There is a particular kind of magic that only old rooms possess — the accumulated resonance of ten thousand nights, the invisible weight of every band that ever tuned up on the low stage and looked out at the sprung dance floor below. The Commodore Ballroom on Granville Street has this quality in abundance, and at 95 years old it remains the most important room in Vancouver music history.</p>
+
+  <p>It has outlasted empires of taste. The Commodore survived big band, folk revival, punk, new wave, grunge, and the entire streaming era without once losing the quality that every serious musician says they feel the moment they walk onstage: the sense that the room itself is listening.</p>
+
+  <hr class="divider">
+
+  <!-- album review -->
+  <span class="category-tag">Album Review</span>
+  <div class="review-card">
+    <div class="review-meta">
+      <div class="review-artist">Alvvays</div>
+      <h2 class="review-album">Blue Rev</h2>
+    </div>
+    <div class="review-score">9.2<span>/10</span></div>
+  </div>
+  <p>On their third album, Alvvays compress an entire architecture of feeling into four minutes at a time — jangling guitar runs that cascade like rain on a skylight, Molly Rankin's voice suspended somewhere between heartbreak and irony, the whole thing mixed loud enough to fill your chest but detailed enough to reward headphones at midnight.</p>
+
+  <hr class="divider">
+
+  <!-- mini grid -->
+  <div class="mini-grid">
+    <div class="card">
+      <div class="card-img"></div>
+      <div class="card-body">
+        <div class="card-cat">Photography</div>
+        <div class="card-title">24 Photos From Japandroids' Final Vancouver Show</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-img"></div>
+      <div class="card-body">
+        <div class="card-cat">Food &amp; Drink</div>
+        <div class="card-title">The Best New Restaurant Openings in Vancouver This Month</div>
+      </div>
+    </div>
+    <div class="text-card">
+      <div class="card-cat">Out N About</div>
+      <div class="card-title">Everything Happening in East Van This Weekend</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== OPTION B ===== -->
+<div class="option" id="opt-b">
+  <div class="option-label">Option B &nbsp;·&nbsp; Playfair Display (headlines) + DM Sans (body)</div>
+
+  <div class="nav-mock">
+    <div class="nav-logo">Vancouver Weekly</div>
+    <ul class="nav-links">
+      <li class="active">A La Music</li>
+      <li>Photography</li>
+      <li>Food &amp; Drink</li>
+      <li>Out N About</li>
+    </ul>
+  </div>
+
+  <span class="category-tag">A La Music</span>
+  <h1>The Commodore Ballroom at 95: How Vancouver's Greatest Venue Became the Heartbeat of the City's Cultural Soul</h1>
+  <div class="byline"><strong>By Sarah Chen</strong> <span>June 13, 2026</span></div>
+  <div class="hero-image">[ featured image ]</div>
+
+  <p>There is a particular kind of magic that only old rooms possess — the accumulated resonance of ten thousand nights, the invisible weight of every band that ever tuned up on the low stage and looked out at the sprung dance floor below. The Commodore Ballroom on Granville Street has this quality in abundance, and at 95 years old it remains the most important room in Vancouver music history.</p>
+
+  <p>It has outlasted empires of taste. The Commodore survived big band, folk revival, punk, new wave, grunge, and the entire streaming era without once losing the quality that every serious musician says they feel the moment they walk onstage: the sense that the room itself is listening.</p>
+
+  <hr class="divider">
+
+  <span class="category-tag">Album Review</span>
+  <div class="review-card">
+    <div class="review-meta">
+      <div class="review-artist">Alvvays</div>
+      <h2 class="review-album">Blue Rev</h2>
+    </div>
+    <div class="review-score">9.2<span>/10</span></div>
+  </div>
+  <p>On their third album, Alvvays compress an entire architecture of feeling into four minutes at a time — jangling guitar runs that cascade like rain on a skylight, Molly Rankin's voice suspended somewhere between heartbreak and irony, the whole thing mixed loud enough to fill your chest but detailed enough to reward headphones at midnight.</p>
+
+  <hr class="divider">
+
+  <div class="mini-grid">
+    <div class="card">
+      <div class="card-img"></div>
+      <div class="card-body">
+        <div class="card-cat">Photography</div>
+        <div class="card-title">24 Photos From Japandroids' Final Vancouver Show</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-img"></div>
+      <div class="card-body">
+        <div class="card-cat">Food &amp; Drink</div>
+        <div class="card-title">The Best New Restaurant Openings in Vancouver This Month</div>
+      </div>
+    </div>
+    <div class="text-card">
+      <div class="card-cat">Out N About</div>
+      <div class="card-title">Everything Happening in East Van This Weekend</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== OPTION C ===== -->
+<div class="option" id="opt-c">
+  <div class="option-label">Option C &nbsp;·&nbsp; Libre Baskerville (headlines) + Source Sans 3 (body)</div>
+
+  <div class="nav-mock">
+    <div class="nav-logo">Vancouver Weekly</div>
+    <ul class="nav-links">
+      <li class="active">A La Music</li>
+      <li>Photography</li>
+      <li>Food &amp; Drink</li>
+      <li>Out N About</li>
+    </ul>
+  </div>
+
+  <span class="category-tag">A La Music</span>
+  <h1>The Commodore Ballroom at 95: How Vancouver's Greatest Venue Became the Heartbeat of the City's Cultural Soul</h1>
+  <div class="byline"><strong>By Sarah Chen</strong> <span>June 13, 2026</span></div>
+  <div class="hero-image">[ featured image ]</div>
+
+  <p>There is a particular kind of magic that only old rooms possess — the accumulated resonance of ten thousand nights, the invisible weight of every band that ever tuned up on the low stage and looked out at the sprung dance floor below. The Commodore Ballroom on Granville Street has this quality in abundance, and at 95 years old it remains the most important room in Vancouver music history.</p>
+
+  <p>It has outlasted empires of taste. The Commodore survived big band, folk revival, punk, new wave, grunge, and the entire streaming era without once losing the quality that every serious musician says they feel the moment they walk onstage: the sense that the room itself is listening.</p>
+
+  <hr class="divider">
+
+  <span class="category-tag">Album Review</span>
+  <div class="review-card">
+    <div class="review-meta">
+      <div class="review-artist">Alvvays</div>
+      <h2 class="review-album">Blue Rev</h2>
+    </div>
+    <div class="review-score">9.2<span>/10</span></div>
+  </div>
+  <p>On their third album, Alvvays compress an entire architecture of feeling into four minutes at a time — jangling guitar runs that cascade like rain on a skylight, Molly Rankin's voice suspended somewhere between heartbreak and irony, the whole thing mixed loud enough to fill your chest but detailed enough to reward headphones at midnight.</p>
+
+  <hr class="divider">
+
+  <div class="mini-grid">
+    <div class="card">
+      <div class="card-img"></div>
+      <div class="card-body">
+        <div class="card-cat">Photography</div>
+        <div class="card-title">24 Photos From Japandroids' Final Vancouver Show</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-img"></div>
+      <div class="card-body">
+        <div class="card-cat">Food &amp; Drink</div>
+        <div class="card-title">The Best New Restaurant Openings in Vancouver This Month</div>
+      </div>
+    </div>
+    <div class="text-card">
+      <div class="card-cat">Out N About</div>
+      <div class="card-title">Everything Happening in East Van This Weekend</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="note">
+  Accent color shown here is a placeholder (#C0392B). Final color will be pulled from the Vancouver Weekly logo.<br>
+  All three typeface pairs are free via Google Fonts (open license, no hosting cost).<br>
+  Nav logo text shown in headline font for A, body font for B and C — can be adjusted.
+</div>
+
+<script>
+  function show(opt) {
+    document.querySelectorAll('.option').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.chooser button').forEach(el => el.classList.remove('active'));
+    document.getElementById('opt-' + opt).classList.add('visible');
+    document.querySelectorAll('.chooser button')[{a:0,b:1,c:2}[opt]].classList.add('active');
+    window.scrollTo({ top: 56, behavior: 'smooth' });
+  }
+</script>
+
+</body>
+</html>
