@@ -476,3 +476,13 @@ Applied `_thumbnail_id` back-fill to all published posts that had none, using fi
 **Why 2,482 posts remain without a featured image:** body images for those posts are either Wayback-proxied external URLs (avatars, social CDN — never in `wp-content/uploads`), uploads not recovered from Wayback, or genuinely external links. No placeholder or invented image was assigned — those posts fall back to headline/excerpt display.
 
 Script: `/tmp/vw_option_c_apply.php` (idempotent — safe to re-run; only touches posts with no existing `_thumbnail_id`).
+
+---
+
+## Contributor attribution audit — findings (2026-06-17)
+- Co-Authors plugin data: ZERO survived the Wayback recovery. Bylines must be rebuilt from body text (JIG image title attributes + figcaptions).
+- Real photographer roster: Ryan Johnson (~249), Jennifer McInnis (~137), Sharon Steele (~61), Mariko Margetson (~35), Peter Ruttan (~33), plus ~25 minor contributors (2–17 posts each). This is the true masthead, reconstructed from surviving body credits.
+- ~400–450 posts need post_author correction (currently attributed to generic "Vancouver Weekly").
+- Duplicate/missing user accounts exist (e.g. McInnis = IDs 137 & 246) — need canonical account per person before/with reassignment.
+- 136 concert photo posts had Facebook-sourced featured images (expired fbcdn URLs) — unrecoverable via Option C, need a separate recovery path (photographers' own originals / VW drives).
+- NEXT: gated byline reassignment, dry run first — Type A galleries (photographer = author) vs Type B written articles (writer = author, photographer → photo_credit meta), word-count tiebreaker at ~250 words, ambiguous cases to manual review.
