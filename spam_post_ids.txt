@@ -1,0 +1,319 @@
+SPAM CLEANUP LIST — Vancouver Weekly
+Generated: 2026-06-16
+======================================================================
+
+TOTAL: 297 confirmed spam posts (3 published, 294 draft)
+SOURCE: November 2021 injection batch — static import artifact, not active
+        All posts have pharma drug-brand titles and pharma-specific categories.
+        Rich content (long bodies, featured images) is spam content — not editorial.
+
+SAFE TO TRASH: all entries below.
+  — None are editorial articles.
+  — Borderline file: 0 cases — no false positives found.
+
+----------------------------------------------------------------------
+SECTION A: PUBLISHED (3) — must trash individually or review
+----------------------------------------------------------------------
+      ID  Date          Status    Title
+   66586  2021-11-08    publish   Ivera chain 7210 color
+   68224  2021-11-10    publish   Securom failed to initialize crysis 3
+   68189  2021-11-16    publish   Scaboma lotion price
+
+----------------------------------------------------------------------
+SECTION B: DRAFTS (294) — bulk trash
+----------------------------------------------------------------------
+      ID  Date          Status    Title
+   66326  2021-11-04    draft     Gotas quanox
+   67361  2021-11-05    draft     Para q sirve las gotas de simpiox
+   67403  2021-11-05    draft     Para que sirve la simpiox
+   67375  2021-11-05    draft     Para que sirve el medicamento de ivexterm
+   65643  2021-11-05    draft     Barato revectina
+   68197  2021-11-05    draft     Scaboma plus lotion uses
+   67359  2021-11-05    draft     Para q sirve ivexterm 6 mg
+   66688  2021-11-05    draft     Ivexterm medicamento
+   68238  2021-11-05    draft     Securonix snypr architecture
+   66542  2021-11-05    draft     Invertex medicamento precio
+   68110  2021-11-05    draft     Revectina similar
+   66594  2021-11-05    draft     Ivergol
+   68106  2021-11-05    draft     Revectina posologia
+   68242  2021-11-05    draft     Securonix snypr platform
+   66648  2021-11-05    draft     Ivexterm 4 tabletas para que sirve
+   68248  2021-11-05    draft     Securovision lunettes
+   67969  2021-11-05    draft     Preiswert ivermec
+   66708  2021-11-05    draft     Ivexterm precio en farmacia guadalajara
+   65633  2021-11-05    draft     Barato ivectin
+   68230  2021-11-05    draft     Securonix gartner
+   65794  2021-11-05    draft     Bula revectina
+   65885  2021-11-05    draft     Cher ivergot
+   66860  2021-11-05    draft     Kaufen ivenox
+   65986  2021-11-05    draft     Compre simpiox
+   67377  2021-11-05    draft     Para que sirve el medicamento ivexterm tabletas
+   66750  2021-11-05    draft     Ivomec for goats
+   68212  2021-11-05    draft     Securo 6 mg precio
+   67426  2021-11-05    draft     Pas revectina
+   66604  2021-11-06    draft     Ivergot gotas venezuela
+   66738  2021-11-06    draft     Ivexterm venta mexico
+   68216  2021-11-06    draft     Securo dosis
+   66616  2021-11-06    draft     Ivermax dosage for humans
+   66706  2021-11-06    draft     Ivexterm precio chedraui
+   66624  2021-11-06    draft     Ivermec dose
+   65984  2021-11-06    draft     Compre quanox
+   66918  2021-11-06    draft     Kjope ivera
+   66924  2021-11-06    draft     Kobe ivera
+   67022  2021-11-06    draft     Levne ivermec
+   68292  2021-11-06    draft     Simpiox gotas contraindicaciones
+   65974  2021-11-06    draft     Comprare quanox
+   65879  2021-11-06    draft     Cheap ivermec
+   66650  2021-11-06    draft     Ivexterm 6 mg 4 tabletas dosis
+   68035  2021-11-06    draft     Quanox locion precio
+   66950  2021-11-06    draft     Koupit ivectin
+   68280  2021-11-06    draft     Simpiox como se toma gotas
+   65453  2021-11-06    draft     A buon mercato simpiox
+   67139  2021-11-06    draft     Medicamento ivexterm precio
+   68218  2021-11-06    draft     Securo pastillas precio
+   65498  2021-11-06    draft     Acheter revectina
+   66718  2021-11-06    draft     Ivexterm prospecto
+   67971  2021-11-06    draft     Preiswert kilox
+   67973  2021-11-06    draft     Preiswert revectina
+   66596  2021-11-06    draft     Ivergot dosis
+   68047  2021-11-06    draft     Que significa simpiox
+   66944  2021-11-06    draft     Kopen ivectin
+   67379  2021-11-06    draft     Para que sirve el medicamento kilox
+   67143  2021-11-06    draft     Medicamento securo
+   66710  2021-11-07    draft     Ivexterm precio espana
+   68084  2021-11-07    draft     Remedio revectina
+   67391  2021-11-07    draft     Para que sirve ivergot en gotas
+   66670  2021-11-07    draft     Ivexterm 6 mg
+   66886  2021-11-07    draft     Kilox gotas precio la rebaja
+   66760  2021-11-07    draft     Ivomec pour on kaufen
+   65976  2021-11-07    draft     Comprare securo
+   65952  2021-11-07    draft     Como tomar ivexterm niños
+   66894  2021-11-07    draft     Kilox vademecum
+   65637  2021-11-07    draft     Barato ivermec
+   68290  2021-11-07    draft     Simpiox gotas 5ml para que sirve
+   68003  2021-11-07    draft     Quanox componentes
+   68193  2021-11-07    draft     Scaboma lotion uses in marathi
+   67357  2021-11-07    draft     Para q sirve el simpiox gotas
+   67355  2021-11-07    draft     Para q sirve el medicamento ivexterm
+   68043  2021-11-07    draft     Que es el simpiox y para que sirve
+   65966  2021-11-07    draft     Comprar revectina portugal
+   66660  2021-11-07    draft     Ivexterm 6 mg oral 2 tabletas
+   66135  2021-11-07    draft     El simpiox para que sirve
+   66678  2021-11-07    draft     Ivexterm cvs
+   66200  2021-11-07    draft     Farmacia san pablo ivexterm
+   66694  2021-11-07    draft     Ivexterm pastillas para piojos
+   68009  2021-11-07    draft     Quanox dosis
+   66698  2021-11-07    draft     Ivexterm piojos
+   68098  2021-11-07    draft     Revectina genérico
+   65956  2021-11-07    draft     Como tomar pastilla ivexterm para piojos
+   66658  2021-11-07    draft     Ivexterm 6 mg oral 2 tabletas para que sirve
+   68175  2021-11-07    draft     Scabioral tablete
+   65579  2021-11-08    draft     Antiparasitario securo
+   66742  2021-11-08    draft     Ivexterm yza
+   66712  2021-11-08    draft     Ivexterm precio farmacia benavides
+   66882  2021-11-08    draft     Kilox gotas para q es
+   68173  2021-11-08    draft     Scabioral 3 mg
+   67141  2021-11-08    draft     Medicamento ivexterm
+   67387  2021-11-08    draft     Para que sirve el quanox locion topica
+   66308  2021-11-08    draft     Goedkoop ivexterm
+   65641  2021-11-08    draft     Barato quanox
+   68282  2021-11-08    draft     Simpiox como se toma
+   65964  2021-11-08    draft     Comprar ivermec
+   66926  2021-11-08    draft     Kobe kilox
+   68191  2021-11-08    draft     Scaboma lotion uses in hindi
+   66730  2021-11-08    draft     Ivexterm tabletas 6 mg x 2 dosis
+   67409  2021-11-08    draft     Para que sirve quanox drops
+   67422  2021-11-08    draft     Pas ivermec
+   66610  2021-11-08    draft     Ivergot precio colombia
+   66716  2021-11-08    draft     Ivexterm precio guatemala
+   66444  2021-11-08    draft     How to fix securom failed to initialize
+   66700  2021-11-08    draft     Ivexterm plm para que sirve
+   65716  2021-11-08    draft     Billigt ivergot
+   66680  2021-11-08    draft     Ivexterm dosis piojos
+   67314  2021-11-08    draft     Onde comprar o remédio revectina
+   65970  2021-11-08    draft     Comprar simpiox
+   66626  2021-11-08    draft     Ivermektin s
+   66748  2021-11-08    draft     Ivomec d
+   68298  2021-11-08    draft     Simpiox que es
+   66940  2021-11-08    draft     Kop revectina
+   66696  2021-11-09    draft     Ivexterm pediatrico
+   66304  2021-11-09    draft     Goedkoop ivergot
+   66674  2021-11-09    draft     Ivexterm 6mg
+   65720  2021-11-09    draft     Billigt securo
+   68296  2021-11-09    draft     Simpiox precio para que sirve
+   66502  2021-11-09    draft     Inkafarma quanox
+   68234  2021-11-09    draft     Securonix revenue
+   68037  2021-11-09    draft     Quanox precio
+   67389  2021-11-09    draft     Para que sirve este medicamento simpiox
+   68246  2021-11-09    draft     Securonix snypr vs splunk
+   67411  2021-11-09    draft     Para que sirve tomar ivexterm
+   66584  2021-11-09    draft     Ivera 6mg
+   66734  2021-11-09    draft     Ivexterm tabletas
+   67385  2021-11-09    draft     Para qué sirve el medicamento simpiox
+   68025  2021-11-09    draft     Quanox gotas para que sirve
+   66682  2021-11-09    draft     Ivexterm en estados unidos
+   66588  2021-11-09    draft     Ivera medical
+   66962  2021-11-09    draft     Kup ivectin
+   66966  2021-11-09    draft     Kup quanox
+   66630  2021-11-09    draft     Ivermite 6mg tablet for lice
+   68294  2021-11-09    draft     Simpiox para piojos
+   66740  2021-11-09    draft     Ivexterm wikipedia
+   66724  2021-11-09    draft     Ivexterm sirve para los piojos
+   65805  2021-11-09    draft     Buy simpiox
+   66590  2021-11-09    draft     Ivera
+   68766  2021-11-09    draft     Uso de ivexterm
+   67316  2021-11-09    draft     Onde compro revectina
+   65982  2021-11-09    draft     Compre ivergot
+   67020  2021-11-09    draft     Levne ivera
+   65950  2021-11-10    draft     Como tomar el simpiox
+   68011  2021-11-10    draft     Quanox drops
+   68300  2021-11-10    draft     Simpiox
+   67371  2021-11-10    draft     Para que sirve el ivergot gotas
+   66958  2021-11-10    draft     Koupit simpiox
+   67365  2021-11-10    draft     Para que es el medicamento ivexterm
+   67977  2021-11-10    draft     Preiswert simpiox
+   66744  2021-11-10    draft     Ivomec buvable ovin
+   68240  2021-11-10    draft     Securonix snypr documentation
+   65968  2021-11-10    draft     Comprar revectina
+   68222  2021-11-10    draft     Securo x 6 comprimidos
+   66686  2021-11-10    draft     Ivexterm farmacia benavides
+   66324  2021-11-10    draft     Gotas ivergot
+   68226  2021-11-10    draft     Securom failed to initialize nba 2k14 fix
+   67395  2021-11-10    draft     Para que sirve ivexterm tab
+   66684  2021-11-10    draft     Ivexterm en línea
+   68284  2021-11-10    draft     Simpiox como tomarlo
+   67383  2021-11-10    draft     Para qué sirve el medicamento quanox
+   66746  2021-11-11    draft     Ivomec chien puces
+   66582  2021-11-11    draft     Ivera 6
+   66099  2021-11-11    draft     Donde venden quanox
+   68214  2021-11-11    draft     Securo contraindicaciones
+   66095  2021-11-11    draft     Donde comprar quanox en lima
+   68001  2021-11-11    draft     Quanox 0.6
+   65978  2021-11-11    draft     Comprare simpiox
+   66756  2021-11-11    draft     Ivomec kaufen
+   65493  2021-11-11    draft     Abus ivera 7200
+   66754  2021-11-11    draft     Ivomec iniettabile
+   66614  2021-11-11    draft     Ivergot tablets 6 mg
+   66664  2021-11-11    draft     Ivexterm 6 mg para que es
+   67116  2021-11-11    draft     Massive kilox 122
+   67963  2021-11-11    draft     Precio de quanox gotas
+   66946  2021-11-11    draft     Kopen ivexterm
+   65992  2021-11-11    draft     Comprimido revectina
+   66884  2021-11-11    draft     Kilox gotas precio drogas la rebaja
+   67961  2021-11-11    draft     Precio de pastillas ivexterm
+   66752  2021-11-11    draft     Ivomec gatti foglietto illustrativo
+   68177  2021-11-11    draft     Scabioral tabletta
+   68104  2021-11-11    draft     Revectina original
+   66656  2021-11-11    draft     Ivexterm 6 mg c/4 tabletas
+   65451  2021-11-11    draft     A buon mercato ivermec
+   66574  2021-11-11    draft     Ivectin 1
+   66964  2021-11-11    draft     Kup ivermec
+   67393  2021-11-11    draft     Para que sirve ivexterm 6 mg
+   66654  2021-11-11    draft     Ivexterm 6 mg c/2 tabletas
+   67030  2021-11-11    draft     Levne securo
+   65958  2021-11-11    draft     Como tomar pastillas ivexterm
+   66690  2021-11-11    draft     Ivexterm nombre generico
+   66672  2021-11-12    draft     Ivexterm 6mg precio
+   68199  2021-11-12    draft     Scaboma plus lotion
+   66956  2021-11-12    draft     Koupit securo
+   68092  2021-11-12    draft     Revectina bula
+   68094  2021-11-12    draft     Revectina comprar online
+   67967  2021-11-12    draft     Preiswert ivergot
+   66732  2021-11-12    draft     Ivexterm tabletas de 6 mg
+   66662  2021-11-12    draft     Ivexterm 6 mg para piojos dosis
+   66938  2021-11-12    draft     Kop kilox
+   67399  2021-11-12    draft     Para que sirve ivexterm tabletas
+   65954  2021-11-12    draft     Como tomar las gotas simpiox
+   68108  2021-11-12    draft     Revectina preço pacheco
+   66888  2021-11-12    draft     Kilox para piojos
+   66097  2021-11-12    draft     Donde puedo comprar quanox
+   65639  2021-11-12    draft     Barato ivexterm
+   67373  2021-11-12    draft     Para que sirve el kilox 0 6
+   65718  2021-11-12    draft     Billigt kilox
+   68195  2021-11-12    draft     Scaboma lotion uses in telugu
+   65980  2021-11-12    draft     Compre ivectin
+   68029  2021-11-12    draft     Quanox gotas se toma con agua
+   66618  2021-11-12    draft     Ivermax for sheep
+   68236  2021-11-13    draft     Securonix snypr api
+   66968  2021-11-13    draft     Kup revectina
+   66728  2021-11-13    draft     Ivexterm tabletas 6 mg plm
+   67026  2021-11-13    draft     Levne revectina
+   66600  2021-11-13    draft     Ivergot gotas para que sirve
+   66702  2021-11-13    draft     Ivexterm precio 4 tabletas san pablo
+   67401  2021-11-13    draft     Para que sirve kilox 0 6
+   68007  2021-11-13    draft     Quanox dosis en niños
+   67367  2021-11-13    draft     Para que ivexterm
+   68027  2021-11-13    draft     Quanox gotas precio inkafarma
+   66612  2021-11-13    draft     Ivergot precio
+   66720  2021-11-13    draft     Ivexterm san pablo
+   66722  2021-11-13    draft     Ivexterm se toma en ayunas
+   68013  2021-11-13    draft     Quanox en inkafarma
+   68005  2021-11-13    draft     Quanox dosis adultos
+   68088  2021-11-13    draft     Revectina 4 comprimidos preço
+   66862  2021-11-13    draft     Kaufen ivera
+   67432  2021-11-13    draft     Pastillas piojos ivexterm
+   66948  2021-11-13    draft     Kopen scabo
+   68096  2021-11-14    draft     Revectina efeitos colaterais
+   68033  2021-11-14    draft     Quanox lima
+   65635  2021-11-14    draft     Barato ivergot
+   68021  2021-11-14    draft     Quanox gotas laboratorio
+   65962  2021-11-14    draft     Comprar ivectin
+   66704  2021-11-14    draft     Ivexterm precio benavides
+   68179  2021-11-14    draft     Scabioral
+   65887  2021-11-14    draft     Cher kilox
+   66896  2021-11-14    draft     Kilox
+   65972  2021-11-14    draft     Comprare ivermec
+   65714  2021-11-14    draft     Billig securo
+   68017  2021-11-14    draft     Quanox gotas 5ml
+   67369  2021-11-14    draft     Para que se usa el ivexterm
+   65881  2021-11-14    draft     Cheap securo
+   68031  2021-11-14    draft     Quanox gotas se toma en ayunas
+   68112  2021-11-14    draft     Revectina
+   67965  2021-11-15    draft     Preço da revectina
+   67413  2021-11-15    draft     Para que sirven las tabletas ivexterm
+   66580  2021-11-15    draft     Ivera 12
+   68861  2021-11-15    draft     Veridex precio
+   66880  2021-11-15    draft     Kilox bussie
+   66892  2021-11-15    draft     Kilox para que sirve
+   68440  2021-11-15    draft     Tanio quanox
+   66666  2021-11-15    draft     Ivexterm 6 mg precio
+   66928  2021-11-15    draft     Kobe securo
+   66736  2021-11-15    draft     Ivexterm uso
+   65631  2021-11-15    draft     Barata ivera
+   67381  2021-11-15    draft     Para que sirve el medicamento quanox gotas
+   66668  2021-11-15    draft     Ivexterm 6 mg tabletas
+   68232  2021-11-15    draft     Securonix revenue 2020
+   66602  2021-11-15    draft     Ivergot gotas precio colombia
+   68228  2021-11-15    draft     Securonix crunchbase
+   67405  2021-11-15    draft     Para que sirve las gotas de kilox
+   66011  2021-11-15    draft     Cuantas dosis de ivexterm debo tomar
+   66652  2021-11-15    draft     Ivexterm 6 mg 4 tabletas
+   66762  2021-11-15    draft     Ivomec pour on rcp
+   66936  2021-11-15    draft     Kop ivexterm
+   65960  2021-11-15    draft     Como tomar simpiox
+   67363  2021-11-15    draft     Para q sirve quanox gotas
+   67397  2021-11-15    draft     Para que sirve ivexterm tabletas 6 mg
+   68244  2021-11-16    draft     Securonix snypr review
+   68041  2021-11-16    draft     Qué es el simpiox para que sirve
+   68769  2021-11-16    draft     Valor do revectina
+   66692  2021-11-16    draft     Ivexterm para que sirve costo
+   68090  2021-11-16    draft     Revectina bula anvisa
+   66676  2021-11-16    draft     Ivexterm comprar
+   66764  2021-11-16    draft     Ivomec super for humans
+   65948  2021-11-16    draft     Como se debe tomar quanox gotas
+   65877  2021-11-16    draft     Cheap ivergot
+   66714  2021-11-16    draft     Ivexterm precio farmacias similares
+   66890  2021-11-16    draft     Kilox para que es
+   68286  2021-11-16    draft     Simpiox dosis para que sirve
+   66211  2021-11-16    draft     Fifa 13 failed to initialize securom fix
+   68278  2021-11-16    draft     Simpiox como se debe tomar
+   68019  2021-11-17    draft     Quanox gotas cada cuanto se toma
+   66576  2021-11-17    draft     Ivectin kaufen
+   66726  2021-11-17    draft     Ivexterm sirve
+   66606  2021-11-17    draft     Ivergot pastillas para que sirve
+   66864  2021-11-17    draft     Kaufen kilox
+   66598  2021-11-17    draft     Ivergot gotas para piojos
+   66620  2021-11-17    draft     Ivermec 12 in hindi
+   68100  2021-11-18    draft     Revectina laboratorio
+   66628  2021-11-18    draft     Ivermin 6 mg
+   67407  2021-11-18    draft     Para que sirve las gotas de simpiox

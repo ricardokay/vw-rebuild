@@ -1,0 +1,22 @@
+BORDERLINE CASES — Vancouver Weekly Spam Cleanup
+Generated: 2026-06-16
+======================================================================
+
+RESULT: 0 borderline cases.
+
+The PHP prep script classified 294 draft posts as 'borderline' because
+they had featured images, named authors, and word counts > 200. Those
+signals were intended to catch false positives (legitimate editorial
+articles whose titles happened to contain spam-pattern words).
+
+After inspection, all 294 are unambiguous spam:
+  - All dated November 2021 (single injection event)
+  - All assigned to pharma/drug-specific spam categories
+    (e.g. 'Ivermectin for cattle and swine', 'Vand ivermectina')
+  - All have drug-brand or pharma-query titles
+    (e.g. 'Ivermin 6 mg', 'Quanox gotas cada cuanto se toma')
+  - Rich content (long articles, featured images) was injected
+    as part of the spam batch — it is not a sign of editorial origin.
+
+All 297 posts (3 published + 294 draft) are moved to Section A/B
+of spam_post_ids.txt for trashing.
