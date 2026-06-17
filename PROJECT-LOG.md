@@ -599,3 +599,63 @@ Image tier chosen AUTOMATICALLY by a PHP function reading image width. Must also
 ### Design reference
 
 `section-cards-preview.html` — static visual card/section designs. Small-image card to be revised: left-aligned thumbnail beside content (not large centered container).
+
+---
+
+## Section build decisions (2026-06-17, Phase 1 complete)
+
+### Curation engine: newspack-blocks (Homepage Posts block)
+
+- `newspack-blocks` plugin now **installed and activated** (free/open-source, GitHub, not wordpress.org; no paid Newspack subscription needed).
+- `archive-section.php` (old custom-PHP stub from an earlier session, never activated in the WordPress template hierarchy) **removed**.
+- Core Query Loop block was considered and rejected — harder to configure, non-coder-unfriendly, wrong editorial fit.
+
+### Implementation: category.php routing → section-parts block templates
+
+`category.php` (~25 lines): routes curated slugs to `section-parts/{slug}.html` via `do_blocks()`. Non-curated categories fall through to Newspack's default `archive.php`. To add a section: add slug to `$curated` array + create corresponding `.html` file.
+
+### Phase 1 curated section fronts (live)
+
+| Section | URL | Block queries categories |
+|---|---|---|
+| A La Music (umbrella) | `/category/a-la-music/` | 7 (a-la-music), 9 (live-music-reviews), 8 (album-reviews), 11 (music-interviews), 20 (music-videos), 10 (music-editorials) |
+| Out 'n About | `/category/out-n-about/` | 17 (out-n-about) |
+| Must-See Films | `/category/must-see-films/` | 15 (must-see-films) |
+
+Block config: 2-column grid, 12 posts, show category/excerpt/date/author, no avatar, "Load more" interim pagination. All three verified rendering correctly via `do_blocks()` before commit.
+
+### Photography — DEFERRED (P3)
+
+- Photography category (term_id 6): 30 posts only — effectively a ghost section.
+- Real gallery content: 90%+ Uncategorized. Ryan Johnson has 38/45 posts in Uncategorized; McInnis 22/23; Steele 18/21; etc. Category assignments were never updated after the byline pass.
+- **Next pass (P1-additive)**: ADD `photography` category to photographer-authored gallery posts; do NOT remove existing categories (a concert gallery correctly belongs in both Photography AND Live Music Reviews). Dry-run first, show counts + samples before writing.
+
+### Uncategorized — pending audit
+
+1,835 posts in Uncategorized (largest bucket). Audit after Photography re-file pass to understand what else is there.
+
+### 366 empty spam categories — still pending
+
+All the ivermectin/spam categories (term_ids 2044–2945 approx), all 0 posts. Logged earlier; still deferred.
+
+---
+
+## Pagination / infinite-scroll plan (2026-06-17, DESIGNED IN — not built yet)
+
+### Interim: Load more (already live)
+
+The Homepage Posts block's `moreButton: true` provides a "Load more" button on all three section fronts. AJAX loads the next page of posts without a full page reload. This is the simple interim until the custom scroll is built.
+
+### Target: intelligent infinite scroll with permanent URL sync
+
+**How it must work:**
+- As a reader scrolls and each post comes into view, JS updates the address bar to that post's PERMANENT URL via the History API (`history.pushState`). Content streams continuously; the address bar always reflects the current post. Bookmark, share, and browser back all work because the URL is real and permanent.
+- Infinite scroll is a layer ON TOP of permanent URLs, never a replacement. Landing directly on `/slug/` (from Google, bookmark, citation) serves the full article via WordPress, THEN scroll loads the next post below it.
+- Server-side / no-JS / crawler safety: search engines and no-JS visitors get every post fully rendered at its own permanent URL. Scroll is progressive enhancement, never the only path to content.
+
+**The ambitious version — recommendation-ordered loading:**
+Rather than loading chronological next, the scroll loads the contextually related next post (same venue / artist / photographer / era, or semantically similar via embeddings). An infinitely scrolling intelligent path through the archive: every stop permanently addressable. This is the differentiator — wander 20 years of connected content, everything shareable and citable.
+
+**Scope:** Custom development (History-API URL sync + standalone fallback + crawler rendering + recommendation-ordered loading). Well-trodden technically but real work. Designed-in v2 feature; depends on the recommendation/entity engine. Build after Phase 1 templates + entity-structuring + recommendation engine.
+
+**Dependencies before building:** Phase 1 section templates ✓, entity-structuring pass, recommendation/similarity engine.

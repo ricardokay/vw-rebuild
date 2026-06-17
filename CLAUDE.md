@@ -47,10 +47,11 @@ These contain credentials or PII (user emails, hashed passwords). The SQL dump i
 ## ARCHITECTURE DECISIONS (FROZEN)
 
 ### Editorial layer: Newspack-native
-- Block tool: Newspack Homepage Posts block (`newspack-blocks` plugin, free/open source)
+- Block tool: Newspack Homepage Posts block (`newspack-blocks` plugin — **installed**, free/open source, from GitHub not wordpress.org)
 - NO page builders (Elementor, Beaver Builder, Bricks) — high lock-in, fragile on multisite
 - NO bloated custom PHP card grids — Newspack blocks handle layout/query
 - Custom PHP only as a thin routing layer (~25 lines `category.php`) delegating to `.html` block templates
+- `archive-section.php` (old draft, never activated in template hierarchy) — **removed**
 
 ### Two-layer content model
 - **Archive layer**: ~2,800 posts, permanent/stable. Post URLs are untouchable.
@@ -58,8 +59,11 @@ These contain credentials or PII (user emails, hashed passwords). The SQL dump i
 
 ### Section fronts
 - Real category archive URLs render curated layouts directly (Option B — no redirect)
-- Implemented: minimal `category.php` → `section-parts/{slug}.html` (Newspack block markup)
+- Implemented: minimal `category.php` (~25 lines) routes curated slugs → `section-parts/{slug}.html` via `do_blocks()`; all other categories fall through to Newspack default archive
+- Phase 1 curated sections: `a-la-music` (umbrella, queries 6 music category IDs: 7,9,8,11,20,10), `out-n-about` (17), `must-see-films` (15)
+- To add a section: add slug to `$curated` array in `category.php` AND create `section-parts/{slug}.html`
 - Lead story: WordPress sticky post → auto-rises to lead slot. Fallback: most recent post with `_thumbnail_id`.
+- **Photography section deferred (P3)**: real gallery content is 90% in Uncategorized, not the Photography category (30 posts). Next pass: P1-additive — ADD photography category to photographer-authored posts, never remove existing categories.
 
 ### Image quality tiers (automatic, never manual)
 - PHP function reads `wp_get_attachment_image_src( get_post_thumbnail_id(), 'full' )` → checks `$width`
