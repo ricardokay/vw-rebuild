@@ -329,3 +329,58 @@ The event listings are a potential asset, not junk. They form a historical gig r
 These two types need to be separated before recategorizing. The most promising auto-detection approach: check for a shared plugin marker (custom field, post format, or tag) that the original events plugin added. If all event listings share a common `_EventStartDate` meta key or similar, they can be bulk-identified and handled as a group without manual review of all 841 posts.
 
 **Action:** Revisit in a later session once the site's events/archive strategy is settled. Posts are untouched in the database. Export CSV (`uncategorized-review.csv`) is available locally for reference but is not committed (large working file, no PII).
+
+---
+
+## Image Import — Session 1 (June 16, 2026)
+
+Pre-work: full DB backup taken before any changes (`db-backups/vancouverweekly_local_2026-06-16_201650.sql`, 134 MB, gitignored).
+
+### Media import script built
+
+`media_import.py` — Method 3 (proper WP attachment registration + batch thumbnail regen). Commands: `parse`, `plan`, `import [--limit N]`, `regen`, `report`.
+
+Key design decisions:
+- Each recovered image registered as a real WordPress media library attachment via `wp_insert_attachment()`
+- Post-to-image parent links reconstructed from the Feb 2019 SQL dump: `old attachment.post_parent → old post slug → new WordPress post ID`
+- Original post titles from SQL dump used as attachment titles where available
+- Alt text intentionally left blank at import time; `_needs_alt_review = 1` postmeta flag set on every image for future AI alt-text pipeline
+- `BATCH_SIZE = 50` — attachments inserted in batches of 50 via WP-CLI eval-file
+
+### 20-image test — passed
+
+`python3 media_import.py import --limit 20` confirmed: attachments created in DB, parent post IDs resolved, `_needs_alt_review` flag set, files copied to correct `wp-content/uploads/YYYY/MM/` paths. Media library shows real imported photos.
+
+### Domain search-replace
+
+Posts imported from Wayback had old-domain absolute URLs baked into `post_content` (e.g. `https://vancouverweekly.com/wp-content/uploads/…`). Fixed via `wp search-replace` across three passes (https, http://www., http://), all with `--skip-columns=guid` to preserve attachment GUIDs.
+
+| Pass | Old string | Replacements |
+|---|---|---|
+| 1 | `https://vancouverweekly.com` | ~2,200 |
+| 2 | `http://www.vancouverweekly.com` | ~2,100 |
+| 3 | `http://vancouverweekly.com` | ~2,300 |
+| **Total** | | **6,632** |
+
+Posts with relative image URLs (no domain prefix) were unaffected — these are correct already.
+
+### Key finding: 'broken images' were empty featured-image slots, not missing photos
+
+During post-test diagnosis, discovered that the widespread broken image boxes visible at the top of article pages were **not** missing recovered images. Root cause:
+
+- The Wayback post importer had set `_thumbnail_id = 64365` (attachment "placeholder", registered as `wp-content/uploads/2024/07/placeholder.jpg`) on every post that lacked a real featured image
+- That file was never created on disk — the DB pointer existed but the file did not
+- 2,495 posts were affected; the Newspack theme renders a featured-image block whenever `has_post_thumbnail()` returns true, producing a broken image box at the top of each post
+- Body images in `post_content` (inline article photos) were recovering correctly and displaying fine — confirmed on 'the-housewife' post
+
+**Fix applied (Option A):** Deleted all 2,495 `wptg_postmeta` rows where `meta_key = '_thumbnail_id'` AND `meta_value = '64365'`. Posts now behave like the 1,710 posts that never had a featured image — `has_post_thumbnail()` returns false, theme skips the featured-image block entirely, no broken box. Confirmed clean on 'the-housewife' and 'overtime-atf' posts.
+
+### Still pending
+
+| Task | Status |
+|---|---|
+| Full media import — 3,585 recovered images | Running overnight (launched June 16 evening) |
+| `wp media regenerate` — generate all WordPress size variants (300×266, 150×150, etc.) from full-size imports | Pending — run manually after import completes |
+| Option C: back-fill real `_thumbnail_id` from first body image | Deferred — run after regen confirms thumbnails are good. Check for suitable full-size images only; avoid small inline variants. |
+| 366 empty spam categories | Deferred |
+| 808 Uncategorized posts | Deferred — see research note above |
