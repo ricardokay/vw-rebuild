@@ -272,3 +272,40 @@ Largest single category. Needs audit: likely contains legitimate content not pro
 7. **Media library import** — bulk-copy `recovered-images/` into `wp-content/uploads/` and register in WP media library
 8. **Logo** — `logo_VW.png` is a placeholder; replace with final SVG when supplied
 9. **Nav finalisation** — section links and active states deferred pending marketing decision on site structure
+10. **Uncategorized review** — 808 published posts with no clear category signal need manual review / re-categorization
+11. **Empty spam categories** — 308 pharma/drug category terms with 0 posts; safe to bulk-delete before launch
+
+---
+
+## Database Cleanup — Session 1 (June 16, 2026)
+
+Pre-work: full DB backup taken before any changes (`db-backups/vancouverweekly_local_2026-06-16_193823.sql`, 134 MB, gitignored).
+
+### Spam drafts trashed
+
+14 pharma/ivermectin draft posts moved to trash (not permanently deleted — recoverable from WP Admin → Posts → Trash). All 14 were drafts created November 2021, never published, with titles like "Revectina onde comprar rj", "Ivomec ovin prix", "Securo precio ioma".
+
+### Duplicate category slug consolidation
+
+The original import script created `-N` slug variants instead of reusing existing terms. All duplicate terms have been merged back into their canonical term and the empty duplicates deleted.
+
+| Category | Count before | Count after | Dupe terms deleted |
+|---|---|---|---|
+| live-music-reviews | 245 (canon) + 381 in 400 dupes | **626** | 400 |
+| album-reviews | 129 (canon) + 45 in 49 dupes | **174** | 49 |
+| music-interviews | 70 (canon) + 62 in 66 dupes | **132** | 66 |
+| music-editorials | 15 (canon) + 12 in 12 dupes | **27** | 12 |
+| music-videos | 93 (canon) + 7 in 7 dupes | **100** | 7 |
+| out-n-about | 210 (canon) + 1 in 1 dupe | **211** | 1 |
+| food-drink | 26 (canon) + 1 in 1 dupe | **27** | 1 |
+
+**Total:** ~536 dupe terms deleted. All post counts verified before and after — zero posts lost.
+
+### Post-cleanup backup
+
+Fresh backup taken immediately after cleanup: `db-backups/vancouverweekly_local_2026-06-16_195016.sql`, 134 MB. Also copied to `~/Library/Mobile Documents/com~apple~CloudDocs/vw-rebuild-backups/` (private iCloud only — contains user PII).
+
+### Still pending
+
+- **808 Uncategorized published posts** — real-looking content with no clear category keyword (film reviews, comedy, general Vancouver coverage). Needs a separate review session.
+- **308 empty spam categories** — pharma/drug category terms with 0 posts. Safe to bulk-delete, deferred to a later cleanup session.
