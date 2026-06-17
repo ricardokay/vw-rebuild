@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vancouver Weekly — Module Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ──────────────────────────────────────────────────────────────
+   MOBILE-FIRST. Base = ~375px phone.
+   Tablet breakpoint:  min-width 640px
+   Desktop breakpoint: min-width 1024px
+   ────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+a { color: inherit; text-decoration: none; }
+
+:root {
+  --bg:       #F7F6F4;
+  --surface:  #FFFFFF;
+  --ink:      #1A161E;
+  --muted:    #767676;
+  --rule:     #E8E8E8;
+  --rule-em:  #C8C4CC;
+  --red:      #C41230;
+  --serif:    'PT Serif', Georgia, serif;
+  --sans:     'Inter', system-ui, sans-serif;
+  --gutter:   20px;
+  --col:      1100px;
+}
+@media (min-width: 640px)  { :root { --gutter: 32px; } }
+@media (min-width: 1024px) { :root { --gutter: 40px; } }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+.wrap { max-width: var(--col); margin: 0 auto; padding: 0 var(--gutter) 120px; }
+.preview-block { margin-bottom: 80px; }
+@media (min-width: 1024px) { .preview-block { margin-bottom: 110px; } }
+
+/* ── Preview metadata ────────────────────────────────────────── */
+.preview-label {
+  font: 600 10px/1 var(--sans);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #aaa;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 10px;
+  margin-bottom: 28px;
+}
+.sub-label {
+  font: 600 10px/1 var(--sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #bbb;
+  margin-bottom: 18px;
+  display: block;
+}
+
+/* ── Annotation boxes ────────────────────────────────────────── */
+.note {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 12px 14px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: 2px;
+}
+.note--edtl { background: #f0f4ff; border: 1px solid #98b0e8; }
+.note--use  { background: #f0f8f0; border: 1px solid #88bb88; }
+.note--mob  { background: #fff8e8; border: 1px solid #ddb860; }
+.note--tech { background: #fdf0f0; border: 1px solid #dda0a0; }
+
+/* ── Sticky nav ──────────────────────────────────────────────── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gutter);
+  height: 52px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+@media (min-width: 640px) { .nav { height: 64px; } }
+.nav-logo { font: 700 17px/1 var(--serif); letter-spacing: -0.01em; }
+@media (min-width: 640px) { .nav-logo { font-size: 21px; } }
+.nav-links { display: none; gap: 24px; list-style: none; }
+@media (min-width: 640px) {
+  .nav-links { display: flex; }
+  .nav-links a { font: 600 11px/1 var(--sans); letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+  .nav-links a.active { color: var(--red); }
+}
+.nav-hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px;
+}
+@media (min-width: 640px) { .nav-hamburger { display: none; } }
+.nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--ink); }
+
+/* ── Page header ─────────────────────────────────────────────── */
+.page-hd {
+  padding: 48px 0 36px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 56px;
+}
+.page-hd__eyebrow {
+  font: 600 10px/1 var(--sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: block;
+}
+.page-hd__title {
+  font: 700 clamp(26px, 5vw, 44px)/1.08 var(--serif);
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+.page-hd__sub {
+  font: 400 15px/1.65 var(--sans);
+  color: var(--muted);
+  max-width: 620px;
+}
+
+/* ════════════════════════════════════════════════════════════
+   SHARED ATOMS
+   ════════════════════════════════════════════════════════════ */
+.kicker {
+  display: block;
+  font: 600 10px/1 var(--sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 7px;
+}
+.byline { font: 400 12px/1 var(--sans); color: var(--muted); margin-top: 10px; }
+.byline strong { font-weight: 600; color: var(--ink); }
+
+.section-hd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 0;
+}
+.section-hd__name { font: 700 12px/1 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; }
+.section-hd__aux  { font: 400 12px/1 var(--sans); color: var(--red); white-space: nowrap; }
+
+/* Dark placeholder for images */
+.img-ph {
+  background: linear-gradient(150deg, #1e1a2e 0%, #2a2440 60%, #1a1630 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  font: 500 10px/1.4 var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 8px;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 1 — HERO / LEAD
+   ════════════════════════════════════════════════════════════ */
+.hero { background: var(--surface); display: block; }
+.hero__img { width: 100%; aspect-ratio: 16/9; }
+@media (min-width: 640px)  { .hero__img { aspect-ratio: 16/7; } }
+@media (min-width: 1024px) { .hero__img { aspect-ratio: 16/6; } }
+.hero__body { padding: 22px 18px 26px; }
+@media (min-width: 640px)  { .hero__body { padding: 28px 26px 32px; } }
+@media (min-width: 1024px) { .hero__body { padding: 32px 36px 36px; } }
+.hero__hed {
+  font: 700 clamp(24px, 5vw, 52px)/1.08 var(--serif);
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+  max-width: 760px;
+}
+.hero__exc {
+  font: 400 15px/1.7 var(--sans);
+  color: var(--ink);
+  max-width: 560px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 2 — FEATURED + COMPACT LIST (side-by-side)
+   Mobile: stacked. Desktop: 60/40 side-by-side.
+   ════════════════════════════════════════════════════════════ */
+.feat-aside { display: block; }
+@media (min-width: 1024px) {
+  .feat-aside { display: grid; grid-template-columns: 1fr 360px; align-items: start; }
+}
+.feat-aside__lead { background: var(--surface); padding: 22px 18px 26px; }
+@media (min-width: 640px)  { .feat-aside__lead { padding: 28px 26px 30px; } }
+@media (min-width: 1024px) { .feat-aside__lead { padding: 32px 36px 36px; border-right: 1px solid var(--rule-em); } }
+.feat-aside__lead-img { width: 100%; aspect-ratio: 3/2; margin-bottom: 18px; }
+@media (min-width: 1024px) { .feat-aside__lead-img { aspect-ratio: 16/9; } }
+.feat-aside__lead-hed {
+  font: 700 clamp(20px, 3.5vw, 30px)/1.12 var(--serif);
+  letter-spacing: -0.015em;
+  margin-bottom: 10px;
+  display: block;
+}
+.feat-aside__lead-exc {
+  font: 400 14px/1.65 var(--sans);
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.feat-aside__list { list-style: none; background: var(--surface); border-top: 2px solid var(--ink); }
+@media (min-width: 1024px) { .feat-aside__list { border-top: none; border-left: 2px solid var(--ink); } }
+
+.feat-aside__item { display: flex; gap: 12px; align-items: flex-start; padding: 14px 18px; border-bottom: 1px solid var(--rule); min-height: 44px; }
+@media (min-width: 640px) { .feat-aside__item { padding: 16px 26px; gap: 14px; } }
+@media (min-width: 1024px) { .feat-aside__item { padding: 15px 22px; } }
+.feat-aside__item-num { font: 700 18px/1 var(--serif); color: var(--rule-em); flex-shrink: 0; margin-top: 2px; min-width: 22px; }
+.feat-aside__item-hed { font: 700 15px/1.25 var(--serif); display: block; margin-bottom: 4px; transition: color 0.1s; }
+.feat-aside__item-hed:hover { color: var(--red); }
+.feat-aside__item-byline { font: 400 11px/1 var(--sans); color: var(--muted); }
+
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 3 — EQUAL-CARD GRID
+   1 col → 2 col tablet → 3 col desktop
+   ════════════════════════════════════════════════════════════ */
+.card-grid { display: grid; grid-template-columns: 1fr; gap: 2px; }
+@media (min-width: 640px)  { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .card-grid { grid-template-columns: repeat(3, 1fr); } }
+.card-grid--4col { }
+@media (min-width: 1024px) { .card-grid--4col { grid-template-columns: repeat(4, 1fr); } }
+
+.card { background: var(--surface); display: flex; flex-direction: column; }
+.card__img { width: 100%; aspect-ratio: 3/2; }
+.card__body { padding: 14px 14px 18px; flex: 1; display: flex; flex-direction: column; }
+@media (min-width: 640px) { .card__body { padding: 16px 16px 20px; } }
+.card__hed {
+  font: 700 clamp(16px, 2.5vw, 21px)/1.22 var(--serif);
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+  flex: 1;
+  display: block;
+  transition: color 0.1s;
+}
+.card__hed:hover { color: var(--red); }
+.card__exc { font: 400 13px/1.6 var(--sans); color: var(--muted); margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 4 — HORIZONTAL CAROUSEL
+   Swipe-scroll on mobile/tablet. Static 4-col row on desktop.
+   ════════════════════════════════════════════════════════════ */
+.carousel-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) transparent;
+  padding-bottom: 10px;
+  /* Bleed to page edge on mobile so hint of next card is visible */
+  margin: 0 calc(-1 * var(--gutter));
+  padding-left: var(--gutter);
+}
+.carousel-wrap::-webkit-scrollbar { height: 3px; }
+.carousel-wrap::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+@media (min-width: 1024px) {
+  .carousel-wrap { overflow-x: visible; scroll-snap-type: none; margin: 0; padding-left: 0; padding-bottom: 0; }
+}
+
+.carousel { display: flex; gap: 16px; width: max-content; }
+@media (min-width: 1024px) {
+  .carousel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; width: auto; }
+}
+
+.carousel__item { flex: 0 0 260px; scroll-snap-align: start; background: var(--surface); }
+@media (min-width: 640px)  { .carousel__item { flex: 0 0 300px; } }
+@media (min-width: 1024px) { .carousel__item { flex: none; } }
+.carousel__img { width: 100%; aspect-ratio: 3/2; }
+.carousel__body { padding: 12px 13px 16px; }
+@media (min-width: 1024px) { .carousel__body { padding: 14px 14px 18px; } }
+.carousel__hed { font: 700 15px/1.25 var(--serif); letter-spacing: -0.01em; margin-bottom: 6px; display: block; }
+@media (min-width: 1024px) { .carousel__hed { font-size: 17px; } }
+
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 5 — PURE HEADLINE LIST
+   No image ever. Kicker column on tablet+. 2-col on desktop.
+   ════════════════════════════════════════════════════════════ */
+.hl-list { list-style: none; }
+.hl-item { padding: 17px 0; border-top: 1px solid var(--rule); }
+.hl-item:last-child { border-bottom: 1px solid var(--rule); }
+.hl-item__kicker {
+  font: 600 10px/1.4 var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red);
+  display: block;
+  margin-bottom: 6px;
+}
+.hl-item__hed {
+  font: 700 clamp(17px, 2.5vw, 21px)/1.2 var(--serif);
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+  display: block;
+  transition: color 0.1s;
+}
+.hl-item__hed:hover { color: var(--red); }
+.hl-item__byline { font: 400 12px/1 var(--sans); color: var(--muted); }
+.hl-item__byline strong { font-weight: 600; color: var(--ink); }
+
+/* Lead item */
+.hl-item--lead .hl-item__hed { font-size: clamp(21px, 3.5vw, 28px); line-height: 1.13; }
+/* Compact item */
+.hl-item--compact { padding: 12px 0; }
+.hl-item--compact .hl-item__hed { font-size: clamp(15px, 2vw, 18px); }
+
+/* Kicker column layout on tablet+ */
+@media (min-width: 640px) {
+  .hl-item { display: grid; grid-template-columns: 90px 1fr; gap: 0 22px; align-items: start; }
+  .hl-item__kicker { padding-top: 3px; margin-bottom: 0; }
+}
+
+/* 2-column newspaper layout on desktop */
+@media (min-width: 1024px) {
+  .hl-list--2col { columns: 2; column-gap: 0; }
+  .hl-list--2col .hl-item { break-inside: avoid; }
+  .hl-list--2col .hl-item:nth-child(odd)  { padding-right: 32px; border-right: 1px solid var(--rule-em); }
+  .hl-list--2col .hl-item:nth-child(even) { padding-left: 32px; }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 6 — TEXT-FORWARD CARD
+   Red left bar. No image. 1 col → 2 col tablet+.
+   ════════════════════════════════════════════════════════════ */
+.tfw-grid { display: grid; grid-template-columns: 1fr; gap: 2px; }
+@media (min-width: 640px) { .tfw-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.tfw-card { background: var(--surface); border-left: 3px solid var(--red); padding: 18px 16px 22px 16px; min-height: 44px; }
+@media (min-width: 640px) { .tfw-card { padding: 22px 20px 26px 20px; } }
+.tfw-card__kicker { margin-bottom: 10px; }
+.tfw-card__hed {
+  font: 700 clamp(19px, 3vw, 26px)/1.15 var(--serif);
+  letter-spacing: -0.015em;
+  margin-bottom: 12px;
+  display: block;
+  transition: color 0.1s;
+}
+.tfw-card__hed:hover { color: var(--red); }
+.tfw-card__exc { font: 400 14px/1.68 var(--sans); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+/* Wide featured variant */
+.tfw-card--wide .tfw-card__hed { font-size: clamp(22px, 4vw, 34px); max-width: 560px; }
+.tfw-card--wide .tfw-card__exc { -webkit-line-clamp: 4; }
+
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 7 — SMALL-THUMBNAIL ROW
+   64px thumb on mobile, 72px tablet+. Works with/without image.
+   ════════════════════════════════════════════════════════════ */
+.thumb-list { list-style: none; }
+.thumb-row { display: flex; align-items: flex-start; gap: 13px; padding: 15px 0; border-top: 1px solid var(--rule); min-height: 44px; }
+@media (min-width: 640px) { .thumb-row { gap: 16px; padding: 17px 0; } }
+.thumb-row:last-child { border-bottom: 1px solid var(--rule); }
+.thumb-row__img { width: 64px; height: 64px; flex-shrink: 0; object-fit: cover; }
+@media (min-width: 640px) { .thumb-row__img { width: 72px; height: 72px; } }
+/* No-image fallback: 3px red bar at same height */
+.thumb-row__img--none { width: 3px; height: 64px; background: var(--red); flex-shrink: 0; }
+@media (min-width: 640px) { .thumb-row__img--none { height: 72px; } }
+.thumb-row__body { flex: 1; min-width: 0; }
+.thumb-row__kicker { margin-bottom: 5px; }
+.thumb-row__hed {
+  font: 700 clamp(15px, 2.2vw, 18px)/1.25 var(--serif);
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 4px;
+  transition: color 0.1s;
+}
+.thumb-row__hed:hover { color: var(--red); }
+.thumb-row__byline { font: 400 11px/1 var(--sans); color: var(--muted); margin-top: 6px; }
+.thumb-row__byline strong { font-weight: 600; color: var(--ink); }
+/* 2-col on desktop */
+@media (min-width: 1024px) {
+  .thumb-list--2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
+  .thumb-list--2col .thumb-row { border-bottom: none; }
+  .thumb-list--2col .thumb-row:nth-child(odd)  { padding-right: 28px; border-right: 1px solid var(--rule-em); }
+  .thumb-list--2col .thumb-row:nth-child(even) { padding-left: 28px; }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 8 — FEATURED + TEXT LIST
+   Lead (text or image) above compact headline list.
+   ════════════════════════════════════════════════════════════ */
+.feat-list__lead { background: var(--surface); border-left: 3px solid var(--red); padding: 22px 18px 26px 18px; }
+@media (min-width: 640px) { .feat-list__lead { padding: 26px 26px 30px 24px; } }
+.feat-list__lead-img { width: 100%; aspect-ratio: 16/7; margin-bottom: 18px; }
+.feat-list__lead-hed {
+  font: 700 clamp(22px, 4vw, 34px)/1.1 var(--serif);
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+  display: block;
+  transition: color 0.1s;
+}
+.feat-list__lead-hed:hover { color: var(--red); }
+.feat-list__lead-exc { font: 400 14px/1.7 var(--sans); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.feat-list__lead-byline { font: 400 12px/1 var(--sans); color: var(--muted); margin-top: 13px; }
+.feat-list__lead-byline strong { font-weight: 600; color: var(--ink); }
+.feat-list__items { list-style: none; border-top: 2px solid var(--ink); }
+.feat-list__item { padding: 13px 0; border-bottom: 1px solid var(--rule); min-height: 44px; }
+.feat-list__item-kicker { font: 600 10px/1.4 var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--red); display: block; margin-bottom: 5px; }
+.feat-list__item-hed {
+  font: 700 clamp(15px, 2vw, 18px)/1.22 var(--serif);
+  letter-spacing: -0.01em;
+  margin-bottom: 5px;
+  display: block;
+  transition: color 0.1s;
+}
+.feat-list__item-hed:hover { color: var(--red); }
+.feat-list__item-byline { font: 400 11px/1 var(--sans); color: var(--muted); }
+@media (min-width: 640px) {
+  .feat-list__item { display: grid; grid-template-columns: 80px 1fr; gap: 0 18px; align-items: start; }
+  .feat-list__item-kicker { padding-top: 3px; margin-bottom: 0; }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   COMPOSED SECTION FRONT wrapper
+   ════════════════════════════════════════════════════════════ */
+.composed { background: var(--bg); border: 2px solid var(--rule); padding: 28px var(--gutter) 48px; }
+@media (min-width: 640px) { .composed { padding: 36px var(--gutter) 56px; } }
+.composed-gap { height: 44px; }
+@media (min-width: 1024px) { .composed-gap { height: 56px; } }
+
+
+/* ════════════════════════════════════════════════════════════
+   IMPLEMENTATION TABLE
+   ════════════════════════════════════════════════════════════ */
+.impl-table { width: 100%; border-collapse: collapse; font: 400 13px/1.5 var(--sans); margin-top: 6px; overflow-x: auto; display: block; }
+@media (min-width: 640px) { .impl-table { display: table; } }
+.impl-table th { font: 600 11px/1 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; text-align: left; padding: 8px 10px; background: #f0f0f0; }
+.impl-table td { padding: 9px 10px; border-top: 1px solid var(--rule); vertical-align: top; }
+.impl-table tr:nth-child(even) td { background: #fafafa; }
+.tag-native { background: #d4edda; color: #155724; border-radius: 2px; padding: 1px 5px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.tag-css    { background: #fff3cd; color: #856404; border-radius: 2px; padding: 1px 5px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.tag-custom { background: #fde8e8; color: #7a1818; border-radius: 2px; padding: 1px 5px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────────────── -->
+<nav class="nav">
+  <span class="nav-logo">Vancouver Weekly</span>
+  <ul class="nav-links">
+    <li><a href="#" class="active">A La Music</a></li>
+    <li><a href="#">Photography</a></li>
+    <li><a href="#">Food &amp; Drink</a></li>
+    <li><a href="#">Out 'n About</a></li>
+  </ul>
+  <div class="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- ── PAGE HEADER ──────────────────────────────────────────── -->
+<div class="page-hd">
+  <span class="page-hd__eyebrow">Vancouver Weekly · Design System</span>
+  <h1 class="page-hd__title">Section Front Module Library</h1>
+  <p class="page-hd__sub">Eight layout modules for composing section fronts. Modules 5–8 are text-first — visual hierarchy from PT Serif headlines, the red kicker, whitespace, and rule lines, not imagery. Resize the browser or open on your phone (iOS Safari / Android Chrome) to preview mobile layouts. All modules are mobile-first.</p>
+</div>
+
+
+<!-- ── IMPLEMENTATION OVERVIEW ──────────────────────────────── -->
+<div class="preview-block">
+  <p class="preview-label">Implementation overview — Newspack native vs. custom CSS vs. custom build</p>
+  <table class="impl-table">
+    <thead>
+      <tr>
+        <th style="width:28px">#</th>
+        <th style="width:190px">Module</th>
+        <th style="width:100px">Effort</th>
+        <th>Implementation path</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Hero / Lead</td><td><span class="tag-css">CSS</span></td><td>homepage-articles (1 post, mediaPosition top) + custom sizing CSS. Falls back to Module 6 if no image.</td></tr>
+      <tr><td>2</td><td>Featured + compact list</td><td><span class="tag-custom">Custom</span></td><td>Columns block wrapping two homepage-articles instances + CSS for 60/40 split. Stacks on mobile automatically.</td></tr>
+      <tr><td>3</td><td>Equal-card grid</td><td><span class="tag-native">Native</span></td><td>homepage-articles, postLayout:"grid", columns:2–3. Works out of the box — already used by the 3 live section fronts.</td></tr>
+      <tr><td>4</td><td>Horizontal carousel</td><td><span class="tag-custom">Custom</span></td><td>homepage-articles + CSS scroll-snap override via block wrapper class. Basic swipe needs no JS. Desktop reverts to static row.</td></tr>
+      <tr><td>5</td><td>Pure headline list</td><td><span class="tag-css">CSS</span></td><td>homepage-articles, showImage:false, postLayout:"list" + CSS for kicker-column layout. 2-col newspaper variant adds columns: CSS only.</td></tr>
+      <tr><td>6</td><td>Text-forward card</td><td><span class="tag-css">CSS</span></td><td>homepage-articles, showImage:false, postLayout:"grid" + CSS for 3px red left bar via ::before pseudo on block wrapper.</td></tr>
+      <tr><td>7</td><td>Small-thumbnail row</td><td><span class="tag-css">CSS</span></td><td>homepage-articles, mediaPosition:"left" + CSS to constrain image to 64–72px square. No-image variant = red bar at same width.</td></tr>
+      <tr><td>8</td><td>Featured + text list</td><td><span class="tag-custom">Custom</span></td><td>Group block: one homepage-articles (1 post, large) + one homepage-articles (showImage:false, list). CSS for 2px rule divider.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MODULE 1 — HERO / LEAD
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Module 1 — Hero / Lead · cinematic image + large headline · image gated by quality tier</p>
+  <div class="note note--mob">
+    <span>📱</span>
+    <span><strong>Mobile:</strong> image 16:9, full-width. Headline clamps 24px → 52px. Body pads 22px → 36px. Entire card is one tap target. No horizontal overflow at 320px — headline breaks across lines naturally. <strong>No image?</strong> Same module renders as Module 6 (full-width text-forward card) — no layout shift, no placeholder.</span>
+  </div>
+  <a href="#" class="hero">
+    <div class="hero__img img-ph">[ Lead image — 16:6 cinematic ]</div>
+    <div class="hero__body">
+      <span class="kicker">Live Review</span>
+      <h2 class="hero__hed">Sigur Rós Bring an Immersive Orchestral Experience to a Packed Vancouver Orpheum</h2>
+      <p class="hero__exc">The band played without a setlist, drawing from every era of their catalogue — Icelandic songs bleeding into each other until the room felt pressurised, as if the music had weather.</p>
+      <p class="byline" style="margin-top:16px;">By <strong>Ryan Johnson</strong> · November 5, 2025</p>
+    </div>
+  </a>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MODULE 2 — FEATURED + COMPACT LIST
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Module 2 — Featured + Compact List · featured story beside numbered list · stacks on mobile</p>
+  <div class="note note--mob">
+    <span>📱</span>
+    <span><strong>Mobile:</strong> featured story full-width on top, numbered list below (single column). Border separating them switches from a vertical right-side rule (desktop) to a horizontal top rule on the list (mobile). Numbered items stay at 44px+ height for comfortable tapping. Featured headline clamps 20px → 30px.</span>
+  </div>
+  <div class="section-hd" style="margin-bottom:0;">
+    <span class="section-hd__name">Must-See Films</span>
+    <a href="#" class="section-hd__aux">All films →</a>
+  </div>
+  <div class="feat-aside">
+    <div class="feat-aside__lead">
+      <div class="feat-aside__lead-img img-ph">[ Image — 3:2 mobile, 16:9 desktop ]</div>
+      <span class="kicker">Film Review</span>
+      <a class="feat-aside__lead-hed" href="#">"Somewhere Between": Four Adopted Girls Search for Identity Across Two Continents</a>
+      <p class="feat-aside__lead-exc">Quieter and harder than it sounds, and better for it. Goldstein Knowlton never editorialises; she just watches.</p>
+      <p class="byline">By <strong>Vancouver Weekly</strong> · 2013</p>
+    </div>
+    <ul class="feat-aside__list">
+      <li>
+        <div class="feat-aside__item">
+          <span class="feat-aside__item-num">1</span>
+          <div>
+            <span class="kicker" style="margin-bottom:4px;">Film Review</span>
+            <a class="feat-aside__item-hed" href="#">Parasite Is the Movie of the Year and It Isn't Close</a>
+            <p class="feat-aside__item-byline">Vancouver Weekly · 2019</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-aside__item">
+          <span class="feat-aside__item-num">2</span>
+          <div>
+            <span class="kicker" style="margin-bottom:4px;">Film Review</span>
+            <a class="feat-aside__item-hed" href="#">Marriage Story: Noah Baumbach's Most Honest Film Yet</a>
+            <p class="feat-aside__item-byline">Vancouver Weekly · December 2019</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-aside__item">
+          <span class="feat-aside__item-num">3</span>
+          <div>
+            <span class="kicker" style="margin-bottom:4px;">Streaming</span>
+            <a class="feat-aside__item-hed" href="#">Five Films Worth Your Time on Netflix This Month</a>
+            <p class="feat-aside__item-byline">Vancouver Weekly · 2019</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-aside__item">
+          <span class="feat-aside__item-num">4</span>
+          <div>
+            <span class="kicker" style="margin-bottom:4px;">Film Review</span>
+            <a class="feat-aside__item-hed" href="#">The Last Black Man in San Francisco</a>
+            <p class="feat-aside__item-byline">Vancouver Weekly · 2019</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MODULE 3 — EQUAL-CARD GRID
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Module 3 — Equal-Card Grid · 1 col mobile → 2 col tablet → 3 col desktop · native Newspack block</p>
+  <div class="note note--mob">
+    <span>📱</span>
+    <span><strong>Mobile:</strong> single column. Cards fill the full width. 3:2 image aspect-ratio is maintained at all sizes — images never crop differently. Card tap area = full card. Grid reflow is handled entirely by CSS grid; the Newspack block's own stylesheet already does this.</span>
+  </div>
+  <div class="note note--tech">
+    <span>🔧</span>
+    <span><strong>Already live:</strong> this is what <code>a-la-music.html</code>, <code>out-n-about.html</code>, and <code>must-see-films.html</code> use today (<code>postLayout:"grid"</code>, <code>columns:2</code>). The section-landing CSS pass will align the block's native output to VW design tokens.</span>
+  </div>
+  <div class="section-hd" style="margin-bottom:0;">
+    <span class="section-hd__name">A La Music</span>
+    <a href="#" class="section-hd__aux">All articles →</a>
+  </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card__img img-ph" style="background:linear-gradient(150deg,#1a2e1e,#243826);">[Image]</div>
+      <div class="card__body">
+        <span class="kicker">Live Review</span>
+        <a class="card__hed" href="#">Sigur Rós at the Orpheum: An Immersive Orchestral Experience</a>
+        <p class="card__exc">The band played without a setlist, drawing from every era of their catalogue.</p>
+        <p class="byline">By <strong>Ryan Johnson</strong> · Nov 2025</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card__img img-ph" style="background:linear-gradient(150deg,#2e1a1e,#3a2428);">[Image]</div>
+      <div class="card__body">
+        <span class="kicker">Album Review</span>
+        <a class="card__hed" href="#">Alvvays — <em>Blue Rev</em>: Dream-Pop at the Edge of Recall</a>
+        <p class="card__exc">Melodies that feel like they've always existed, buried under just enough fuzz.</p>
+        <p class="byline">By <strong>Vancouver Weekly</strong> · Oct 2022</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card__img img-ph" style="background:linear-gradient(150deg,#1a1e2e,#242838);">[Image]</div>
+      <div class="card__body">
+        <span class="kicker">Interview</span>
+        <a class="card__hed" href="#">Sharon Van Etten on Grief, Survival, and Making the Album She Needed to Hear</a>
+        <p class="card__exc">She spoke with the kind of directness that makes you forget you're in an interview.</p>
+        <p class="byline">By <strong>Jennifer McInnis</strong> · Feb 2020</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MODULE 4 — HORIZONTAL CAROUSEL
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Module 4 — Horizontal Carousel · touch-swipe on mobile/tablet · static 4-col row on desktop</p>
+  <div class="note note--mob">
+    <span>📱</span>
+    <span><strong>Mobile:</strong> horizontally scrollable with scroll-snap (one card per snap point). Cards are 260px wide — partial next card is visible at the right edge, signalling that more items exist. Uses <code>-webkit-overflow-scrolling: touch</code> for iOS momentum scroll. The scrollbar is 3px and barely visible (decorative only). <strong>No JS required</strong> for swipe behavior. Desktop: static 4-column grid — overflow: visible, snap disabled.</span>
+  </div>
+  <div class="section-hd" style="margin-bottom:14px;">
+    <span class="section-hd__name">Album Reviews</span>
+    <a href="#" class="section-hd__aux">See all →</a>
+  </div>
+  <div class="carousel-wrap">
+    <div class="carousel">
+      <div class="carousel__item">
+        <div class="carousel__img img-ph" style="background:linear-gradient(150deg,#1a2e1e,#243826);">[Album]</div>
+        <div class="carousel__body">
+          <span class="kicker">Album Review</span>
+          <a class="carousel__hed" href="#">Alvvays — <em>Blue Rev</em></a>
+          <p class="byline">Vancouver Weekly · 2022</p>
+        </div>
+      </div>
+      <div class="carousel__item">
+        <div class="carousel__img img-ph" style="background:linear-gradient(150deg,#2e1a1e,#3a2428);">[Album]</div>
+        <div class="carousel__body">
+          <span class="kicker">Album Review</span>
+          <a class="carousel__hed" href="#">Death Cab for Cutie — <em>Asphalt Meadows</em></a>
+          <p class="byline">Vancouver Weekly · 2022</p>
+        </div>
+      </div>
+      <div class="carousel__item">
+        <div class="carousel__img img-ph" style="background:linear-gradient(150deg,#1a1e2e,#242838);">[Album]</div>
+        <div class="carousel__body">
+          <span class="kicker">Album Review</span>
+          <a class="carousel__hed" href="#">The National — <em>First Two Pages of Frankenstein</em></a>
+          <p class="byline">Vancouver Weekly · 2023</p>
+        </div>
+      </div>
+      <div class="carousel__item">
+        <div class="carousel__img img-ph" style="background:linear-gradient(150deg,#2e2a1a,#3a3424);">[Album]</div>
+        <div class="carousel__body">
+          <span class="kicker">Album Review</span>
+          <a class="carousel__hed" href="#">Sigur Rós — <em>ÁTTA</em></a>
+          <p class="byline">Vancouver Weekly · 2023</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MODULE 5 — PURE HEADLINE LIST
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Module 5 — Pure Headline List · kicker + headline + byline · no image ever · likely the most-used module</p>
+  <div class="note note--mob">
+    <span>📱</span>
+    <span><strong>Mobile:</strong> kicker stacks above headline (no two-column layout below 640px). Lead headline clamps 21px → 28px. Each item is 44px+ tall. No horizontal overflow at 320px — PT Serif wraps gracefully at any width. The 2-column newspaper variant only kicks in at 1024px+ and collapses back to single column below — no breakage on tablet or phone.</span>
+  </div>
+  <div class="note note--edtl">
+    <span>📰</span>
+    <span><strong>Design intent:</strong> visual hierarchy from the kicker column (90px fixed, like a broadsheet section tag), the PT Serif headline weight, and the thin rule rhythm — not from any image. Red kicker + serif headline + muted byline = three typographic voices that establish editorial tone with zero imagery. NYRB / broadsheet newspaper feel.</span>
+  </div>
+
+  <div style="margin-bottom:48px;">
+    <span class="sub-label">Variant 5a — single column (default, mobile-to-desktop)</span>
+    <div class="section-hd"><span class="section-hd__name">A La Music</span><span class="section-hd__aux">490 articles</span></div>
+    <ul class="hl-list">
+      <li>
+        <div class="hl-item hl-item--lead">
+          <span class="hl-item__kicker">Live Review</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Sigur Rós Bring an Immersive Orchestral Experience to a Packed Vancouver Orpheum</a>
+            <p class="hl-item__byline"><strong>Ryan Johnson</strong> · November 5, 2025</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item">
+          <span class="hl-item__kicker">Live Review</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Air Delivers a Dreamy Moon Safari Experience in Vancouver</a>
+            <p class="hl-item__byline"><strong>Sharon Steele</strong> · September 2024</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item">
+          <span class="hl-item__kicker">Album Review</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Alvvays — <em>Blue Rev</em>: Dream-Pop at the Edge of Recall</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · October 2022</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item">
+          <span class="hl-item__kicker">Interview</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Cat Cohen Showcases Life as a Gal About Town in Debut Poetry Collection</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · June 2024</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item hl-item--compact">
+          <span class="hl-item__kicker">Music Video</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">The National Share Melancholy New Video for "Tropic Morning News"</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · March 2023</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item hl-item--compact">
+          <span class="hl-item__kicker">Live Review</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Japandroids Close Out the Commodore Run with Controlled Abandon</a>
+            <p class="hl-item__byline"><strong>Ryan Johnson</strong> · June 2013</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div>
+    <span class="sub-label">Variant 5b — two-column newspaper (desktop only; collapses to single column on mobile/tablet)</span>
+    <div class="section-hd"><span class="section-hd__name">Out 'n About</span><span class="section-hd__aux">211 articles</span></div>
+    <ul class="hl-list hl-list--2col">
+      <li>
+        <div class="hl-item hl-item--lead">
+          <span class="hl-item__kicker">Out 'n About</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Kismet Asks the Big Questions: Do We Owe Anything to the City We Leave Behind?</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · 2024</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item hl-item--lead">
+          <span class="hl-item__kicker">Out 'n About</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Break Your Fast, Not Your Wallet: Best Cheap Breakfasts in Vancouver</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · June 2024</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item">
+          <span class="hl-item__kicker">Out 'n About</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">A Monthly Cereal Bar Pop-Up Is Bringing Nostalgia to Saturday Mornings</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · 2024</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item">
+          <span class="hl-item__kicker">Out 'n About</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Vancouver's Secret Staircases and the Neighbourhoods They Connect</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · 2019</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item hl-item--compact">
+          <span class="hl-item__kicker">Out 'n About</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">The Last Record Store on Main Street Refuses to Go Quietly</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · 2018</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item hl-item--compact">
+          <span class="hl-item__kicker">Out 'n About</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Chinatown After Midnight: What the City Looks Like at 2am</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · 2016</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MODULE 6 — TEXT-FORWARD CARD
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Module 6 — Text-Forward Card · red left bar · headline leads · no image expected or needed</p>
+  <div class="note note--mob">
+    <span>📱</span>
+    <span><strong>Mobile:</strong> single column. Padding 18px → 22px desktop. Red left bar stays 3px at all sizes. Headline clamps 19px → 26px. Excerpt is 3-line clamped, never overflows. Min-height 44px guarantees comfortable tap. The wide featured variant (6b) is always full-width — no change needed on mobile, it's already single column.</span>
+  </div>
+  <div class="note note--edtl">
+    <span>📰</span>
+    <span><strong>Design intent:</strong> the 3px red bar is the design — not a missing-image indicator. The bar earns its place on opinion pieces, long-form reviews, interviews. Headline is 5–7px larger than an image card's because it carries the visual weight alone. White card surface against the off-white page creates contrast with no image needed. Especially strong on mobile where the full-width text is immersive.</span>
+  </div>
+
+  <div style="margin-bottom:32px;">
+    <span class="sub-label">Variant 6a — 2-column grid (1 col on mobile, 2 col on tablet+)</span>
+    <div class="tfw-grid">
+      <div class="tfw-card">
+        <span class="kicker tfw-card__kicker">Live Review</span>
+        <a class="tfw-card__hed" href="#">Japandroids at the Commodore: Two Hours of Perfect Noise</a>
+        <p class="tfw-card__exc">The band took the stage at 10:30 and played without pause for the better part of two hours — a set built like a bonfire, methodically stacked and then lit all at once, everything burning at the same temperature.</p>
+        <p class="byline">By <strong>Ryan Johnson</strong> · June 2013</p>
+      </div>
+      <div class="tfw-card">
+        <span class="kicker tfw-card__kicker">Album Review</span>
+        <a class="tfw-card__hed" href="#">Alvvays — <em>Blue Rev</em>: Dream-Pop at the Edge of Recall</a>
+        <p class="tfw-card__exc">On their third album, Alvvays have built something both wispy and load-bearing: melodies that feel like they've always existed, buried under just enough fuzz to make you think you're remembering them.</p>
+        <p class="byline">By <strong>Vancouver Weekly</strong> · October 2022</p>
+      </div>
+      <div class="tfw-card">
+        <span class="kicker tfw-card__kicker">Interview</span>
+        <a class="tfw-card__hed" href="#">Sharon Van Etten on Grief, Survival, and Making the Album She Needed to Hear</a>
+        <p class="tfw-card__exc">Before the Vogue Theatre show, Van Etten sat down for 45 minutes and spoke with the kind of directness that makes you forget you're conducting an interview.</p>
+        <p class="byline">By <strong>Jennifer McInnis</strong> · February 2020</p>
+      </div>
+      <div class="tfw-card">
+        <span class="kicker tfw-card__kicker">Music Editorial</span>
+        <a class="tfw-card__hed" href="#">Why the Commodore Ballroom Is the Greatest Small Venue in North America</a>
+        <p class="tfw-card__exc">There are better-sounding rooms. There are better-looking rooms. None of that matters. The Commodore is the Commodore, and that's the argument in full.</p>
+        <p class="byline">By <strong>Vancouver Weekly</strong> · 2017</p>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <span class="sub-label">Variant 6b — full-width featured (section opener when no lead image)</span>
+    <div class="tfw-card tfw-card--wide">
+      <span class="kicker tfw-card__kicker">Feature</span>
+      <a class="tfw-card__hed" href="#">Behind the Lens: Twenty Years Shooting the Vancouver Music Scene and Why I Keep Coming Back</a>
+      <p class="tfw-card__exc">Jennifer McInnis started photographing shows at the Commodore when she was nineteen, with a film camera she'd borrowed from her father and a press pass that took six months to get. She kept going back because of what the room did to light — the way the sprung floor made every photo feel like it was already moving. This is what twenty years looks like.</p>
+      <p class="byline" style="margin-top:14px;">By <strong>Jennifer McInnis</strong> · June 2019</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MODULE 7 — SMALL-THUMBNAIL ROW
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Module 7 — Small-Thumbnail Row · 64–72px image accent · text dominant · works with or without image</p>
+  <div class="note note--mob">
+    <span>📱</span>
+    <span><strong>Mobile:</strong> thumbnail 64px (72px on tablet+). Gap 13px → 16px. Headline is 3-line clamped — no overflow at 320px. No-image fallback (3px red bar) stays at the same horizontal position as a thumbnail, so the text block starts at the same x-offset with or without an image — no layout shift. Full row height is one tap target.</span>
+  </div>
+  <div class="note note--edtl">
+    <span>📰</span>
+    <span><strong>Design intent:</strong> good for sections with mixed coverage (30–50% of posts have images). Text takes 85% of the row at any viewport size. Works like a magazine digest list. On mobile, the small thumb or the red bar provides a visual left anchor that makes the list easy to scan quickly.</span>
+  </div>
+
+  <div style="margin-bottom:40px;">
+    <span class="sub-label">Variant 7a — single column, mixed image / no-image</span>
+    <div class="section-hd"><span class="section-hd__name">Food &amp; Drink</span><span class="section-hd__aux">27 articles</span></div>
+    <ul class="thumb-list">
+      <li>
+        <div class="thumb-row">
+          <div class="thumb-row__img img-ph" style="background:linear-gradient(135deg,#4a6741,#2c3e28);"></div>
+          <div class="thumb-row__body">
+            <span class="kicker thumb-row__kicker">Food &amp; Drink</span>
+            <a class="thumb-row__hed" href="#">The Best New Patios in Vancouver for Summer 2019</a>
+            <p class="thumb-row__byline">By <strong>Laura Sciarpelletti</strong> · June 2019</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="thumb-row">
+          <div class="thumb-row__img--none"></div>
+          <div class="thumb-row__body">
+            <span class="kicker thumb-row__kicker">Food &amp; Drink</span>
+            <a class="thumb-row__hed" href="#">Why Vancouver's Bar Scene Peaked in 2015 and What We Lost</a>
+            <p class="thumb-row__byline">By <strong>Issie Patterson</strong> · October 2018</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="thumb-row">
+          <div class="thumb-row__img img-ph" style="background:linear-gradient(135deg,#c8b8a0,#b8a890);"></div>
+          <div class="thumb-row__body">
+            <span class="kicker thumb-row__kicker">Hungry Social</span>
+            <a class="thumb-row__hed" href="#">What Vancouver Eats at 2am: Night Markets, Ramen, and the Pizza Window</a>
+            <p class="thumb-row__byline">By <strong>Vancouver Weekly</strong> · January 2017</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="thumb-row">
+          <div class="thumb-row__img--none"></div>
+          <div class="thumb-row__body">
+            <span class="kicker thumb-row__kicker">Food &amp; Drink</span>
+            <a class="thumb-row__hed" href="#">Campagnolo's New Menu Is Quietly the Best in the City Right Now</a>
+            <p class="thumb-row__byline">By <strong>Mary Matheson</strong> · March 2018</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="thumb-row">
+          <div class="thumb-row__img img-ph" style="background:linear-gradient(135deg,#8a6a4a,#7a5a3a);"></div>
+          <div class="thumb-row__body">
+            <span class="kicker thumb-row__kicker">Food &amp; Drink</span>
+            <a class="thumb-row__hed" href="#">The Cocktail Bars You Should Have Gone to Before They Closed</a>
+            <p class="thumb-row__byline">By <strong>Vancouver Weekly</strong> · December 2016</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div>
+    <span class="sub-label">Variant 7b — two-column (desktop only; single column on mobile/tablet)</span>
+    <div class="section-hd"><span class="section-hd__name">Out 'n About</span></div>
+    <ul class="thumb-list thumb-list--2col">
+      <li>
+        <div class="thumb-row">
+          <div class="thumb-row__img img-ph" style="background:linear-gradient(135deg,#3a4a6a,#2a3a5a);"></div>
+          <div class="thumb-row__body">
+            <span class="kicker thumb-row__kicker">Out 'n About</span>
+            <a class="thumb-row__hed" href="#">The Farmer's Market Guide: Where to Go and What to Buy</a>
+            <p class="thumb-row__byline">By <strong>Vancouver Weekly</strong> · 2019</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="thumb-row">
+          <div class="thumb-row__img--none"></div>
+          <div class="thumb-row__body">
+            <span class="kicker thumb-row__kicker">Out 'n About</span>
+            <a class="thumb-row__hed" href="#">A Brief History of Vancouver's Most Beloved Dive Bars</a>
+            <p class="thumb-row__byline">By <strong>Vancouver Weekly</strong> · 2017</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="thumb-row">
+          <div class="thumb-row__img--none"></div>
+          <div class="thumb-row__body">
+            <span class="kicker thumb-row__kicker">Out 'n About</span>
+            <a class="thumb-row__hed" href="#">The Last Record Store on Main Street Refuses to Go Quietly</a>
+            <p class="thumb-row__byline">By <strong>Vancouver Weekly</strong> · 2018</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="thumb-row">
+          <div class="thumb-row__img img-ph" style="background:linear-gradient(135deg,#6a3a4a,#5a2a3a);"></div>
+          <div class="thumb-row__body">
+            <span class="kicker thumb-row__kicker">Out 'n About</span>
+            <a class="thumb-row__hed" href="#">Chinatown After Midnight: What the City Looks Like When It Thinks No One Is Watching</a>
+            <p class="thumb-row__byline">By <strong>Vancouver Weekly</strong> · 2016</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MODULE 8 — FEATURED + TEXT LIST
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Module 8 — Featured + Text List · one lead (text or image) above compact headline list</p>
+  <div class="note note--mob">
+    <span>📱</span>
+    <span><strong>Mobile:</strong> lead card full-width, list stacks below. The 2px ink rule (the strongest visual break in the module) is visible and correct at all sizes. List items use kicker-above-headline layout below 640px, kicker-column layout at 640px+. Lead headline clamps 22px → 34px. List items 44px+ tall. The image variant (8b) stacks correctly: image fills width at 16:7 ratio, then text below.</span>
+  </div>
+  <div class="note note--edtl">
+    <span>📰</span>
+    <span><strong>Design intent:</strong> editorial weight earns the lead slot — not having a photo. The 2px rule between lead and list is the sharpest break on the module. "One big, several small" is a broadsheet front-page structure collapsed into a single reusable module. The same module works whether the lead has an image or not — no fallback needed, no layout shift.</span>
+  </div>
+
+  <div style="margin-bottom:48px;">
+    <span class="sub-label">Variant 8a — text-only lead (the editorial default)</span>
+    <div class="section-hd"><span class="section-hd__name">A La Music</span></div>
+    <div class="feat-list__lead">
+      <span class="kicker" style="margin-bottom:12px;">Feature</span>
+      <a class="feat-list__lead-hed" href="#">Behind the Lens: Twenty Years Shooting the Vancouver Music Scene</a>
+      <p class="feat-list__lead-exc">Jennifer McInnis started photographing shows at the Commodore when she was nineteen. She kept going back because of what the room did to light — the way the sprung floor made every photo feel like it was already moving.</p>
+      <p class="feat-list__lead-byline">By <strong>Jennifer McInnis</strong> · June 2019</p>
+    </div>
+    <ul class="feat-list__items">
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Live Review</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Sigur Rós at the Orpheum: An Immersive Orchestral Experience</a>
+            <p class="feat-list__item-byline"><strong>Ryan Johnson</strong> · November 2025</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Album Review</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Alvvays — <em>Blue Rev</em>: Dream-Pop at the Edge of Recall</a>
+            <p class="feat-list__item-byline"><strong>Vancouver Weekly</strong> · October 2022</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Live Review</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Air Delivers a Dreamy Moon Safari Experience in Vancouver</a>
+            <p class="feat-list__item-byline"><strong>Sharon Steele</strong> · September 2024</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Interview</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Sharon Van Etten on Grief, Survival, and Making the Album She Needed to Hear</a>
+            <p class="feat-list__item-byline"><strong>Jennifer McInnis</strong> · February 2020</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Live Review</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Japandroids at the Commodore: Two Hours of Perfect Noise</a>
+            <p class="feat-list__item-byline"><strong>Ryan Johnson</strong> · June 2013</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div>
+    <span class="sub-label">Variant 8b — lead with image (same module, image present)</span>
+    <div class="section-hd"><span class="section-hd__name">Must-See Films</span></div>
+    <div class="feat-list__lead">
+      <div class="feat-list__lead-img img-ph" style="background:linear-gradient(150deg,#1a1a2e,#0f3460);">[ Image — 16:7 if available ]</div>
+      <span class="kicker" style="margin-bottom:12px;">Film Review</span>
+      <a class="feat-list__lead-hed" href="#">"Somewhere Between": Four Adopted Girls Search for Identity Across Two Continents</a>
+      <p class="feat-list__lead-exc">Linda Goldstein Knowlton's documentary follows four American teenagers adopted from China as they travel back to find the families they were born into. It is quieter and harder than it sounds, and better for it.</p>
+      <p class="feat-list__lead-byline">By <strong>Vancouver Weekly</strong> · 2013</p>
+    </div>
+    <ul class="feat-list__items">
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Film Review</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Parasite Is the Movie of the Year and It Isn't Close</a>
+            <p class="feat-list__item-byline">Vancouver Weekly · November 2019</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Film Review</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Marriage Story: Noah Baumbach's Most Honest Film Yet</a>
+            <p class="feat-list__item-byline">Vancouver Weekly · December 2019</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Streaming</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">The Five Netflix Films Worth Your Time This Month</a>
+            <p class="feat-list__item-byline">Vancouver Weekly · 2019</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     COMPOSED — A La Music umbrella section front
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Composed example — A La Music umbrella section front · modules alternating top to bottom · open on phone to test</p>
+  <div class="note note--edtl">
+    <span>📰</span>
+    <span><strong>Structure (top → bottom):</strong> Module 8 (featured lead + list) → Module 3 (equal-card grid, Live Music Reviews subsection) → Module 5 (headline list, Album Reviews subsection) → Module 4 (carousel, More Album Reviews). An editor composes from the library; each module swaps independently. This is "Pitchfork structure, broadsheet typography."</span>
+  </div>
+  <div class="note note--mob">
+    <span>📱</span>
+    <span><strong>Mobile:</strong> all modules reflow cleanly. Lead stacks. Grid goes 1-col. Headline list stays dense. Carousel swipes horizontally (intentional — the only horizontal scroll on the page). No overflow anywhere except the carousel. Resize this browser window to any width to verify.</span>
+  </div>
+
+  <div class="composed">
+
+    <!-- Section header -->
+    <div class="section-hd" style="margin-bottom:28px;">
+      <span class="section-hd__name">A La Music</span>
+      <a href="#" class="section-hd__aux">490 articles</a>
+    </div>
+
+    <!-- Module 8 lead -->
+    <div class="feat-list__lead">
+      <span class="kicker" style="margin-bottom:12px;">Live Review</span>
+      <a class="feat-list__lead-hed" href="#">Sigur Rós Bring an Immersive Orchestral Experience to a Packed Vancouver Orpheum</a>
+      <p class="feat-list__lead-exc">The band played without a setlist, drawing from every era of their catalogue — Icelandic songs bleeding into each other until the room felt pressurised, as if the music had weather.</p>
+      <p class="feat-list__lead-byline">By <strong>Ryan Johnson</strong> · November 5, 2025</p>
+    </div>
+    <ul class="feat-list__items" style="margin-bottom:0;">
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Live Review</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Air Delivers a Dreamy Moon Safari Experience in Vancouver</a>
+            <p class="feat-list__item-byline"><strong>Sharon Steele</strong> · September 2024</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Interview</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Sharon Van Etten on Grief, Survival, and Making the Album She Needed to Hear</a>
+            <p class="feat-list__item-byline"><strong>Jennifer McInnis</strong> · February 2020</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="feat-list__item">
+          <span class="feat-list__item-kicker">Live Review</span>
+          <div>
+            <a class="feat-list__item-hed" href="#">Japandroids at the Commodore: Two Hours of Perfect Noise</a>
+            <p class="feat-list__item-byline"><strong>Ryan Johnson</strong> · June 2013</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="composed-gap"></div>
+
+    <!-- Module 3: subsection grid -->
+    <div class="section-hd" style="margin-bottom:0;">
+      <span class="section-hd__name">Live Music Reviews</span>
+      <a href="#" class="section-hd__aux">See all →</a>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card__img img-ph" style="background:linear-gradient(150deg,#2e1a1e,#3a2428);">[Image]</div>
+        <div class="card__body">
+          <span class="kicker">Live Review</span>
+          <a class="card__hed" href="#">Death Cab for Cutie at the Orpheum: A Genuinely Heartbreaking Return</a>
+          <p class="byline">Vancouver Weekly · 2022</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__img img-ph" style="background:linear-gradient(150deg,#1a2e1e,#243826);">[Image]</div>
+        <div class="card__body">
+          <span class="kicker">Live Review</span>
+          <a class="card__hed" href="#">Cat Power Plays the Fox Cabaret: A Masterclass in Restraint</a>
+          <p class="byline">Vancouver Weekly · 2019</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__img img-ph" style="background:linear-gradient(150deg,#1a1e2e,#242838);">[Image]</div>
+        <div class="card__body">
+          <span class="kicker">Live Review</span>
+          <a class="card__hed" href="#">Phoebe Bridgers at the Commodore: Two Hours and Not Enough</a>
+          <p class="byline">Vancouver Weekly · 2022</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="composed-gap"></div>
+
+    <!-- Module 5: headline list subsection -->
+    <div class="section-hd"><span class="section-hd__name">Album Reviews</span><a href="#" class="section-hd__aux">626 articles →</a></div>
+    <ul class="hl-list hl-list--2col">
+      <li>
+        <div class="hl-item">
+          <span class="hl-item__kicker">Album Review</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Alvvays — <em>Blue Rev</em>: Dream-Pop at the Edge of Recall</a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · October 2022</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item">
+          <span class="hl-item__kicker">Album Review</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Death Cab for Cutie — <em>Asphalt Meadows</em></a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · September 2022</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item hl-item--compact">
+          <span class="hl-item__kicker">Album Review</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">The National — <em>First Two Pages of Frankenstein</em></a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · 2023</p>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="hl-item hl-item--compact">
+          <span class="hl-item__kicker">Album Review</span>
+          <div class="hl-item__body">
+            <a class="hl-item__hed" href="#">Sigur Rós — <em>ÁTTA</em></a>
+            <p class="hl-item__byline"><strong>Vancouver Weekly</strong> · 2023</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="composed-gap"></div>
+
+    <!-- Module 4: carousel -->
+    <div class="section-hd" style="margin-bottom:14px;">
+      <span class="section-hd__name">More Album Reviews</span>
+      <a href="#" class="section-hd__aux">All reviews →</a>
+    </div>
+    <div class="carousel-wrap">
+      <div class="carousel">
+        <div class="carousel__item">
+          <div class="carousel__img img-ph" style="background:linear-gradient(150deg,#2a1a2e,#38243a);">[Album]</div>
+          <div class="carousel__body">
+            <span class="kicker">Album Review</span>
+            <a class="carousel__hed" href="#">Phoebe Bridgers — <em>Punisher</em></a>
+            <p class="byline">Vancouver Weekly · 2020</p>
+          </div>
+        </div>
+        <div class="carousel__item">
+          <div class="carousel__img img-ph" style="background:linear-gradient(150deg,#1a2a2e,#24383a);">[Album]</div>
+          <div class="carousel__body">
+            <span class="kicker">Album Review</span>
+            <a class="carousel__hed" href="#">Radiohead — <em>A Moon Shaped Pool</em></a>
+            <p class="byline">Vancouver Weekly · 2016</p>
+          </div>
+        </div>
+        <div class="carousel__item">
+          <div class="carousel__img img-ph" style="background:linear-gradient(150deg,#2e2a1a,#3a3424);">[Album]</div>
+          <div class="carousel__body">
+            <span class="kicker">Album Review</span>
+            <a class="carousel__hed" href="#">Feist — <em>Pleasure</em></a>
+            <p class="byline">Vancouver Weekly · 2017</p>
+          </div>
+        </div>
+        <div class="carousel__item">
+          <div class="carousel__img img-ph" style="background:linear-gradient(150deg,#1a1e2a,#242838);">[Album]</div>
+          <div class="carousel__body">
+            <span class="kicker">Album Review</span>
+            <a class="carousel__hed" href="#">Bon Iver — <em>i,i</em></a>
+            <p class="byline">Vancouver Weekly · 2019</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .composed -->
+</div>
+
+</div><!-- .wrap -->
+</body>
+</html>

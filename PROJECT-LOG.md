@@ -659,3 +659,54 @@ Rather than loading chronological next, the scroll loads the contextually relate
 **Scope:** Custom development (History-API URL sync + standalone fallback + crawler rendering + recommendation-ordered loading). Well-trodden technically but real work. Designed-in v2 feature; depends on the recommendation/entity engine. Build after Phase 1 templates + entity-structuring + recommendation engine.
 
 **Dependencies before building:** Phase 1 section templates ✓, entity-structuring pass, recommendation/similarity engine.
+
+---
+
+## Section front = module library (2026-06-17, design direction, mockup stage)
+
+Section fronts are composed of DIFFERENT module TYPES that alternate down the page (Pitchfork-structure), NOT one repeating feed. Build a reusable module library; editor composes section fronts from it.
+
+### Module types
+
+1. **Hero/lead** — big story, large image, large headline
+2. **Featured + list** — one lead (image+standfirst) beside compact list of 4–5
+3. **Equal-card grid** — N equal cards, 2–4 cols
+4. **Horizontal row/carousel** — scrollable equal cards
+5. **Pure headline list** — kicker+headline+byline, dense, NO image (likely most-used)
+6. **Text-forward card** — headline-led + excerpt + red left bar, no image expected
+7. **Small-thumbnail row** — image as small left-aligned accent, never dominant
+8. **Featured + text list** — lead (image only if it has one) over text list
+
+### KEY adaptation: image-poor archive
+
+We have ~1 image per 9 posts. Text-first layouts are FIRST-CLASS, not fallbacks. Visual hierarchy from TYPOGRAPHY + spacing (PT Serif sizes, red kicker, whitespace, rule lines), not imagery. References: broadsheet papers / literary journals / NYRB for text rhythm + Pitchfork for modular composition. Design = **"Pitchfork structure, broadsheet typography."**
+
+### Two-level structure
+
+Umbrella front (`/category/a-la-music/`) = labeled module per subsection (latest few + "See all →"). Each subsection (`/category/live-music-reviews/` etc.) = full feed at its own permanent URL.
+
+### Implementation path per module
+
+| # | Module | Effort | Notes |
+|---|--------|--------|-------|
+| 1 | Hero/Lead | CSS | homepage-articles (1 post, mediaPosition top) + CSS. Falls back to Module 6 if no image. |
+| 2 | Featured + compact list | Custom | Two homepage-articles in Columns block + CSS for 60/40 split. |
+| 3 | Equal-card grid | Native | homepage-articles, postLayout:grid, columns:2–3. Already live on 3 section fronts. |
+| 4 | Horizontal carousel | Custom | homepage-articles + CSS scroll-snap override. No JS for basic swipe. |
+| 5 | Pure headline list | CSS | homepage-articles, showImage:false, postLayout:list + kicker-column CSS. |
+| 6 | Text-forward card | CSS | homepage-articles, showImage:false + red left bar via ::before on wrapper. |
+| 7 | Small-thumbnail row | CSS | homepage-articles, mediaPosition:left + 64–72px image constraint. No-image = red bar. |
+| 8 | Featured + text list | Custom | Group block: one large homepage-articles (1 post) + one list (showImage:false). |
+
+### Responsive approach
+
+All modules are **mobile-first** (base styles target 375px; tablet breakpoint 640px; desktop 1024px). Key behaviors:
+- Multi-column grids collapse to 1-col on mobile
+- Carousel stays touch-swipeable on mobile (scroll-snap, no JS required) and reverts to static row on desktop
+- Featured+list stacks vertically on mobile (lead top, list below)
+- Typography uses `clamp()` so PT Serif headlines scale fluidly without overflow at any width
+- No-image fallback (3px red bar in Module 7) maintains layout at the same x-offset as a thumbnail — no layout shift
+
+### Mockup
+
+`text-modules-preview.html` — all 8 module types with image-rich and text-only states, implementation table, per-module mobile behavior annotations, and one composed A La Music umbrella example. Fully responsive (open on phone to test).
