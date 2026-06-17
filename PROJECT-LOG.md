@@ -410,3 +410,26 @@ Dry-run completed. **Not yet applied.**
 Unresolvable breakdown: 9,714 Wayback-proxied external images (avatars, social media CDN — never in `wp-content/uploads`); ~5,200 VW uploads not recovered from Wayback; 6 truly external links. Path matching is not the issue — files are genuinely missing.
 | 366 empty spam categories | Deferred |
 | 808 Uncategorized posts | Deferred — see research note above |
+
+---
+
+## Spam investigation — static leftover, NOT active (DEFERRED to next session)
+
+### Finding: spam is static import leftover, not an active compromise
+Investigation (read-only) confirmed the spam posts are a frozen snapshot from the old site's 2021 compromise, ingested during the Phase 1 Wayback recovery. Nothing is generating new spam.
+- No spam being created: newest spam dated Nov 2021, count is fixed.
+- Origin: 2021 XML-RPC injection hit the live site before it went offline; Wayback snapshot captured the already-compromised DB. Confirmed by 13-day burst, frozen modification timestamps, 100% Nov 2021 clustering — one-time import, not ongoing.
+- No active malicious code: no mu-plugins, no scheduled/future posts, no unfamiliar plugins. Only recently-modified PHP is our own rebuild work (header.php, functions.php, archive-section.php, vw-security.php, June 13-16).
+- The unfamiliar `vw_monthly_security_audit` cron event is part of OUR vw-security plugin — it emails an audit report, creates nothing. Not suspicious.
+
+### Site is already protected going forward
+- vw-security plugin (active, v1.0.0) blocks any post containing pharma keywords from publishing (forces to draft + logs the attempt) via wp_insert_post_data.
+- XML-RPC (original injection vector) is fully disabled. Pingbacks disabled, login throttle active, registration approval gate on.
+
+### Cleanup target (DO NEXT SESSION, gated)
+- Target: 3 published + 38 draft spam posts = 41 total.
+- The 3 published slipped Phase 1's filter because titles read as borderline-legitimate (e.g. "Securom failed to initialize crysis 3" looks like a tech-support question). Treat the 3 published with extra care in borderline review.
+- Cleanup approach: backup DB first, build auditable ID list, borderline-review the 3 published especially, trash (not permanent delete) so recoverable, log counts. Do not permanently delete in first pass.
+
+### Knock-on effect for featured images (DEFERRED)
+Featured-image back-fill (Option C) was paused. The 227/388 assignable counts are suspect because some may target spam posts. Revisit featured-image strategy AFTER spam cleanup, on the cleaned post set. See the earlier "Featured image strategy" deferred note.
