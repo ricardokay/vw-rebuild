@@ -307,5 +307,25 @@ Fresh backup taken immediately after cleanup: `db-backups/vancouverweekly_local_
 
 ### Still pending
 
-- **808 Uncategorized published posts** — real-looking content with no clear category keyword (film reviews, comedy, general Vancouver coverage). Needs a separate review session.
-- **308 empty spam categories** — pharma/drug category terms with 0 posts. Safe to bulk-delete, deferred to a later cleanup session.
+- **808 Uncategorized published posts** — see note below; action deferred.
+- **366 empty spam categories** — pharma/drug category terms with 0 posts. Safe to bulk-delete, deferred to a later cleanup session.
+
+---
+
+## Uncategorized Posts — Research Note (June 16, 2026)
+
+After auditing and exporting the ~841 uncategorized published posts (full CSV with excerpts at `uncategorized-review.csv`, gitignored), the content is confirmed real — no spam. But it is a **mix of two distinct content types** that likely need different handling:
+
+1. **Genuine editorial articles** — film reviews, comedy coverage, arts features, interviews, and other editorial pieces that simply weren't assigned a category during the Wayback recovery parse. These belong in normal section categories (Must See Films, A La Music, Out 'N' About, etc.) and should be recategorized in a future pass.
+
+2. **Old event listings** — short posts that appear to have been created through an events plugin (e.g., "Trampled by Turtles", "Goldroom", "Mayday Parade" — artist/band name only as title, with date/venue/ticket info as body). These are time-sensitive/dated content from 2013–2016 era and probably don't belong in editorial sections.
+
+### Why the event listings matter
+
+The event listings are a potential asset, not junk. They form a historical gig record of Vancouver's live music scene during the site's active years — consistent with the nostalgia-feed / archive-depth vision for the rebuilt site. A dedicated historical events archive (browseable by year or venue) could be a distinctive feature.
+
+### Deferred decision
+
+These two types need to be separated before recategorizing. The most promising auto-detection approach: check for a shared plugin marker (custom field, post format, or tag) that the original events plugin added. If all event listings share a common `_EventStartDate` meta key or similar, they can be bulk-identified and handled as a group without manual review of all 841 posts.
+
+**Action:** Revisit in a later session once the site's events/archive strategy is settled. Posts are untouched in the database. Export CSV (`uncategorized-review.csv`) is available locally for reference but is not committed (large working file, no PII).
