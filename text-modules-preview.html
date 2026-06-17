@@ -346,16 +346,20 @@ body {
   .hl-item__kicker { padding-top: 3px; margin-bottom: 0; }
 }
 
-/* 2-column newspaper layout on desktop — CSS grid (not columns) for correct left/right alignment */
+/* 2-column newspaper layout on desktop.
+   Must target > li (the grid items), NOT .hl-item — .hl-item is always the only
+   child of its <li>, so :nth-child(odd) would match every row in both columns. */
 @media (min-width: 1024px) {
   .hl-list--2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-  /* Close bottom on last row — handles even and odd item counts */
-  .hl-list--2col .hl-item:last-child { border-bottom: 1px solid var(--rule); }
-  .hl-list--2col .hl-item:nth-last-child(2):nth-child(odd) { border-bottom: 1px solid var(--rule); }
-  /* Left column: right-side gutter + vertical rule */
-  .hl-list--2col .hl-item:nth-child(odd)  { padding-right: 32px; border-right: 1px solid var(--rule-em); }
-  /* Right column: left-side gutter */
-  .hl-list--2col .hl-item:nth-child(even) { padding-left: 32px; border-right: none; }
+  /* Left col: vertical rule on right edge of grid cell (spans full row height) */
+  .hl-list--2col > li:nth-child(odd)            { border-right: 1px solid var(--rule-em); }
+  /* Left col: right-side gutter on content */
+  .hl-list--2col > li:nth-child(odd)  .hl-item  { padding-right: 32px; }
+  /* Right col: left-side gutter on content */
+  .hl-list--2col > li:nth-child(even) .hl-item  { padding-left:  32px; }
+  /* Close bottom on last row (handles both even and odd item counts) */
+  .hl-list--2col > li:last-child .hl-item,
+  .hl-list--2col > li:nth-last-child(2):nth-child(odd) .hl-item { border-bottom: 1px solid var(--rule); }
 }
 
 
@@ -411,12 +415,23 @@ body {
 .thumb-row__hed:hover { color: var(--red); }
 .thumb-row__byline { font: 400 11px/1 var(--sans); color: var(--muted); margin-top: 6px; }
 .thumb-row__byline strong { font-weight: 600; color: var(--ink); }
-/* 2-col on desktop */
+/* 2-col on desktop.
+   Must target > li (the grid items), NOT .thumb-row — .thumb-row is always the only
+   child of its <li>, so :nth-child(odd) would match every row in both columns. */
 @media (min-width: 1024px) {
   .thumb-list--2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
-  .thumb-list--2col .thumb-row { border-bottom: none; }
-  .thumb-list--2col .thumb-row:nth-child(odd)  { padding-right: 28px; border-right: 1px solid var(--rule-em); }
-  .thumb-list--2col .thumb-row:nth-child(even) { padding-left: 28px; }
+  /* Suppress the base :last-child bottom border — fires on every row since
+     .thumb-row is always the only child of <li> */
+  .thumb-list--2col > li .thumb-row             { border-bottom: none; }
+  /* Left col: vertical rule on right edge of grid cell */
+  .thumb-list--2col > li:nth-child(odd)              { border-right: 1px solid var(--rule-em); }
+  /* Left col: right-side gutter on content */
+  .thumb-list--2col > li:nth-child(odd)  .thumb-row  { padding-right: 28px; }
+  /* Right col: left-side gutter on content */
+  .thumb-list--2col > li:nth-child(even) .thumb-row  { padding-left:  28px; }
+  /* Close bottom on last row */
+  .thumb-list--2col > li:last-child .thumb-row,
+  .thumb-list--2col > li:nth-last-child(2):nth-child(odd) .thumb-row { border-bottom: 1px solid var(--rule); }
 }
 
 
