@@ -759,3 +759,17 @@ Added Photography category (term_id=6, term_taxonomy_id=6) additively to 113 con
 ID 62786 verified untouched (categories: `out n about` only).
 
 **Candidate audit file:** `photo_refile_candidates.txt` (all 114 evaluated, 113 acted on).
+
+**Git:** Committed locally at `c385458`. Push pending GitHub credential refresh (HTTPS auth not configured in this environment — run `! gh auth login` then `! git push` to publish).
+
+---
+
+### Deferred follow-ups noted from /category/photography/ inspection
+
+Do not fix now. Log for future passes:
+
+1. **"by Photography" byline on some posts** — attribution gap remains. Some photographer-authored posts display the category name as the byline rather than the photographer's display name. Separate from this re-file; affects posts where the WP user display_name was not correctly set during import.
+
+2. **Visible duplicate posts** (Brad Paisley, The Strokes, Black Label Society appear twice in the archive) — duplicate-import issue, known and pending. The Photography re-file surfaced them because both copies are now in Photography. Duplicate cleanup is a separate pass.
+
+3. **"Comment Comment…" artifact text in excerpts** — Jig2 gallery imports have plugin error wrapper text leaking into post excerpts. Affects the 19 `gallery-jig-error` posts (Jennifer McInnis). Separate cleanup pass needed: either strip the excerpt or set a manual excerpt on each.
