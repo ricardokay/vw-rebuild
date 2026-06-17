@@ -486,3 +486,54 @@ Script: `/tmp/vw_option_c_apply.php` (idempotent — safe to re-run; only touche
 - Duplicate/missing user accounts exist (e.g. McInnis = IDs 137 & 246) — need canonical account per person before/with reassignment.
 - 136 concert photo posts had Facebook-sourced featured images (expired fbcdn URLs) — unrecoverable via Option C, need a separate recovery path (photographers' own originals / VW drives).
 - NEXT: gated byline reassignment, dry run first — Type A galleries (photographer = author) vs Type B written articles (writer = author, photographer → photo_credit meta), word-count tiebreaker at ~250 words, ambiguous cases to manual review.
+
+---
+
+## Byline reassignment — write pass (2026-06-17)
+
+**Scope:** All posts attributed to "Vancouver Weekly" with a recoverable credit in the body.
+
+**New photographer accounts created (role: Author):**
+| Photographer | UID | Login |
+|---|---|---|
+| Tom Paillé | 407 | tom.paille |
+| Ben Hartley | 408 | ben.hartley |
+| Sterling Larose | 409 | sterling.larose |
+| Scott Place | 410 | scott.place |
+| Bob Hanham | 411 | bob.hanham |
+
+**Canonical accounts confirmed (original 2024 import accounts, real email):**
+Ryan Johnson 172, Jennifer McInnis 137, Sharon Steele 178, Mariko Margetson 218, Peter Ruttan 188.
+The 2026-06-13 auto-created `@contributors.vancouverweekly.com` duplicates (UIDs 246–330) were abandoned — all have 0 posts.
+
+**Classification logic:**
+- Type A (photo gallery): "Photos:" title → photographer; photo-only credit + wc<250 → photographer
+- Type B (written article): writer byline → writer as author; photographer → `photo_credit` postmeta
+- Safety checks: word-count-decided posts verified all photo-credit-only (no writer bylines)
+- 7 bare "Sharon" credits confirmed as Sharon Steele (178) by spot-check
+- 85 "Photos:" title / no body credit posts → manual review (photographer unidentifiable from body alone)
+- 352 fbcdn posts → separate recovery path (deferred)
+
+**Write pass results:**
+| | Count |
+|---|---|
+| Type A post_author updates | 141 |
+| Type B post_author updates | 2 |
+| photo_credit meta inserted | 0 (neither Type B post had a photographer credit) |
+| Errors | 0 |
+| Posts still on "Vancouver Weekly" after pass | 2,435 |
+
+**Breakdown of 141 Type A assignments:**
+Ryan Johnson (172): 39 · Jennifer McInnis (137): 24 · Sharon Steele (178): 18 · Tom Paillé (407): 11 · Mariko Margetson (218): 7 · Bryce Bladon (131): 6 · Ben Hartley (408): 5 · Peter Ruttan (188): 4 · Jason Martin (194): 4 · Erik Lyon (128): 4 · Scott Place (410): 3 · Sterling Larose (409): 3 · Bob Hanham (411): 2 · others: 11
+
+**Type B:** Issie Patterson (221) — "Cascadia Project Showcases Delightful New Plays"; Laura Sciarpelletti (159) — untitled post (ID 52447).
+
+**DB backup:** `db-backups/vancouverweekly_local_2026-06-17_115330.sql` (145 MB, taken before write pass).
+
+**Deferred follow-ups (logged, not started):**
+- (a) Facebook-gallery OAuth-error cleanup: strip ONLY erroring shortcodes from the ~352 fbcdn posts — working galleries must be left alone. Source of truth = photographers' own archives (Ryan Johnson, Jennifer McInnis / creativecopperimages.com, Tom Paillé).
+- (b) 85 "Photos:"-title / no-credit-in-body posts: photographer unidentifiable automatically; need manual review or a targeted pass once archive sources are available.
+- (c) 7 "Sharon" posts: confirmed Sharon Steele by spot-check, already attributed (UID 178).
+- (d) 2,435 posts still on "Vancouver Weekly": bulk are genuinely authored by VW editorial (no individual byline) or have writers without WP accounts. Separate follow-up pass needed.
+
+Scripts: `/tmp/vw_byline_final_dryrun.php` (final dry run), `/tmp/vw_byline_apply.php` (write pass), `/tmp/byline_write_plan.json` (143-entry write plan).

@@ -43,6 +43,11 @@ import_checkpoint.json
 recovery_run.log
 import_run.log
 
+# Media import working files (large, regeneratable)
+media-import-data.json
+media-import-plan.csv
+media-import-ledger.csv
+
 # Spam audit output
 quarantine.csv
 
