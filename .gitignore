@@ -22,6 +22,12 @@ recovered_posts/
 
 # Downloaded images from Wayback
 recovered_images/
+recovered-images/
+
+# Image recovery script outputs (runtime — large or regeneratable)
+image-urls.txt
+image-recovery-ledger.csv
+# image-recovery-gaps.txt is committed intentionally (small, useful for manual recovery)
 
 # Large cached data files (regeneratable by re-running scripts)
 cdx_all_urls.json
