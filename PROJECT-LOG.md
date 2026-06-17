@@ -454,3 +454,25 @@ The original spam investigation used a 6-pattern MySQL REGEXP (`iverm|scaboma|iv
 
 ### Next: Option C featured-image back-fill
 Now that spam is cleared, re-run Option C dry-run on the cleaned post set before applying.
+
+---
+
+## Option C apply — featured-image back-fill (2026-06-17)
+
+Applied `_thumbnail_id` back-fill to all published posts that had none, using first usable body image. Ran against cleaned post set (spam already trashed).
+
+| Metric | Count |
+|---|---|
+| Published posts with no `_thumbnail_id` (start) | 2,776 |
+| Posts updated — featured image set | **294** |
+| — of which: exact path match | 225 |
+| — of which: basename fallback | 69 |
+| Posts left with no featured image | 2,482 |
+| `@2x` srcs skipped | 1 |
+| Unresolvable srcs skipped | 13,786 |
+
+**Resolver:** exact uploads-relative path match first; basename fallback for unambiguous single-file matches; skips `@2x` and size-variant derivatives; only assigns if file exists on disk.
+
+**Why 2,482 posts remain without a featured image:** body images for those posts are either Wayback-proxied external URLs (avatars, social CDN — never in `wp-content/uploads`), uploads not recovered from Wayback, or genuinely external links. No placeholder or invented image was assigned — those posts fall back to headline/excerpt display.
+
+Script: `/tmp/vw_option_c_apply.php` (idempotent — safe to re-run; only touches posts with no existing `_thumbnail_id`).
