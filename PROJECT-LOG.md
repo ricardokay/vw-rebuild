@@ -379,8 +379,10 @@ During post-test diagnosis, discovered that the widespread broken image boxes vi
 
 | Task | Status |
 |---|---|
-| Full media import — 3,585 recovered images | Running overnight (launched June 16 evening) |
-| `wp media regenerate` — generate all WordPress size variants (300×266, 150×150, etc.) from full-size imports | Pending — run manually after import completes |
+| Full media import — 3,585 recovered images | ✓ Complete — 3,565/3,565 imported, 0 errors, all 72 batches clean |
+| `wp media regenerate` — generate all WordPress size variants (300×266, 150×150, etc.) from full-size imports | Running overnight (relaunched after bug fix — see note below) |
 | Option C: back-fill real `_thumbnail_id` from first body image | Deferred — run after regen confirms thumbnails are good. Check for suitable full-size images only; avoid small inline variants. |
+
+**Regen bug caught and fixed:** First regen launch silently failed — `media_import.py` passed `--attachment-id=ID1,ID2,…` which is not a valid flag for this WP-CLI version. The correct syntax is positional args: `wp media regenerate ID1 ID2 …`. Fixed in `regen_ids()` (chunk size reduced to 100, IDs passed as `*chunk`). Verified on 3 attachments — 5 size variants created correctly. Regen relaunched: 36 chunks × 100 images, confirmed `Regenerated 100 of 100` on first chunk.
 | 366 empty spam categories | Deferred |
 | 808 Uncategorized posts | Deferred — see research note above |
