@@ -818,17 +818,18 @@ Post deduplication across zones via `$used_ids` → `post__not_in` in each succe
 
 ## Design Direction: Pitchfork 3-Column Lead Block — 2026-06-17
 
-**Status: MOCKUP ONLY — prototyped in `text-modules-preview.html` as Module 9. Not yet ported to live template.**
+**Status: APPROVED IN MOCKUP (`text-modules-preview.html`, Module 9). PENDING port to live `a-la-music.php`.**
 
-Replaces the single large hero as the top zone of section fronts. Shows 7–8 stories at once. Structure:
+Replaces the single hero as the top zone of section fronts. Final approved structure:
 
-- **Left column**: vertical stack of 2 smaller stories — each has image (3:2) + kicker + headline + byline. Horizontal rule divides them.
-- **Center column**: one larger featured story — bigger image (4:3), bigger headline — the visual anchor. Not a full-width dominant hero.
-- **Right column**: "The Latest" — dense text-only headline list, 5 items, kicker + headline + byline, thin horizontal rules between items. No images. Suits our image-poor archive.
-- Thin vertical rules divide the 3 columns (broadsheet/newspaper structure).
+- **Left column**: text-only headline list, ~5 items, kicker + headline + byline, no images, thin horizontal rules between items.
+- **Center column**: single featured story with image (4:3) as the sole visual anchor — bigger headline + dek. Not a full-width dominant hero.
+- **Right column**: identical structure to left — text-only headline list, ~5 items, same treatment.
+- Thin vertical rules divide the 3 columns.
+- Symmetric layout: text list | image anchor | text list. Intentionally distinct from Pitchfork's asymmetric design.
 
-**Responsive collapse plan**: single column on mobile/tablet — center story first (highest weight), then left stack, then right list. 3-col only on desktop (1024px+). Grid-area CSS approach used in mockup.
+**Design rationale**: flanks never depend on images that may not exist (image-poor archive). All 10 side-column stories are fully readable as pure text. The single center image carries all visual weight — one strong anchor instead of spreading image dependency across the zone.
 
-**Why this over single hero**: shows editorial depth immediately. The text-only right column is archive-friendly (works with or without images). Center column gives one clear anchor without dominating as a full-width cinematic hero.
+**Responsive collapse**: single column on mobile/tablet — center story first, then left list, then right list. 3-col at 1024px+. Grid-area CSS in mockup handles column reordering.
 
-**Next step**: review mockup → approve structure → port to live `a-la-music.php`.
+**Next step**: port to live `a-la-music.php` — replace current Zone A (single hero) with this 3-col lead block.
