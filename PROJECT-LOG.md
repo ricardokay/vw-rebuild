@@ -433,3 +433,24 @@ Investigation (read-only) confirmed the spam posts are a frozen snapshot from th
 
 ### Knock-on effect for featured images (DEFERRED)
 Featured-image back-fill (Option C) was paused. The 227/388 assignable counts are suspect because some may target spam posts. Revisit featured-image strategy AFTER spam cleanup, on the cleaned post set. See the earlier "Featured image strategy" deferred note.
+
+---
+
+## Spam cleanup — 297 posts trashed (2026-06-17)
+
+### Pre-cleanup backup
+`db-backups/vancouverweekly_local_2026-06-16_224119.sql` (142 MB) — taken the night before during prep. Confirmed present before any trashing.
+
+### What was trashed
+- **3 published** spam posts (IDs 66586, 68224, 68189): trashed individually via `wp post delete`
+- **294 draft** spam posts: trashed in 3 bulk chunks of ~100 via `wp post delete`
+- **Total: 297 posts moved to Trash** — not permanently deleted, fully recoverable from WP Admin > Trash
+
+### Detection note: 297 vs the earlier 43
+The original spam investigation used a 6-pattern MySQL REGEXP (`iverm|scaboma|ivera|securom|lotion price|chain [0-9]`) and found 43 total (3 published + 38 draft + 2 pre-trashed). The cleanup pass used the full drug-brand regex family (kilox, simpiox, ivergot, ivexterm, revectina, quanox, etc.) and found all 297 posts from the same November 2021 injection batch. The higher count is correct — it's the same single event, more completely detected. No false positives: every match had a pharma drug-brand title and a pharma-specific spam category (e.g. "Ivermectin for cattle and swine").
+
+### Trash count after cleanup
+311 total posts in WP Trash = 297 trashed now + 14 already in trash before cleanup (including the 2 pre-trashed spam posts from the original investigation).
+
+### Next: Option C featured-image back-fill
+Now that spam is cleared, re-run Option C dry-run on the cleaned post set before applying.
