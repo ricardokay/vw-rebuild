@@ -1,0 +1,158 @@
+Photography P1-Additive Dry Run — 2026-06-17
+============================================================
+DRY RUN ONLY. No posts modified. No categories added.
+Awaiting user approval before any write.
+
+SUMMARY
+-------
+Total candidates (photographer-authored, NOT in Photography, published): 114
+  → WOULD ADD Photography: 113
+  → WOULD EXCLUDE:          1  (ID 62786 — written article, not a gallery)
+
+Classification breakdown:
+  gallery-title-prefix  (post_title starts with "Photos:"):  93
+  gallery-jig-error     (post_content has jigErrorMessage):   19
+  gallery-jig-plugin    (post_content has justified-image-grid): 1
+  non-gallery (written article):                               1
+
+Current categories of candidates:
+  Uncategorized:   113 posts
+  out n about:       1 post (ID 62786 — the EXCLUDE)
+
+Operation: ADD term_id=6 (Photography) to 113 posts.
+Operation is ADDITIVE — existing category assignments are never removed.
+
+CANDIDATE LIST
+--------------
+ID      Author              Title                                                                   Current Categories    Classification          Action
+------  ------------------  ----------------------------------------------------------------------  --------------------  ----------------------  --------------------
+67894   Ben Hartley         Photos: Truckfighters | Rickshaw                                        Uncategorized         gallery-title-prefix    ADD Photography
+67862   Ben Hartley         Photos: The Lemonheads | Rickshaw Theatre                               Uncategorized         gallery-title-prefix    ADD Photography
+67864   Ben Hartley         Photos: The Palms | The Fox Cabaret                                     Uncategorized         gallery-title-prefix    ADD Photography
+67832   Ben Hartley         Photos: Spiritualized | Commodore Ballroom                              Uncategorized         gallery-title-prefix    ADD Photography
+67628   Ben Hartley         Photos: Jungle | Vogue | Mar. 9 / 2019                                  Uncategorized         gallery-title-prefix    ADD Photography
+67914   Bob Hanham          Photos: WWE Friday Night SmackDown | Rogers Arena                       Uncategorized         gallery-title-prefix    ADD Photography
+67508   Bob Hanham          Photos: BATTLEWORLD '88 Wrestling | Rickshaw Theatre                    Uncategorized         gallery-title-prefix    ADD Photography
+67629   Jennifer McInnis    Photos: K. Flay | Commodore Ballroom                                    Uncategorized         gallery-title-prefix    ADD Photography
+67576   Jennifer McInnis    Photos: Elle King | Shake The Spirit Tour | Commodore Ballroom           Uncategorized         gallery-title-prefix    ADD Photography
+65945   Jennifer McInnis    Down at The Commodore Ballroom                                          Uncategorized         gallery-jig-error       ADD Photography
+68670   Jennifer McInnis    Tokyo Police Club, the Pack A.D., Said the Whale at The Commodore       Uncategorized         gallery-jig-plugin      ADD Photography
+68748   Jennifer McInnis    Uncle Acid & the Deadbeats, Black Wizard at Rickshaw Theatre            Uncategorized         gallery-jig-error       ADD Photography
+67308   Jennifer McInnis    Old Crow Medicine Show at Orpheum                                       Uncategorized         gallery-jig-error       ADD Photography
+65787   Jennifer McInnis    Brother Ali at The Biltmore Cabaret                                     Uncategorized         gallery-jig-error       ADD Photography
+67339   Jennifer McInnis    The Orwells at Rickshaw Theatre                                         Uncategorized         gallery-jig-error       ADD Photography
+68169   Jennifer McInnis    Sam Smith at Orpheum                                                    Uncategorized         gallery-jig-error       ADD Photography
+66073   Jennifer McInnis    Die Antwoord at The Commodore Ballroom                                  Uncategorized         gallery-jig-error       ADD Photography
+68383   Jennifer McInnis    STEVE BROCKLEY BAND, THE RECKONERS and REAL PONCHOS                     Uncategorized         gallery-jig-error       ADD Photography
+66124   Jennifer McInnis    The Dudes, Mindil Beach, and Rolla Olak at the Imperial                 Uncategorized         gallery-jig-error       ADD Photography
+69219   Jennifer McInnis    The Zolas, James Younger, and Damn Fools at the Imperial                Uncategorized         gallery-jig-error       ADD Photography
+65848   Jennifer McInnis    Car Free Day at Neptoon Records                                         Uncategorized         gallery-jig-error       ADD Photography
+67310   Jennifer McInnis    Old Man Markley at the Biltmore Cabaret                                 Uncategorized         gallery-jig-error       ADD Photography
+67264   Jennifer McInnis    Nice Peter at the Rickshaw Theatre                                      Uncategorized         gallery-jig-error       ADD Photography
+65752   Jennifer McInnis    Bon Red with La Chinga at the Biltmore Cabaret                          Uncategorized         gallery-jig-error       ADD Photography
+66831   Jennifer McInnis    Jordan Klassen with Chersea at the Biltmore                             Uncategorized         gallery-jig-error       ADD Photography
+68252   Jennifer McInnis    Sex with Strangers Album Release at the Fox                             Uncategorized         gallery-jig-error       ADD Photography
+68393   Jennifer McInnis    Stu Larsen at the Media Club                                            Uncategorized         gallery-jig-error       ADD Photography
+66035   Jennifer McInnis    Daniel Wesley with City Walls at the Imperial                           Uncategorized         gallery-jig-error       ADD Photography
+65627   Jennifer McInnis    Banks at Venue Nightclub                                                Uncategorized         gallery-jig-error       ADD Photography
+62786   Jennifer McInnis    The Voyage: Boca del Lupo - Review                                      out n about           non-gallery             EXCLUDE — written article
+67538   Mariko Margetson    Photos: Chromeo | Malkin Bowl                                           Uncategorized         gallery-title-prefix    ADD Photography
+67509   Mariko Margetson    Photos: Bear's Den | Commodore Ballroom                                 Uncategorized         gallery-title-prefix    ADD Photography
+67865   Mariko Margetson    Photos: The Philosopher Kings | Imperial                                Uncategorized         gallery-title-prefix    ADD Photography
+67846   Mariko Margetson    Photos: The Boom Booms | Commodore Ballroom                             Uncategorized         gallery-title-prefix    ADD Photography
+67529   Mariko Margetson    Photos: Buckman Coe with Erica Dee and Tonye | Rickshaw                 Uncategorized         gallery-title-prefix    ADD Photography
+67662   Mariko Margetson    Photos: Mt. Joy w/ Wilderado | Imperial                                 Uncategorized         gallery-title-prefix    ADD Photography
+67847   Mariko Margetson    Photos: The Cat Empire w/ Neal Francis | Commodore Ballroom              Uncategorized         gallery-title-prefix    ADD Photography
+67559   Peter Ruttan        Photos: Death Angel with Exmortus and Hellfire | Rickshaw               Uncategorized         gallery-title-prefix    ADD Photography
+67881   Peter Ruttan        Photos: The Who : Moving On Tour | Rogers Arena                         Uncategorized         gallery-title-prefix    ADD Photography
+67804   Peter Ruttan        Photos: Rob Zombie + Marilyn Manson | 'Twins of Evil Tour' | Rogers     Uncategorized         gallery-title-prefix    ADD Photography
+67826   Peter Ruttan        Photos: Slash featuring Myles Kennedy and The Conspirators | QET        Uncategorized         gallery-title-prefix    ADD Photography
+67874   Ryan Johnson        Photos: The Strokes | Rogers Arena                                      Uncategorized         gallery-title-prefix    ADD Photography
+67520   Ryan Johnson        Photos: Black Label Society | Vogue Theatre                             Uncategorized         gallery-title-prefix    ADD Photography
+67788   Ryan Johnson        Photos: Platinum Blonde | The Commodore Ballroom                        Uncategorized         gallery-title-prefix    ADD Photography
+67487   Ryan Johnson        Photos: ALEXISONFIRE with The Distillers | Pacific Coliseum             Uncategorized         gallery-title-prefix    ADD Photography
+67817   Ryan Johnson        Photos: ShoCore with The Rubes | Rickshaw Theatre                       Uncategorized         gallery-title-prefix    ADD Photography
+66854   Ryan Johnson        Photos: King Princess | Queen Elizabeth Theatre                         Uncategorized         gallery-title-prefix    ADD Photography
+67848   Ryan Johnson        Photos: The Chainsmokers | World War Joy Tour 2019 | Rogers Arena       Uncategorized         gallery-title-prefix    ADD Photography
+67633   Ryan Johnson        Photos: King Diamond | Queen Elizabeth Theatre                           Uncategorized         gallery-title-prefix    ADD Photography
+67845   Ryan Johnson        Photos: The Black Keys | 2019 Globe World Tour | Rogers Arena           Uncategorized         gallery-title-prefix    ADD Photography
+67539   Ryan Johnson        Photos: City and Colour | Pacific Coliseum                              Uncategorized         gallery-title-prefix    ADD Photography
+67619   Ryan Johnson        Photos: JINJER | The Rickshaw Theatre                                   Uncategorized         gallery-title-prefix    ADD Photography
+67585   Ryan Johnson        Photos: Gary Clark Jr. | Malkin Bowl                                    Uncategorized         gallery-title-prefix    ADD Photography
+67810   Ryan Johnson        Photos: Said The Whale with The Beaches | Malkin Bowl                   Uncategorized         gallery-title-prefix    ADD Photography
+67560   Ryan Johnson        Photos: Death Cab For Cutiee | Malkin Bowl                              Uncategorized         gallery-title-prefix    ADD Photography
+67532   Ryan Johnson        Photos: Carly Rae Jepsen at Commodore Ballroom                          Uncategorized         gallery-title-prefix    ADD Photography
+67658   Ryan Johnson        Photos: Moist "Silver" 25th Anniversary Tour | Commodore                Uncategorized         gallery-title-prefix    ADD Photography
+67667   Ryan Johnson        Photos: Norah Jones | Orpheum Theatre                                   Uncategorized         gallery-title-prefix    ADD Photography
+67505   Ryan Johnson        Photos: Back Street Boys : DNA World Tour 2019 | Rogers Arena           Uncategorized         gallery-title-prefix    ADD Photography
+67891   Ryan Johnson        Photos: Truck Stop Concert Series 2019 | Red Truck Brewery              Uncategorized         gallery-title-prefix    ADD Photography
+67793   Ryan Johnson        Photos: Queen with Adam Lambert: The Rhapsody Tour | Rogers Arena       Uncategorized         gallery-title-prefix    ADD Photography
+67799   Ryan Johnson        Photos: Revolver Presents: Avatar Country World Tour 2019               Uncategorized         gallery-title-prefix    ADD Photography
+67517   Ryan Johnson        Photos: Billie Eilish | 'When We All Fall Asleep' Tour | PNE            Uncategorized         gallery-title-prefix    ADD Photography
+67536   Ryan Johnson        Photos: Cher | Here We Go Again Tour | Rogers Arena                     Uncategorized         gallery-title-prefix    ADD Photography
+67486   Ryan Johnson        Photos: Alessia Cara | "Pains of Growing" Tour                          Uncategorized         gallery-title-prefix    ADD Photography
+67534   Ryan Johnson        Photos: Carrie Underwood with Runaway June and Maddie & Tae | Rogers    Uncategorized         gallery-title-prefix    ADD Photography
+67616   Ryan Johnson        Photos: Jenny Lewis | Commodore Ballroom                                Uncategorized         gallery-title-prefix    ADD Photography
+67895   Ryan Johnson        Photos: Twenty One Pilots: Bandito Tour | Rogers Arena                  Uncategorized         gallery-title-prefix    ADD Photography
+67876   Ryan Johnson        Photos: The Tea Party | Commodore Ballroom                              Uncategorized         gallery-title-prefix    ADD Photography
+67652   Ryan Johnson        Photos: Metric with July Talk | Art Of Doubt Tour 2019                  Uncategorized         gallery-title-prefix    ADD Photography
+67488   Ryan Johnson        Photos: Alice In Chains | Queen Elizabeth Theatre                       Uncategorized         gallery-title-prefix    ADD Photography
+67860   Ryan Johnson        Photos: The Interrupters | Commodore Ballroom                           Uncategorized         gallery-title-prefix    ADD Photography
+67494   Ryan Johnson        Photos: An Evening with MICHAEL BUBLÉ | Rogers Arena                    Uncategorized         gallery-title-prefix    ADD Photography
+67659   Ryan Johnson        Photos: Moon Vrs. Sun | Rio Theatre                                     Uncategorized         gallery-title-prefix    ADD Photography
+67912   Ryan Johnson        Photos: Weezer & Pixies | Rogers Arena                                  Uncategorized         gallery-title-prefix    ADD Photography
+67786   Ryan Johnson        Photos: Pink "Beutiful Truama" Tour 2019 | Rogers Arena                 Uncategorized         gallery-title-prefix    ADD Photography
+67808   Ryan Johnson        Photos: RY X with Charlie Cunningham | Rio Theatre                      Uncategorized         gallery-title-prefix    ADD Photography
+67637   Ryan Johnson        Photos: Laura Jane Grace & The Devouring Mothers | Venue                Uncategorized         gallery-title-prefix    ADD Photography
+67913   Ryan Johnson        Photos: Within Temptation & In Flames | Vogue                           Uncategorized         gallery-title-prefix    ADD Photography
+67571   Scott Place         Photos: Doug and The Slugs | 41st Anniversary Show | Commodore          Uncategorized         gallery-title-prefix    ADD Photography
+67796   Scott Place         Photos: Rascal Flatts "Forever Summer Playlist Tour" | Abbotsford       Uncategorized         gallery-title-prefix    ADD Photography
+67565   Scott Place         Photos: Demons & Wizards | Commodore Ballroom                           Uncategorized         gallery-title-prefix    ADD Photography
+67495   Sharon Steele       Photos: Antibalas | The Rickshaw Theatre                                Uncategorized         gallery-title-prefix    ADD Photography
+67821   Sharon Steele       Photos: Sinéad O'Connor | Vogue Theatre                                Uncategorized         gallery-title-prefix    ADD Photography
+67884   Sharon Steele       Photos: Theory of a Deadman | Commodore Ballroom                        Uncategorized         gallery-title-prefix    ADD Photography
+67886   Sharon Steele       Photos: Thievery Corporation | Commodore Ballroom                       Uncategorized         gallery-title-prefix    ADD Photography
+67526   Sharon Steele       Photos: Brittany Howard | Commodore Ballroom                            Uncategorized         gallery-title-prefix    ADD Photography
+67518   Sharon Steele       Photos: Bishop Briggs | Commodore Ballroom                              Uncategorized         gallery-title-prefix    ADD Photography
+67859   Sharon Steele       Photos: The Interrupters | Commodore Ballroom                           Uncategorized         gallery-title-prefix    ADD Photography
+67851   Sharon Steele       Photos: The Distillers | Commodore Ballroom                             Uncategorized         gallery-title-prefix    ADD Photography
+67510   Sharon Steele       Photos: Beast Coast: Joey Bada$$ + Flatbush Zombies | PNE Forum         Uncategorized         gallery-title-prefix    ADD Photography
+67627   Sharon Steele       Photos: Judas Priest | Firepower Tour 2019 | Abbotsford Centre          Uncategorized         gallery-title-prefix    ADD Photography
+67561   Sharon Steele       Photos: Death From Above | 'Heads Up! Is Now' Tour | Commodore          Uncategorized         gallery-title-prefix    ADD Photography
+67781   Sharon Steele       Photos: Passion Pit | Commodore Ballroom                                Uncategorized         gallery-title-prefix    ADD Photography
+67492   Sharon Steele       Photos: An Evening with Bill Clinton and Hillary Rodham Clinton          Uncategorized         gallery-title-prefix    ADD Photography
+67491   Sharon Steele       Photos: Alice Merton | Biltmore Cabaret                                 Uncategorized         gallery-title-prefix    ADD Photography
+67812   Sharon Steele       Photos: Sarah Brightman | Queen Elizabeth Theatre                       Uncategorized         gallery-title-prefix    ADD Photography
+67581   Sharon Steele       Photos: Foals | Orpheum Theatre                                         Uncategorized         gallery-title-prefix    ADD Photography
+67484   Sharon Steele       Photos: Actors | Biltmore Cabaret                                       Uncategorized         gallery-title-prefix    ADD Photography
+67558   Sharon Steele       Photos: Dean Lewis @ Imperial                                           Uncategorized         gallery-title-prefix    ADD Photography
+67831   Sterling Larose     Photos: SonReal | Commodore Ballroom                                    Uncategorized         gallery-title-prefix    ADD Photography
+67911   Sterling Larose     Photos: Wallows | Venue Nightclub                                       Uncategorized         gallery-title-prefix    ADD Photography
+67478   Sterling Larose     Photos: A Boogie Wit da Hoodie "Outbreak Tour" 2019 | Commodore         Uncategorized         gallery-title-prefix    ADD Photography
+67485   Tom Paillé          Photos: Alan Doyle | Queen Elizabeth Theatre                            Uncategorized         gallery-title-prefix    ADD Photography
+67524   Tom Paillé          Photos: Brad Paisley | Abbotsford Centre                                Uncategorized         gallery-title-prefix    ADD Photography
+67838   Tom Paillé          Photos: Tebey | Commodore Ballroom                                      Uncategorized         gallery-title-prefix    ADD Photography
+67660   Tom Paillé          Photos: Morgan Evans at VENUE                                           Uncategorized         gallery-title-prefix    ADD Photography
+67553   Tom Paillé          Photos: Dallas Smith and Dean Brody | Abbotsford Centre                 Uncategorized         gallery-title-prefix    ADD Photography
+67645   Tom Paillé          Photos: Luke Combs : Beer Never Broke My Heart Tour                     Uncategorized         gallery-title-prefix    ADD Photography
+67837   Tom Paillé          Photos: Sunfest 2019 | Laketown Ranch                                   Uncategorized         gallery-title-prefix    ADD Photography
+67653   Tom Paillé          Photos: Michael Bernard Fitzgerald & JJ Shiplett "Come As You Are"      Uncategorized         gallery-title-prefix    ADD Photography
+67835   Tom Paillé          Photos: Steven Page with Port Cities | Commodore Ballroom                Uncategorized         gallery-title-prefix    ADD Photography
+67888   Tom Paillé          Photos: Thomas Rhett: Life Changes Tour 2019 | Rogers Arena             Uncategorized         gallery-title-prefix    ADD Photography
+67646   Tom Paillé          Photos: Lynyrd Skynyrd | Abbotsford Centre                              Uncategorized         gallery-title-prefix    ADD Photography
+
+EXCLUSION DETAIL
+----------------
+ID 62786 | Jennifer McInnis | "The Voyage: Boca del Lupo - Review"
+Category: out n about | Classification: non-gallery (written theatre review)
+Action: DO NOT ADD Photography — this is a text article, not a photo gallery.
+
+VERIFICATION NOTES
+------------------
+- Photography category term_id=6, currently contains 30 posts
+- After this operation: Photography would contain 30 + 113 = 143 posts
+- The 19 Jennifer McInnis gallery-jig-error posts: classified as galleries because entire
+  post_content is the Jig2 plugin error wrapper (jigErrorMessage) — no article text present.
+- ID 68670 (Tokyo Police Club): classified gallery-jig-plugin — post_content contains
+  justified-image-grid markup from JIG full plugin.
+- Operation uses wp_set_object_terms($id, 6, 'category', append=true) — existing categories preserved.

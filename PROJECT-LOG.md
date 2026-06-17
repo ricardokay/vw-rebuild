@@ -710,3 +710,52 @@ All modules are **mobile-first** (base styles target 375px; tablet breakpoint 64
 ### Mockup
 
 `text-modules-preview.html` — all 8 module types with image-rich and text-only states, implementation table, per-module mobile behavior annotations, and one composed A La Music umbrella example. Fully responsive (open on phone to test).
+
+---
+
+## Phase: Photography P1-Additive Dry Run — 2026-06-17
+
+**Status: DRY RUN COMPLETE — awaiting user approval before any writes.**
+
+Identified photographer-authored gallery posts sitting in Uncategorized that are not yet in the Photography category (term_id=6). Operation is strictly additive — no existing category assignments would be removed.
+
+Photographers queried: Ryan Johnson (172), Jennifer McInnis (137), Sharon Steele (178), Mariko Margetson (218), Peter Ruttan (188), Tom Paillé (407), Ben Hartley (408), Sterling Larose (409), Scott Place (410), Bob Hanham (411).
+
+**Findings:**
+- Total candidates: 114 posts
+- WOULD ADD Photography: 113 posts
+- WOULD EXCLUDE: 1 post (ID 62786 — Jennifer McInnis, "The Voyage: Boca del Lupo - Review" — written theatre review, not a gallery)
+- Classification: 93 gallery-title-prefix, 19 gallery-jig-error, 1 gallery-jig-plugin, 1 non-gallery
+- Photography category after operation: 30 existing + 113 = 143 posts
+
+**Candidate file:** `photo_refile_candidates.txt` — full list with ID, author, title, current categories, classification, and action for all 114 posts.
+
+**Decision:** Deferred P3 Photography section (real gallery content was 90% in Uncategorized). This dry run confirms that assessment. Awaiting approval to execute the additive write.
+
+---
+
+## Phase: Photography P1-Additive Write — 2026-06-17
+
+**Status: COMPLETE.**
+
+Pre-write DB backup taken: `~/Library/Mobile Documents/com~apple~CloudDocs/vw-rebuild-backups/local-20260617-153739-pre-photo-refile.sql` (145 MB).
+
+Added Photography category (term_id=6, term_taxonomy_id=6) additively to 113 confirmed gallery posts. Operation used `INSERT IGNORE` inside a transaction; existing category assignments untouched. ID 62786 (written theatre review) excluded as planned.
+
+**Result:**
+- Photography post count: 30 → 143 (+113)
+- Uncategorized count: unchanged (posts remain in Uncategorized + Photography)
+
+**Spot-check (5 posts, before → after):**
+
+| ID | Author | Before | After |
+|---|---|---|---|
+| 67874 | Ryan Johnson | Uncategorized | photography \| Uncategorized |
+| 65945 | Jennifer McInnis | Uncategorized | photography \| Uncategorized |
+| 67821 | Sharon Steele | Uncategorized | photography \| Uncategorized |
+| 67485 | Tom Paillé | Uncategorized | photography \| Uncategorized |
+| 67831 | Sterling Larose | Uncategorized | photography \| Uncategorized |
+
+ID 62786 verified untouched (categories: `out n about` only).
+
+**Candidate audit file:** `photo_refile_candidates.txt` (all 114 evaluated, 113 acted on).
