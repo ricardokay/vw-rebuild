@@ -388,5 +388,25 @@ During post-test diagnosis, discovered that the widespread broken image boxes vi
 **Silent chunk verification — `wp media regenerate --only-missing --yes`:** Run after regen to confirm the 3 silent chunks actually worked. Results: 4,684 of 4,835 total attachments regenerated successfully. The 151 reported failures broke down to 24 unique attachment IDs, all `@2x` retina thumbnail files (e.g. `DSC01237-240x150@2x.jpg`). These were registered as separate attachment records in the original SQL dump by the old site's retina plugin — the current local install has no retina plugin, so WP-CLI can't generate them. All 24 are in chunks 10 and 11; chunk 3 had zero failures. The "(no output)" for chunks 10 and 11 was caused by the @2x `File is not an image` warnings going to stderr (discarded by `wpcli()`), leaving no stdout for the summary line. All standard editorial images across all 3 silent chunks regenerated correctly. Output saved to `regen_only_missing.log` (gitignored).
 
 **Import gap clarification:** The import log showed "Attachment records created: 3,565" (full run) while the regen reported "3,585 attachments" — the gap of 20 is the test batch (m00001–m00020) imported before the full run. Ledger confirmed: 3,585 rows, all status `ok`, zero errors. Nothing was lost.
+
+### Option C — Featured image back-fill (pending approval)
+
+Dry-run completed. **Not yet applied.**
+
+**Resolver v1 → v2 fix:** The original resolver matched body `<img>` src URLs to attachments using exact uploads-relative path only (after stripping size suffix and lowercasing). 161 additional posts were unresolvable because the file existed on disk but under a slightly different `YYYY/MM` path than the src referenced (e.g., src said `2013/06/maxresdefault.jpg`, recovered file landed at `2013/09/maxresdefault.jpg`). Fix: added a basename fallback — when exact path fails, collect all attachment index entries sharing the same filename. Use the match only when unambiguous: exactly 1 candidate on disk, or prefer same `YYYY/MM` directory, then same year. Skip if still ambiguous.
+
+**Dry-run v2 results (not applied):**
+
+| | Count |
+|---|---|
+| Posts with no `_thumbnail_id` | 2,776 |
+| Would assign featured image | **294** |
+| — via exact path match | 225 |
+| — via basename fallback | 69 |
+| Would leave with none (clean fallback) | 2,482 |
+| `@2x` srcs skipped | 1 |
+| Unresolvable srcs skipped | 13,786 |
+
+Unresolvable breakdown: 9,714 Wayback-proxied external images (avatars, social media CDN — never in `wp-content/uploads`); ~5,200 VW uploads not recovered from Wayback; 6 truly external links. Path matching is not the issue — files are genuinely missing.
 | 366 empty spam categories | Deferred |
 | 808 Uncategorized posts | Deferred — see research note above |
