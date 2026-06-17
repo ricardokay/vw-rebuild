@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vancouver Weekly — Section Card Variants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #F7F6F4;
+  --surface: #FFFFFF;
+  --ink:     #1A161E;
+  --muted:   #767676;
+  --border:  #E8E8E8;
+  --red:     #C41230;
+  --serif:   'PT Serif', Georgia, serif;
+  --sans:    'Inter', system-ui, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Wrapper ─────────────────────────────────────── */
+.wrap { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+
+/* ── Preview labels ──────────────────────────────── */
+.preview-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #aaa;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 32px;
+}
+
+.preview-block { margin-bottom: 88px; }
+
+/* ── Nav ─────────────────────────────────────────── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 68px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-logo { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--ink); text-decoration: none; }
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a { font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); text-decoration: none; }
+.nav-links a.active { color: var(--red); }
+
+/* ── Section header ──────────────────────────────── */
+.section-hd { margin-bottom: 28px; }
+.section-hd h1 { font-family: var(--serif); font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+.section-hd p  { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.section-hd hr { border: none; border-top: 1px solid var(--border); margin-top: 18px; }
+
+/* ── Kicker ──────────────────────────────────────── */
+.kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 8px;
+}
+
+/* ── Byline ──────────────────────────────────────── */
+.byline { font-size: 13px; color: var(--muted); margin-top: 12px; }
+.byline strong { font-weight: 600; color: var(--ink); }
+
+/* ═══════════════════════════════════════════════════
+   ANNOTATION BOXES
+   ═══════════════════════════════════════════════════ */
+.note {
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  font-size: 13px;
+  line-height: 1.65;
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+.note-icon { flex-shrink: 0; font-size: 14px; }
+.note code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 2px; font-size: 12px; font-family: ui-monospace, monospace; }
+.note--auto   { background: #ebf5eb; border: 1px solid #88bb88; }
+.note--manual { background: #fdf3e7; border: 1px solid #e8a84a; }
+.note--warn   { background: #fdecea; border: 1px solid #d88; }
+
+/* ═══════════════════════════════════════════════════
+   CARD BASE
+   ═══════════════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Tier 1: Large image (≥ 1024px wide) ─────────── */
+.card--large .card-media {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  overflow: hidden;
+}
+.card--large .card-media-fill {
+  width: 100%; height: 100%;
+  background: linear-gradient(150deg, #1a1a2e 0%, #16213e 45%, #0f3460 100%);
+  display: flex; align-items: flex-end; padding: 10px 12px;
+}
+.card--large .card-body { padding: 20px; }
+.card--large .card-hed  { font-family: var(--serif); font-size: 20px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; margin-bottom: 10px; }
+.card--large .card-exc  { font-size: 15px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── Tier 3: Small/framed image (< 480px wide) ───── */
+.card--small .card-media {
+  background: var(--bg);
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.card--small .card-media-frame {
+  width: 176px; height: 118px;
+  background: linear-gradient(135deg, #8fa8c8 0%, #a0b8d0 60%, #7a9ab5 100%);
+  border: 1px solid #ccd8e4;
+  border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  display: flex; align-items: flex-end; padding: 6px 8px;
+}
+.card--small .card-body { padding: 14px 20px 20px; }
+.card--small .card-hed  { font-family: var(--serif); font-size: 20px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; margin-bottom: 10px; }
+.card--small .card-exc  { font-size: 15px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── Text-forward (no image) ─────────────────────── */
+.card--text {
+  border-left: 3px solid var(--red);
+}
+.card--text .card-body { padding: 22px 22px 22px 20px; }
+.card--text .card-hed  { font-family: var(--serif); font-size: 24px; font-weight: 700; line-height: 1.15; letter-spacing: -0.015em; margin-bottom: 12px; }
+.card--text .card-exc  { font-size: 15px; line-height: 1.65; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── Lead story (first post, large image) ────────── */
+.card--lead { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
+.card--lead .card-media { aspect-ratio: 21 / 9; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0a2040 100%); }
+.card--lead .card-body  { padding: 26px 28px; }
+.card--lead .card-hed   { font-family: var(--serif); font-size: 30px; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 10px; max-width: 680px; }
+.card--lead .card-exc   { font-size: 16px; line-height: 1.6; max-width: 580px; }
+
+/* ═══════════════════════════════════════════════════
+   GRIDS
+   ═══════════════════════════════════════════════════ */
+.grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Food & Drink list item ──────────────────────── */
+.list-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+}
+.list-item + .list-item { margin-top: 14px; }
+
+.list-thumb {
+  width: 88px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #4a6741 0%, #3d5435 60%, #2c3e28 100%);
+}
+.list-thumb--pale { background: linear-gradient(135deg, #c8b8a0 0%, #d4c4ac 60%, #b8a890 100%); }
+.list-thumb--small-frame {
+  width: 88px; flex-shrink: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+}
+.list-thumb--small-frame .thumb-img {
+  width: 62px; height: 62px;
+  background: linear-gradient(135deg, #c8b8a0 0%, #d4c4ac 100%);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.list-body { padding: 14px 18px; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.list-kicker { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--red); }
+.list-hed    { font-family: var(--serif); font-size: 17px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.list-exc    { font-size: 13px; line-height: 1.5; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.list-byline { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.list-byline strong { font-weight: 600; color: var(--ink); }
+
+/* list-item with no thumbnail (text-forward in list) */
+.list-item--text { border-left: 3px solid var(--red); }
+
+/* ── Image label (inside placeholder) ───────────── */
+.img-label { font-family: var(--sans); font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.07em; text-transform: uppercase; }
+
+/* ═══════════════════════════════════════════════════
+   CURATION TABLE
+   ═══════════════════════════════════════════════════ */
+.curation-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.curation-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--ink);
+}
+.curation-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.curation-table tr.warn td { background: #fdf9f0; }
+.tag-auto   { color: #2a7a2a; font-weight: 600; white-space: nowrap; }
+.tag-manual { color: #7a4e1a; font-weight: 600; white-space: nowrap; }
+.tag-code   { color: #b54020; font-weight: 600; white-space: nowrap; }
+.curation-table td code { background: rgba(0,0,0,0.05); padding: 1px 5px; border-radius: 2px; font-size: 12px; font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="#">Vancouver Weekly</a>
+  <ul class="nav-links">
+    <li><a href="#">A La Music</a></li>
+    <li><a href="#" class="active">Photography</a></li>
+    <li><a href="#">Food &amp; Drink</a></li>
+    <li><a href="#">Out 'n About</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+
+  <!-- ══════════════════════════════════════════════
+       A  ·  Mixed quality — all three card types
+       ══════════════════════════════════════════════ -->
+  <div class="preview-block">
+    <p class="preview-label">Preview A — Three card variants in one mixed grid</p>
+
+    <div class="note note--auto">
+      <span class="note-icon">🤖</span>
+      <span><strong>Automatic — no editorial action needed:</strong> At render time, PHP calls
+      <code>wp_get_attachment_image_src( get_post_thumbnail_id(), 'full' )</code>
+      and reads the returned width. Width ≥ 1024px → <code>card--large</code> (full-bleed 16:9).
+      Width &lt; 480px → <code>card--small</code> (framed, padded). No
+      <code>_thumbnail_id</code> → <code>card--text</code>. The two thresholds live in one PHP
+      constant — adjustable without touching templates.</span>
+    </div>
+
+    <div class="grid-2col">
+
+      <!-- Tier 1: Large image -->
+      <div class="card card--large">
+        <div class="card-media">
+          <div class="card-media-fill">
+            <span class="img-label">1024px+ ← full-bleed 16:9</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="kicker">Photography</span>
+          <h2 class="card-hed">Photos: Japandroids at the Commodore Ballroom</h2>
+          <p class="card-exc">Ryan Johnson was at the Commodore for the final Vancouver show of the Celebration Rock tour — a sold-out night.</p>
+          <p class="byline">By <strong>Ryan Johnson</strong> · June 2013</p>
+        </div>
+      </div>
+
+      <!-- Text-forward (no image) -->
+      <div class="card card--text">
+        <div class="card-body">
+          <span class="kicker">Photography</span>
+          <h2 class="card-hed">Behind the Lens: Twenty Years Shooting the Commodore Ballroom</h2>
+          <p class="card-exc">Jennifer McInnis reflects on two decades of concert photography, what changed when phones replaced film, and why the Commodore remains her favourite room in the city.</p>
+          <p class="byline">By <strong>Jennifer McInnis</strong> · June 2019</p>
+        </div>
+      </div>
+
+      <!-- Tier 3: Small/framed image -->
+      <div class="card card--small">
+        <div class="card-media">
+          <div class="card-media-frame">
+            <span class="img-label">Under 480px ← framed</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="kicker">Photography</span>
+          <h2 class="card-hed">A Night with the Vancouver Symphony at the Orpheum</h2>
+          <p class="card-exc">Sharon Steele's photos from an intimate chamber evening in the Orpheum's main hall — recovered at 400px.</p>
+          <p class="byline">By <strong>Sharon Steele</strong> · March 2018</p>
+        </div>
+      </div>
+
+      <!-- Tier 1: Large image (alt colour) -->
+      <div class="card card--large">
+        <div class="card-media">
+          <div class="card-media-fill" style="background: linear-gradient(150deg, #2c3e50 0%, #34495e 40%, #4a6741 100%);">
+            <span class="img-label">1024px+ ← full-bleed 16:9</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="kicker">Photography</span>
+          <h2 class="card-hed">Photos: Rifflandia Festival 2013 — Day One</h2>
+          <p class="card-exc">Erik Lyon documents the opening day of Victoria's Rifflandia — four stages, afternoon sun, and an eclectic lineup.</p>
+          <p class="byline">By <strong>Erik Lyon</strong> · September 2013</p>
+        </div>
+      </div>
+
+    </div><!-- .grid-2col -->
+  </div><!-- .preview-block -->
+
+
+  <!-- ══════════════════════════════════════════════
+       B  ·  Photography — image-led layout
+       ══════════════════════════════════════════════ -->
+  <div class="preview-block">
+    <p class="preview-label">Preview B — Photography section: image-led 2-column layout</p>
+
+    <div class="note note--manual">
+      <span class="note-icon">✏️</span>
+      <span><strong>Editorial — one click, no code:</strong> Whether a section uses "image-led" vs
+      "list" layout is stored as a category meta value — one dropdown in WP Admin → Categories → Edit
+      that section. Changing Photography from image-led to list-style = one click, no code.</span>
+    </div>
+
+    <div class="section-hd">
+      <h1>Photography</h1>
+      <p>Vancouver through a lens</p>
+      <hr>
+    </div>
+
+    <!-- Lead story (conditional: only if first post has a large image) -->
+    <div class="card--lead">
+      <div class="card-media"></div>
+      <div class="card-body">
+        <span class="kicker">Photography</span>
+        <h2 class="card-hed">Photos: The Strokes at Rogers Arena</h2>
+        <p class="card-exc">Ryan Johnson was at Rogers Arena for one of the biggest shows of 2020 — and these are the shots.</p>
+        <p class="byline" style="margin-top: 14px;">By <strong>Ryan Johnson</strong> · March 2020</p>
+      </div>
+    </div>
+
+    <!-- 2-column image-led grid -->
+    <div class="grid-2col">
+
+      <div class="card card--large">
+        <div class="card-media">
+          <div class="card-media-fill" style="background: linear-gradient(150deg, #1a1a2e 0%, #3d1c5e 50%, #0f3460 100%);">
+            <span class="img-label">large</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="kicker">Photography</span>
+          <h2 class="card-hed">Photos: Sharon Van Etten at the Vogue Theatre</h2>
+          <p class="card-exc">Mariko Margetson captures a rare intimate show before Van Etten's world tour.</p>
+          <p class="byline">By <strong>Mariko Margetson</strong> · Feb 2020</p>
+        </div>
+      </div>
+
+      <div class="card card--text">
+        <div class="card-body">
+          <span class="kicker">Photography</span>
+          <h2 class="card-hed">Down at the Commodore Ballroom</h2>
+          <p class="card-exc">Jennifer McInnis's gallery from a three-band Friday night — all photos taken with available light, no recovered image.</p>
+          <p class="byline">By <strong>Jennifer McInnis</strong> · Oct 2017</p>
+        </div>
+      </div>
+
+      <div class="card card--small">
+        <div class="card-media">
+          <div class="card-media-frame">
+            <span class="img-label">recovered 400px</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="kicker">Photography</span>
+          <h2 class="card-hed">Photos: Peter Ruttan at Rifflandia 2016</h2>
+          <p class="card-exc">Outdoor festival light, recovered at 400px — framed so it doesn't look degraded.</p>
+          <p class="byline">By <strong>Peter Ruttan</strong> · Sept 2016</p>
+        </div>
+      </div>
+
+      <div class="card card--large">
+        <div class="card-media">
+          <div class="card-media-fill" style="background: linear-gradient(150deg, #1c3a1c 0%, #2d5e2d 50%, #1a401a 100%);">
+            <span class="img-label">large</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="kicker">Photography</span>
+          <h2 class="card-hed">Photos: Alvvays at the Fox Cabaret</h2>
+          <p class="card-exc">Sharon Steele catches the dream-pop quartet on their quietest Vancouver show in years.</p>
+          <p class="byline">By <strong>Sharon Steele</strong> · Nov 2019</p>
+        </div>
+      </div>
+
+    </div><!-- .grid-2col -->
+  </div><!-- .preview-block -->
+
+
+  <!-- ══════════════════════════════════════════════
+       C  ·  Food & Drink — editorial list layout
+       ══════════════════════════════════════════════ -->
+  <div class="preview-block">
+    <p class="preview-label">Preview C — Food &amp; Drink section: editorial list layout</p>
+
+    <div class="note note--manual">
+      <span class="note-icon">✏️</span>
+      <span><strong>Editorial — same one-click setting:</strong> Food &amp; Drink uses "list" because
+      it's text-heavy editorial writing, not galleries. Same category meta dropdown as Photography — no code.
+      Image quality still adapts automatically within the list layout.</span>
+    </div>
+
+    <div class="section-hd">
+      <h1>Food &amp; Drink</h1>
+      <p>Vancouver's kitchens and bars</p>
+      <hr>
+    </div>
+
+    <div>
+
+      <!-- Large thumbnail -->
+      <div class="list-item">
+        <div class="list-thumb"></div>
+        <div class="list-body">
+          <span class="list-kicker">Food &amp; Drink</span>
+          <h2 class="list-hed">The Best New Patios in Vancouver for Summer 2019</h2>
+          <p class="list-exc">Twelve spots worth a visit before the rain returns.</p>
+          <p class="list-byline">By <strong>Laura Sciarpelletti</strong> · June 2019</p>
+        </div>
+      </div>
+
+      <!-- Small/framed thumbnail -->
+      <div class="list-item">
+        <div class="list-thumb--small-frame"><div class="thumb-img"></div></div>
+        <div class="list-body">
+          <span class="list-kicker">Food &amp; Drink</span>
+          <h2 class="list-hed">Campagnolo's New Menu Is Quietly the Best in the City</h2>
+          <p class="list-exc">Small photo recovered at 300px — displayed at natural size with a frame border rather than stretched.</p>
+          <p class="list-byline">By <strong>Mary Matheson</strong> · March 2018</p>
+        </div>
+      </div>
+
+      <!-- Text-forward (no image) -->
+      <div class="list-item list-item--text">
+        <div class="list-body">
+          <span class="list-kicker">Food &amp; Drink</span>
+          <h2 class="list-hed">Why Vancouver's Bar Scene Peaked in 2015</h2>
+          <p class="list-exc">A written editorial with no photography — the red bar signals "no image, all story."</p>
+          <p class="list-byline">By <strong>Issie Patterson</strong> · Oct 2018</p>
+        </div>
+      </div>
+
+      <!-- Large thumbnail (alt colour) -->
+      <div class="list-item">
+        <div class="list-thumb list-thumb--pale"></div>
+        <div class="list-body">
+          <span class="list-kicker">Food &amp; Drink</span>
+          <h2 class="list-hed">Hungry Social: What Vancouver Eats at 2am</h2>
+          <p class="list-exc">Night-market vendors, late-night ramen, and the pizza window everyone forgets.</p>
+          <p class="list-byline">By <strong>Vancouver Weekly</strong> · Jan 2017</p>
+        </div>
+      </div>
+
+      <!-- Text-forward (no image) -->
+      <div class="list-item list-item--text">
+        <div class="list-body">
+          <span class="list-kicker">Food &amp; Drink</span>
+          <h2 class="list-hed">The Cocktail Bars You Should Have Gone to Before They Closed</h2>
+          <p class="list-exc">A written retrospective — no photos survived, but the story did.</p>
+          <p class="list-byline">By <strong>Vancouver Weekly</strong> · Dec 2016</p>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- .preview-block -->
+
+
+  <!-- ══════════════════════════════════════════════
+       D  ·  Curation approach: auto vs editorial
+       ══════════════════════════════════════════════ -->
+  <div class="preview-block">
+    <p class="preview-label">Curation approach — what's automatic vs editorial vs code</p>
+
+    <div class="note note--warn">
+      <span class="note-icon">⚠️</span>
+      <span><strong>Important context before reviewing the table:</strong> This table assumes
+      the custom PHP template approach (category.php). Whether to build that at all, or to
+      use Newspack's own Homepage Articles block + Query Loop instead, is a foundation decision
+      that should be settled before any template code is written. See the architectural
+      comparison in your response for the full breakdown.</span>
+    </div>
+
+    <table class="curation-table">
+      <thead>
+        <tr>
+          <th style="width: 36%">Decision</th>
+          <th style="width: 18%">Who handles it</th>
+          <th>How</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Image quality tier (large / small / none)</td>
+          <td><span class="tag-auto">🤖 Automatic</span></td>
+          <td><code>wp_get_attachment_image_src()</code> at render — no manual step across 2,800 posts</td>
+        </tr>
+        <tr>
+          <td>Card type (image / text-forward)</td>
+          <td><span class="tag-auto">🤖 Automatic</span></td>
+          <td>Derives from whether <code>_thumbnail_id</code> exists — already set by Option C</td>
+        </tr>
+        <tr>
+          <td>Which posts appear on a section front</td>
+          <td><span class="tag-manual">✏️ Editorial</span></td>
+          <td>Standard WP category assignment — add/remove a category on any post from the post editor</td>
+        </tr>
+        <tr>
+          <td>Section front layout (image-grid vs list)</td>
+          <td><span class="tag-manual">✏️ Editorial</span></td>
+          <td>Category meta dropdown — WP Admin → Categories → Edit → Layout. No code.</td>
+        </tr>
+        <tr>
+          <td>Lead story (hero slot)</td>
+          <td><span class="tag-manual">✏️ Editorial</span></td>
+          <td>WordPress sticky post — one click from the post editor sidebar. Fallback: most recent post with a large image auto-leads if nothing is sticky.</td>
+        </tr>
+        <tr>
+          <td>Posts per page</td>
+          <td><span class="tag-manual">✏️ Editorial</span></td>
+          <td>Category meta — same screen as layout. Default 12 for grid, 15 for list.</td>
+        </tr>
+        <tr class="warn">
+          <td><strong>Adding a new section layout type</strong> (e.g. masonry, compact)</td>
+          <td><span class="tag-code">⚠️ Code edit</span></td>
+          <td>New template-part file + new dropdown option. One-time dev task per new layout — not routine. Rare.</td>
+        </tr>
+        <tr class="warn">
+          <td><strong>Adding a new main section to the theme</strong></td>
+          <td><span class="tag-code">⚠️ Code edit</span></td>
+          <td>Add category slug to <code>$main_sections</code> in <code>category.php</code>. 30-second edit — but it is a code edit. Could be avoided by storing the list in WP Options.</td>
+        </tr>
+        <tr class="warn">
+          <td><strong>Changing image quality thresholds</strong></td>
+          <td><span class="tag-code">⚠️ Code edit</span></td>
+          <td>Two PHP constants in <code>functions.php</code>. Could be exposed as a WP Options field if this matters long-term.</td>
+        </tr>
+        <tr class="warn">
+          <td><strong>Per-section presentation that differs significantly</strong> (e.g. Music wants a sidebar filter)</td>
+          <td><span class="tag-code">⚠️ Code edit</span></td>
+          <td>Beyond layout-type switching, genuinely different UI patterns need a developer. This is the boundary of what categorymeta can handle.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div><!-- .preview-block -->
+
+</div><!-- .wrap -->
+
+</body>
+</html>

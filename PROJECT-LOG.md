@@ -537,3 +537,65 @@ Ryan Johnson (172): 39 · Jennifer McInnis (137): 24 · Sharon Steele (178): 18 
 - (d) 2,435 posts still on "Vancouver Weekly": bulk are genuinely authored by VW editorial (no individual byline) or have writers without WP accounts. Separate follow-up pass needed.
 
 Scripts: `/tmp/vw_byline_final_dryrun.php` (final dry run), `/tmp/vw_byline_apply.php` (write pass), `/tmp/byline_write_plan.json` (143-entry write plan).
+
+---
+
+## Foundation decision — editorial architecture (2026-06-17, DECIDED)
+
+### Chosen: Newspack-native, NOT a page builder, NOT bloated custom PHP
+
+**Section fronts = Option B (native category archive URL renders curated layout directly)**
+- URL `/category/{slug}/` serves the curated layout natively — no redirect, no separate Page, no plugin in the path
+- Implemented via a minimal ~25-line `category.php` routing file that delegates to Newspack Homepage Posts block markup in `section-parts/*.html`
+- Newspack blocks handle layout/query; URL is native and unbreakable
+
+**Rejected alternatives:**
+- Option A (Page + redirect): splits URL equity, breaks to 404 if redirect ever fails
+- Page builders (Elementor/Beaver/Bricks): high lock-in (layouts in proprietary post-meta), per-site cost across multisite, fragility — "exactly how the previous agency rebuild broke"
+- Original bloated custom category.php (200+ lines replacing Newspack layout logic)
+
+### Why (the deciding insight)
+
+Vox abandoned its custom Chorus CMS in 2023 and moved to WordPress — even a fully-funded newsroom found a bespoke editorial CMS unsustainable. Lesson: lock-in and maintenance are the real enemies; use WordPress well. The one real gap vs Chorus (a real-time drag-and-drop front-page dashboard, ~$3–8K custom plugin) is deliberately NOT being closed for v1; liveable for a one-editor operation.
+
+### Permanent URL rules (HARD constraints, now in CLAUDE.md)
+
+- Permalink structure FROZEN at `/%postname%/` — flat slugs, no date/category prefix. Never change. Category base stays default (`/category/`).
+- ALL editorial content (archive + new) = permanent, citable URLs. Existing slugs preserved exactly.
+- Curated editorial layer lives at structural URLs (`/`, `/category/{slug}/`); never at content URLs. Arrangement above can change freely; post URLs underneath stay fixed.
+- Microsites/campaigns: each is its OWN multisite site with its own domain/subdomain from day one (never a subdirectory path on main) — permanence-ready, promotable to permanent cleanly.
+
+### Multisite (decide BEFORE creating any city site)
+
+- Network type = SUBDOMAIN or separate-domain. NEVER subdirectory (subdirectory prefixes are permanent once set and risk prefixing Vancouver's URLs). Changing network type after sites exist is URL-destructive.
+- Each city site has independent category namespace; same child theme + section templates deploy identically. Multisite editorial management via newspack-network (free). Cost across 5+ sites: $0.
+
+### Two-layer model
+
+- **Archive layer**: ~2,800 posts, permanent/stable/preserved, lightly editable (still recovering images/attribution).
+- **Editorial layer**: curated Newspack Homepage Posts modules surfacing archive + new content. Per-section layouts can differ and evolve freely.
+
+### Monetization (designed in, not yet built)
+
+Branded sponsorships (primary) as native sponsored module types; limited display ads in defined slots served DYNAMICALLY (never hard-coded into permanent posts); voluntary supporter tier (ties to user accounts/2FA); affiliate links with disclosure. Newspack's native ad/sponsored tooling. $0/multisite.
+
+### Image treatment (design direction)
+
+Three card types:
+1. Large/high-res image on top (full-bleed)
+2. Small/low-res image LEFT-ALIGNED beside content (no oversized container — avoids dead space)
+3. Text-forward with red left bar
+
+Image tier chosen AUTOMATICALLY by a PHP function reading image width. Must also detect broken/missing files (dead Facebook-sourced images) and NOT assign them the large treatment.
+
+### Build order (approved, gated at each phase)
+
+- **Phase 0**: freeze permalink in CLAUDE.md, document subdomain multisite, audit category structure + where photography galleries actually live — STOP for approval
+- **Phase 1**: `category.php` routing + `section-parts/` block templates
+- **Phase 2**: sticky-post lead story + editor workflow doc
+- **Phase 3**: image-quality PHP function
+- **Phase 4**: multisite readiness check
+
+### Design reference
+
+`section-cards-preview.html` — static visual card/section designs. Small-image card to be revised: left-aligned thumbnail beside content (not large centered container).
