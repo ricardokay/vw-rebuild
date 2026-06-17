@@ -127,18 +127,16 @@ img { display: block; max-width: 100%; }
   align-items: center;
   justify-content: space-between;
   padding: 0 48px;
-  height: 76px;
+  height: 100px;
   position: sticky;
   top: 0;
   z-index: 100;
   /* No border-bottom — nav and body are one continuous surface */
 }
 .nav-logo {
-  font-family: 'PT Serif', Georgia, serif;
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: -0.02em;
-  color: var(--vw-ink);
+  display: block;
+  height: 80px;
+  width: auto;
 }
 .nav-links {
   display: flex;
@@ -147,8 +145,8 @@ img { display: block; max-width: 100%; }
 .nav-links a {
   display: block;
   padding: 0 22px;
-  height: 76px;
-  line-height: 76px;
+  height: 100px;
+  line-height: 100px;
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 500;
@@ -518,7 +516,9 @@ img { display: block; max-width: 100%; }
 
 <!-- ── Nav ────────────────────────────────────────────────────── -->
 <nav class="nav">
-  <span class="nav-logo">Vancouver Weekly</span>
+  <a href="#" aria-label="Vancouver Weekly — Home">
+    <img src="../assets/images/logo_VW.png" alt="Vancouver Weekly" class="nav-logo">
+  </a>
   <ul class="nav-links">
     <li><a href="#landing" class="active">A La Music</a></li>
     <li><a href="#">Photography</a></li>

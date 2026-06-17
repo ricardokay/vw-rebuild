@@ -11,6 +11,72 @@
    ================================================================ */
 
 
+/* ── Site navigation ─────────────────────────────────────────── */
+
+.vw-nav {
+  background: var(--vw-bg-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;     /* explicit: span full width of the #page flex column */
+  flex-shrink: 0;  /* don't compress inside Newspack's flex #page wrapper */
+  /* No border-bottom — nav and body are one continuous surface */
+}
+
+.vw-nav__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.vw-nav__logo-link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.vw-nav__logo {
+  height: 80px;
+  width: auto;
+  display: block;
+}
+
+.vw-nav__links {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.vw-nav__link {
+  display: block;
+  padding: 0 22px;
+  height: 100px;
+  line-height: 100px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vw-ink-muted);
+  text-decoration: none;
+  transition: color 0.12s;
+  white-space: nowrap;
+}
+
+.vw-nav__link:hover  { color: var(--vw-ink); }
+.vw-nav__link--active { color: var(--vw-red); }
+
+@media (max-width: 600px) {
+  .vw-nav__inner { padding: 0 20px; height: 88px; }
+  .vw-nav__logo  { height: 64px; }
+  .vw-nav__link  { padding: 0 14px; font-size: 11px; height: 88px; line-height: 88px; }
+}
+
+
 /* ── Page ground ─────────────────────────────────────────────── */
 
 .vw-section-landing,

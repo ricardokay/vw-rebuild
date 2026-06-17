@@ -1,0 +1,274 @@
+# Vancouver Weekly Rebuild — Project Log
+
+Running source-of-truth log for the full site rebuild. Append new entries at the bottom as work continues.
+
+**Repo:** github.com/ricardokay/vw-rebuild
+**Local dev:** Local by WP Engine — site `vancouverweekly-local`
+**Parent theme:** Newspack (directory slug: `newspack-theme`)
+**Child theme:** `vancouver-weekly` (at `wp-content/themes/vancouver-weekly/`)
+
+---
+
+## Background
+
+Vancouver Weekly (`vancouverweekly.com`) was a Vancouver-based arts and culture publication — local, independent, Pitchfork-influenced in format. Covered music (live reviews, album reviews, interviews), film, food & drink, photography, politics, and local events. The site ran from roughly 2011 to 2019.
+
+The site was compromised by a pharma/spam injection attack: hundreds of spam posts about ivermectin, generic drugs, and other pill keywords were injected into the WordPress database. By the time recovery started, the live domain was dead and the hosting account was either deleted or inaccessible.
+
+### Recovery assets available
+
+| Asset | Status |
+|---|---|
+| Wayback Machine crawl of the live site | Extensive — used as primary content source |
+| SQL database backup (Feb 2019) | `vanctcjx_vweekly2016a_feb2019.sql.zip` — 29 MB compressed, 209 MB uncompressed. 48 tables, includes `wp_posts` + `wp_postmeta` |
+| Original media files | Not recovered — server gone. Partial recovery from Wayback CDX |
+| Logo files | `VancouverWeekly Logo.eps`, `VW_logo.psd`, `logo_VW.png` (clean transparent PNG) |
+
+---
+
+## Phase 1 — Content Recovery (Complete)
+
+**Completed: June 2026**
+
+### Method
+
+Custom Python recovery pipeline (`vw-rebuild-starter-kit/recovery/`):
+
+1. **Wayback CDX crawl** — fetched the full CDX index for `vancouverweekly.com` to identify all archived page URLs
+2. **Content extraction** — for each post URL, fetched the Wayback snapshot and parsed the article HTML (title, body, author, date, categories, tags, featured image URL)
+3. **Spam audit** — filtered ivermectin/pharma injected posts before import; 197 posts failed or were excluded
+4. **WordPress import** — `import_to_wordpress.py` used WP-CLI via Local's bundled PHP to create posts directly in the local WordPress database
+
+### Results
+
+| Metric | Count |
+|---|---|
+| Posts successfully imported | 2,789 |
+| Posts failed / excluded (spam or parse errors) | 197 |
+| Total attempted | 2,986 |
+
+Import ran June 13, 2026. Log at `vw-rebuild-starter-kit/recovery/import_run.log`.
+
+### Category inventory (confirmed June 17, 2026)
+
+Queried via WP-CLI against the live local database. Counts are live post counts. Duplicate slugs (a known import bug — see Database Issues below) are collapsed into the canonical slug for this table.
+
+| Category Name | Canonical Slug | Post Count |
+|---|---|---|
+| Uncategorized | `uncategorized` | 1,835 |
+| A La Music | `a-la-music` | 490 |
+| Live Music Reviews | `live-music-reviews` | 245 |
+| Out 'N' About | `out-n-about` | 210 |
+| Must See Films | `must-see-films` | 170 |
+| Album Reviews | `album-reviews` | 129 |
+| Music Videos | `music-videos` | 93 |
+| Book Reviews | `book-reviews` | 90 |
+| Video | `video` | 76 |
+| Music Interviews | `music-interviews` | 70 |
+| Contests | `contests` | 63 |
+| Political Megaphone | `political-megaphone` | 55 |
+| Netflix Films | `netflix-films` | 37 |
+| Photography | `photography` | 30 |
+| Food & Drink | `food-drink` | 26 |
+| Business | `business` | 24 |
+| Fiction & Essays | `fiction-and-essays` | 22 |
+| Hungry Social | `hungry-social` | 22 |
+| Music Editorials | `music-editorials` | 15 |
+| Upcoming Events | `upcoming-events` | 9 |
+| Contest | `contest` | 7 |
+| Featured | `featured` | 5 |
+| Netflix Reviews | `netflix-reviews` | 1 |
+
+All seven originally expected categories confirmed present: A La Music, Photography, Food & Drink, Out 'N' About, Must See Films, Political Megaphone, Business. ✓
+
+**Note on Uncategorized (1,835 posts):** This is the largest bucket and likely contains real content that wasn't assigned a category during the Wayback recovery parse (original site may have used tags, custom taxonomies, or a section structure not captured in the category field). Needs audit before launch.
+
+---
+
+## Phase 2 — Image Recovery (Complete)
+
+**Completed: June 16–17, 2026**
+
+### Source analysis
+
+The Feb 2019 SQL dump's `wp_posts.guid` field and `wp_postmeta._wp_attached_file` entries were parsed to extract all original upload URLs.
+
+| Metric | Count |
+|---|---|
+| Unique original image URLs in SQL dump | 8,333 |
+| Of those: in the Wayback CDX index (status 200) | 3,659 |
+| Of those: full-size originals (no WxH resize suffix) | 2,606 |
+| Of those: large thumbnails (1024px wide, usable quality) | 1,053 |
+| Successfully downloaded | 3,653 |
+| Network failures (in Wayback, download failed) | 4 |
+| Never archived by Wayback | 4,674 |
+
+### Why Wayback had limited coverage
+
+Wayback Machine crawls pages, not direct file links. It captured thumbnail variants embedded in article HTML (e.g. `-240x150.jpg`, `-150x150.jpg`, `-1024x683.jpg`) but rarely crawled the full-size originals. Only 2,606 originals were reachable. The 1,053 large thumbnails (1024px wide) are high enough resolution for a news site.
+
+### Recovery script
+
+`recover_images.py` — fully resumable, CDX-based downloader. Uses `if_` modifier on Wayback URLs to get raw file bytes, not the toolbar HTML wrapper. Respects rate limits with exponential backoff on 429 responses. Progress ledger in `image-recovery-ledger.csv`.
+
+```bash
+python3 recover_images.py extract              # rebuild URL list from CDX
+python3 recover_images.py recover              # download (resumable)
+python3 recover_images.py recover --limit 20  # test run
+python3 recover_images.py report               # progress summary
+```
+
+### Recovered files
+
+Stored in `recovered-images/YYYY/MM/filename.ext` — mirrors WordPress's `wp-content/uploads/` structure exactly, so files can be bulk-copied into the uploads folder for a clean media library import.
+
+### Gaps
+
+`image-recovery-gaps.txt` — 7,000 URLs not recovered (6,996 never archived + 4 network failures). Secondary recovery sources to try: archive.today, Google cache, original photographers/contributors, press/PR sources for album art and press photos.
+
+---
+
+## Phase 3 — WordPress Theme Build (In Progress)
+
+**Started: June 13, 2026**
+
+### Design system (final, as built and approved)
+
+The design went through significant iteration before locking. Full rationale in `VW-DESIGN-BRIEF.md`.
+
+**Design journey (what was tried and dropped):**
+- Started with a four-color section palette (deep crimson, emerald, amber, indigo — one color per section) + cyan accent + per-section duotone image filters. Felt too festival/tech, not editorial.
+- Tested Instrument Serif + Space Grotesk as the type pairing — dropped.
+- Moved to Cormorant Garamond Bold as the headline font — too decorative/precious.
+- Tried Fraunces at weight 900 — too stylized.
+- Landed on **PT Serif Bold (700)** — sturdy, plain, genuinely editorial. Locked.
+- Simplified the color system from four section colors to **one red accent (#C41230)** used sparingly. Everything else is near-black ink on off-white/white grounds.
+
+**Final design system:**
+
+| Element | Value |
+|---|---|
+| Page background | `#F7F6F4` (off-white) |
+| Card / surface background | `#FFFFFF` (white) |
+| Ink (headlines, body) | `#1A161E` (near-black) |
+| Muted ink (bylines, captions) | `#767676` |
+| Border / hairlines | `#E8E8E8` |
+| Accent red | `#C41230` |
+| Red on white contrast | 6.0:1 — WCAG 2.1 AA ✓ |
+| White on red contrast | 6.0:1 — WCAG 2.1 AA ✓ |
+| Red on off-white contrast | 5.6:1 — WCAG 2.1 AA ✓ |
+| Headline font | PT Serif Bold (weight 700), self-hosted woff2 |
+| Body / UI font | Inter (weight 400–600), self-hosted woff2 |
+| Nav background | `#F7F6F4` — same as page, seamless, no border |
+| Cards | 1px solid `#E8E8E8` border, 4px radius, internal padding |
+| Images | Natural full color — no duotone treatment |
+
+Red accent used only for: kickers/section labels, category tags, active nav links, article links, filled badge/flag elements. Never as a large background.
+
+**Fonts self-hosted** (OFL licensed, no CDN dependency):
+- PT Serif Bold: latin + latin-ext subsets, normal + italic variants (4 woff2 files)
+- Inter: latin + latin-ext, weight 400–600 variable (2 woff2 files)
+- Cormorant Garamond: retained on disk, currently unused
+
+### Theme file structure
+
+```
+theme/
+  style.css                   # Child theme header (Template: newspack-theme)
+  functions.php               # Enqueues palette.css, fonts.css, section-landing.css
+  header.php                  # Custom full-width nav with logo
+  archive-section.php         # Section landing template (started, not final)
+  palette.css                 # CSS custom properties — single source of truth
+  assets/
+    css/
+      fonts.css               # @font-face declarations
+      section-landing.css     # Section landing + article + nav styles
+    fonts/                    # 12 woff2 files (PT Serif Bold + Inter)
+    images/
+      logo_VW.png             # Clean transparent PNG logo (horizontal wordmark)
+  previews/
+    section-landing.html      # Static self-contained design preview (approved)
+  template-parts/
+```
+
+### Build steps completed
+
+| Step | Status | Notes |
+|---|---|---|
+| 1. Child theme scaffold | ✓ Done | `style.css` + `functions.php` — activated on Local |
+| 2. Palette + fonts live | ✓ Verified | CSS custom properties on `:root`, font files loading |
+| 3. Nav / header | ✓ Done | `header.php` with logo, off-white full-width bar, 4 section links |
+| 4. Section landing templates | Pending | `archive-section.php` started but not wired |
+| 5. Single article template | Pending | |
+| 6. Smoke test across all 4 sections | Pending | |
+| Media library import | Pending | 3,653 recovered images need bulk import into WP |
+
+### Header implementation notes
+
+Newspack's `footer.php` closes `</div><!-- #content -->` and `</div><!-- #page -->`. Our `header.php` must open both — missing them causes malformed HTML and a visually constrained header background. Current `header.php` opens:
+
+```html
+<div id="page" class="site">
+  <header class="vw-nav">...</header>
+  <div id="content" class="site-content">
+```
+
+Nav is `position: sticky; top: 0; width: 100%; flex-shrink: 0` to span full viewport inside Newspack's flex `#page` column.
+
+Logo is set to `height: 80px; width: auto` in CSS, `height="80"` attribute in HTML. Nav bar is 100px tall (10px breathing room above and below).
+
+---
+
+## Known Database Issues (Fix Before Launch)
+
+### 1. Duplicate category slugs
+
+The import script called `wp post create --post_category` with a category name string. WordPress's `wp_insert_term` creates a new term when a slug collision occurs instead of reusing the existing one, appending `-2`, `-3`, etc. This produced:
+
+- `live-music-reviews` through `live-music-reviews-401` (401 slugs, 626 total posts — should be 1 slug with 626 posts)
+- `album-reviews` through `album-reviews-50` (50 slugs, 174 total posts)
+- `music-interviews` through `music-interviews-67` (67 slugs, 132 total posts)
+- `music-editorials` through `music-editorials-13` (13 slugs, 27 total posts)
+- `music-videos` through `music-videos-8` (8 slugs, 100 total posts)
+- `out-n-about-2` (2 slugs, 211 total posts)
+- `food-drink-2` (2 slugs, 27 total posts)
+
+**Fix:** WP-CLI consolidation script — for each group, reassign all posts to the canonical term ID, then delete the duplicate terms. Ready to build when needed.
+
+### 2. Spam/drug categories (308 entries, all 0 posts)
+
+Ivermectin/pharma category names created during import from spam posts that passed the content filter. All have 0 posts so they don't affect URLs or content. Safe to bulk-delete before launch.
+
+### 3. Uncategorized (1,835 posts)
+
+Largest single category. Needs audit: likely contains legitimate content not properly categorized during Wayback recovery. Some may be spam posts. Approach TBD — could re-parse original slugs to infer categories, or do a manual spot-check.
+
+---
+
+## Infrastructure
+
+| Item | Detail |
+|---|---|
+| GitHub repo | `github.com/ricardokay/vw-rebuild` (main branch) |
+| Credential helper | macOS Keychain (`git config --global credential.helper osxkeychain`) — push from Mac Terminal without pasting tokens |
+| Local WP | `vancouverweekly-local` in Local by WP Engine |
+| MySQL socket | `/Users/ricardokhayatte/Library/Application Support/Local/run/HKOO9D7DI/mysql/mysqld.sock` |
+| WP-CLI | `/tmp/wp-cli.phar` with PHP ini at `/tmp/wp-cli-php.ini` (socket path configured) |
+| SQL backup | `vanctcjx_vweekly2016a_feb2019.sql.zip` in project root (gitignored — contains PII) |
+| SQL unzipped | `/tmp/vw-sql-inspect/vanctcjx_vweekly2016a.sql` (scratch location, not committed) |
+| Recovered images | `recovered-images/` (gitignored — large binary files) |
+| Image gaps list | `image-recovery-gaps.txt` (committed — 7,000 URLs for later recovery) |
+
+---
+
+## Next Steps
+
+1. **Fix duplicate categories** — consolidation script to merge `-N` slug variants into canonical terms
+2. **Delete spam categories** — bulk remove 308 empty pharma terms
+3. **Audit Uncategorized** — determine how many of the 1,835 are real content vs spam
+4. **Step 4: Section landing templates** — wire `archive-section.php` to render the approved card grid design for each of the four main sections (A La Music, Photography, Food & Drink, Out 'N' About)
+5. **Step 5: Single article template** — `single.php` with the approved article layout
+6. **Step 6: Smoke test** — full run through all four sections with live imported content
+7. **Media library import** — bulk-copy `recovered-images/` into `wp-content/uploads/` and register in WP media library
+8. **Logo** — `logo_VW.png` is a placeholder; replace with final SVG when supplied
+9. **Nav finalisation** — section links and active states deferred pending marketing decision on site structure
