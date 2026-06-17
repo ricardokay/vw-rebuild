@@ -773,3 +773,62 @@ Do not fix now. Log for future passes:
 2. **Visible duplicate posts** (Brad Paisley, The Strokes, Black Label Society appear twice in the archive) — duplicate-import issue, known and pending. The Photography re-file surfaced them because both copies are now in Photography. Duplicate cleanup is a separate pass.
 
 3. **"Comment Comment…" artifact text in excerpts** — Jig2 gallery imports have plugin error wrapper text leaking into post excerpts. Affects the 19 `gallery-jig-error` posts (Jennifer McInnis). Separate cleanup pass needed: either strip the excerpt or set a manual excerpt on each.
+
+---
+
+## Phase: A La Music Section Front — Styling State — 2026-06-17
+
+**Status: COMPLETE (styling pass done; live at `/category/a-la-music/`).**
+
+Built custom PHP section template (`section-parts/a-la-music.php`) instead of Newspack block approach — Newspack block output is incompatible with our design system CSS classes. Template included via `category.php` `.php` template check.
+
+### Architecture
+- `category.php` checks for `section-parts/{slug}.php` first, falls back to `.html` (do_blocks), then Newspack default archive
+- `vw_image_tier()` helper in `functions.php`: checks file existence on disk (guards dead Facebook imports), reads 'full' width → T0 (missing/broken), T1 (≥1024px), T2 (480–1023px), T3 (<480px)
+- `vw_primary_cat_name()` helper: returns category name preferring music cats in order
+- Music cat IDs: 7 (a-la-music), 9 (live-music-reviews), 8 (album-reviews), 11 (music-interviews), 20 (music-videos), 10 (music-editorials)
+
+### Four-zone structure (live)
+- **Zone A — Hero**: single T1 post (≥1024px image, file on disk verified). Prefers sticky post; falls back to most recent T1.
+- **Zone B — Featured + list**: image lead + 5 compact text items
+- **Zone C — Headline list 2-col**: 10 posts in newspaper 2-column layout
+- **Zone D — Card grid**: 6 posts; T1/T2 get image card, T0 gets text-forward card
+
+Post deduplication across zones via `$used_ids` → `post__not_in` in each successive WP_Query.
+
+### CSS state (section-landing.css)
+- Container: `max-width: 1440px` (widened from 1100px during this session)
+- Nav: full viewport width (no max-width on `.vw-nav__inner`), `padding: 0 40px`
+- Module spacing: `padding: 52px 0` on `.vw-module`, 48px bottom on hero module
+- Module dividers: `border-top: 1px solid var(--vw-border)` between modules
+- Section header: 30px PT Serif centered, reduced padding
+- Kickers: `--vw-kicker-ink: #1A1A1A` (near-black, not red)
+- Bylines: `--vw-byline-ink: #555555` (quiet dark gray); `strong` wrap on author names → weight 600
+- Image cards: image full-bleed, text block has `14px 16px 0` padding
+- Text-forward cards: `border-left: 3px solid var(--vw-red)`, byline grouped directly under headline (not bottom-pinned)
+- Image border: `1px solid var(--vw-border)` on `.vw-card__img`
+
+### Still pending for this section
+- Eyebrow tab: solid black overlapping label on image cards (Zone D) — approved, not yet built
+- 3-col Pitchfork lead block (see below) — prototyped in mockup, not yet ported live
+- Single article template (`single.php`)
+- out-n-about, must-see-films sections need same styling pass
+
+---
+
+## Design Direction: Pitchfork 3-Column Lead Block — 2026-06-17
+
+**Status: MOCKUP ONLY — prototyped in `text-modules-preview.html` as Module 9. Not yet ported to live template.**
+
+Replaces the single large hero as the top zone of section fronts. Shows 7–8 stories at once. Structure:
+
+- **Left column**: vertical stack of 2 smaller stories — each has image (3:2) + kicker + headline + byline. Horizontal rule divides them.
+- **Center column**: one larger featured story — bigger image (4:3), bigger headline — the visual anchor. Not a full-width dominant hero.
+- **Right column**: "The Latest" — dense text-only headline list, 5 items, kicker + headline + byline, thin horizontal rules between items. No images. Suits our image-poor archive.
+- Thin vertical rules divide the 3 columns (broadsheet/newspaper structure).
+
+**Responsive collapse plan**: single column on mobile/tablet — center story first (highest weight), then left stack, then right list. 3-col only on desktop (1024px+). Grid-area CSS approach used in mockup.
+
+**Why this over single hero**: shows editorial depth immediately. The text-only right column is archive-friendly (works with or without images). Center column gives one clear anchor without dominating as a full-width cinematic hero.
+
+**Next step**: review mockup → approve structure → port to live `a-la-music.php`.

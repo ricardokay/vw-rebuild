@@ -491,6 +491,122 @@ body {
 .tag-native { background: #d4edda; color: #155724; border-radius: 2px; padding: 1px 5px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .tag-css    { background: #fff3cd; color: #856404; border-radius: 2px; padding: 1px 5px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .tag-custom { background: #fde8e8; color: #7a1818; border-radius: 2px; padding: 1px 5px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 9 — PITCHFORK 3-COLUMN LEAD BLOCK
+   3 cols divided by thin vertical rules. Shows 7–8 stories.
+   Left: 2 smaller image stories. Center: main anchor story.
+   Right: "The Latest" dense text-only list, no images.
+   Mobile: center first → left stack → right list (single col).
+   ════════════════════════════════════════════════════════════ */
+
+.lead-block {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.lead-block__col--center { order: 1; }
+.lead-block__col--left   { order: 2; }
+.lead-block__col--right  { order: 3; }
+
+@media (min-width: 1024px) {
+  .lead-block {
+    display: grid;
+    grid-template-columns: 1fr 1.7fr 1fr;
+    grid-template-areas: "left center right";
+    gap: 0;
+    align-items: start;
+  }
+  .lead-block__col--center { order: unset; grid-area: center; border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); padding: 0 28px; }
+  .lead-block__col--left   { order: unset; grid-area: left;   padding-right: 28px; }
+  .lead-block__col--right  { order: unset; grid-area: right;  padding-left: 28px; }
+}
+
+/* Left col: 2 smaller stories stacked */
+.lead-block__small { padding-bottom: 20px; }
+.lead-block__small + .lead-block__small { padding-top: 20px; border-top: 1px solid var(--rule); padding-bottom: 0; }
+.lead-block__small-img { width: 100%; aspect-ratio: 3/2; margin-bottom: 12px; }
+.lead-block__small-kicker {
+  display: block;
+  font: 600 9px/1 var(--sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.lead-block__small-hed {
+  font: 700 16px/1.28 var(--serif);
+  letter-spacing: -0.01em;
+  display: block;
+  margin-bottom: 7px;
+  transition: opacity 0.1s;
+}
+.lead-block__small-hed:hover { opacity: 0.7; }
+.lead-block__small-byline { font: 400 11px/1 var(--sans); color: var(--muted); }
+.lead-block__small-byline strong { font-weight: 600; color: var(--ink); }
+
+/* Center col: main anchor story */
+.lead-block__main-img { width: 100%; aspect-ratio: 4/3; margin-bottom: 16px; }
+.lead-block__main-kicker {
+  display: block;
+  font: 600 9px/1 var(--sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 9px;
+}
+.lead-block__main-hed {
+  font: 700 clamp(20px, 2.2vw, 28px)/1.18 var(--serif);
+  letter-spacing: -0.015em;
+  display: block;
+  margin-bottom: 10px;
+  transition: opacity 0.1s;
+}
+.lead-block__main-hed:hover { opacity: 0.7; }
+.lead-block__main-dek {
+  font: 400 13px/1.65 var(--sans);
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lead-block__main-byline { font: 400 11px/1 var(--sans); color: var(--muted); }
+.lead-block__main-byline strong { font-weight: 600; color: var(--ink); }
+
+/* Right col: dense "The Latest" text list */
+.lead-block__list-label {
+  font: 600 10px/1 var(--sans);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 0;
+}
+.lead-block__list { list-style: none; }
+.lead-block__list > li { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.lead-block__list > li:last-child { border-bottom: none; }
+.lead-block__list-kicker {
+  display: block;
+  font: 600 9px/1 var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.lead-block__list-hed {
+  font: 700 14px/1.3 var(--serif);
+  display: block;
+  margin-bottom: 5px;
+  transition: opacity 0.1s;
+}
+.lead-block__list-hed:hover { opacity: 0.7; }
+.lead-block__list-byline { font: 400 11px/1 var(--sans); color: var(--muted); }
+.lead-block__list-byline strong { font-weight: 600; color: var(--ink); }
 </style>
 </head>
 <body>
@@ -1164,13 +1280,86 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════════════
+     MODULE 9 — PITCHFORK 3-COLUMN LEAD BLOCK (standalone preview)
+     ════════════════════════════════════════════════════════════ -->
+<div class="preview-block">
+  <p class="preview-label">Module 9 — Pitchfork 3-Column Lead Block · replaces single hero · 7–8 stories at once · left: 2 image stories · center: anchor · right: text-only "The Latest" list</p>
+  <div class="note note--edtl">
+    <span>📰</span>
+    <span><strong>Responsive collapse:</strong> desktop = 3 columns with vertical rules. Mobile = single column, center story first (highest weight), then left stack, then right list. Tablet: same single-column reflow. Right column intentionally text-only — suits our image-poor archive.</span>
+  </div>
+
+  <div class="lead-block">
+
+    <!-- Center column (anchor story — HTML-first for SEO) -->
+    <div class="lead-block__col lead-block__col--center">
+      <div class="lead-block__main-img img-ph" style="aspect-ratio:4/3; background:linear-gradient(150deg,#1e1a2e,#2a2440);">[Center story image — 4:3]</div>
+      <span class="lead-block__main-kicker">Live Review</span>
+      <a class="lead-block__main-hed" href="#">Sigur Rós Bring an Immersive Orchestral Experience to a Packed Vancouver Orpheum</a>
+      <p class="lead-block__main-dek">The band played without a setlist, drawing from every era of their catalogue — Icelandic songs bleeding into each other until the room felt pressurised, as if the music had weather.</p>
+      <p class="lead-block__main-byline">By <strong>Ryan Johnson</strong> · November 5, 2025</p>
+    </div>
+
+    <!-- Left column: stack of 2 smaller stories -->
+    <div class="lead-block__col lead-block__col--left">
+      <div class="lead-block__small">
+        <div class="lead-block__small-img img-ph" style="background:linear-gradient(150deg,#1e2a1a,#2a3824);">[Image]</div>
+        <span class="lead-block__small-kicker">Album Review</span>
+        <a class="lead-block__small-hed" href="#">Alvvays — <em>Blue Rev</em>: Dream-Pop at the Edge of Recall</a>
+        <p class="lead-block__small-byline">By <strong>Vancouver Weekly</strong> · Oct 2022</p>
+      </div>
+      <div class="lead-block__small">
+        <div class="lead-block__small-img img-ph" style="background:linear-gradient(150deg,#2e1a1e,#3a2428);">[Image]</div>
+        <span class="lead-block__small-kicker">Interview</span>
+        <a class="lead-block__small-hed" href="#">Sharon Van Etten on Grief, Survival, and the Album She Needed to Hear</a>
+        <p class="lead-block__small-byline">By <strong>Jennifer McInnis</strong> · Feb 2020</p>
+      </div>
+    </div>
+
+    <!-- Right column: "The Latest" text-only dense list -->
+    <div class="lead-block__col lead-block__col--right">
+      <span class="lead-block__list-label">The Latest</span>
+      <ul class="lead-block__list">
+        <li>
+          <span class="lead-block__list-kicker">Live Review</span>
+          <a class="lead-block__list-hed" href="#">Air Delivers a Dreamy Moon Safari Experience in Vancouver</a>
+          <p class="lead-block__list-byline">By <strong>Sharon Steele</strong> · Sep 2024</p>
+        </li>
+        <li>
+          <span class="lead-block__list-kicker">Album Review</span>
+          <a class="lead-block__list-hed" href="#">Death Cab for Cutie — <em>Asphalt Meadows</em></a>
+          <p class="lead-block__list-byline">By <strong>Vancouver Weekly</strong> · Sep 2022</p>
+        </li>
+        <li>
+          <span class="lead-block__list-kicker">Live Review</span>
+          <a class="lead-block__list-hed" href="#">Japandroids at the Commodore: Two Hours of Perfect Noise</a>
+          <p class="lead-block__list-byline">By <strong>Ryan Johnson</strong> · Jun 2013</p>
+        </li>
+        <li>
+          <span class="lead-block__list-kicker">Music Interview</span>
+          <a class="lead-block__list-hed" href="#">Feist on Solitude, the Body, and What Comes After</a>
+          <p class="lead-block__list-byline">By <strong>Vancouver Weekly</strong> · 2017</p>
+        </li>
+        <li>
+          <span class="lead-block__list-kicker">Album Review</span>
+          <a class="lead-block__list-hed" href="#">Phoebe Bridgers — <em>Punisher</em></a>
+          <p class="lead-block__list-byline">By <strong>Vancouver Weekly</strong> · 2020</p>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
      COMPOSED — A La Music umbrella section front
      ════════════════════════════════════════════════════════════ -->
 <div class="preview-block">
   <p class="preview-label">Composed example — A La Music umbrella section front · modules alternating top to bottom · open on phone to test</p>
   <div class="note note--edtl">
     <span>📰</span>
-    <span><strong>Structure (top → bottom):</strong> Module 8 (featured lead + list) → Module 3 (equal-card grid, Live Music Reviews subsection) → Module 5 (headline list, Album Reviews subsection) → Module 4 (carousel, More Album Reviews). An editor composes from the library; each module swaps independently. This is "Pitchfork structure, broadsheet typography."</span>
+    <span><strong>Structure (top → bottom):</strong> Module 9 (Pitchfork 3-col lead block) → Module 3 (equal-card grid, Live Music Reviews subsection) → Module 5 (headline list, Album Reviews subsection) → Module 4 (carousel, More Album Reviews). An editor composes from the library; each module swaps independently. This is "Pitchfork structure, broadsheet typography."</span>
   </div>
   <div class="note note--mob">
     <span>📱</span>
@@ -1185,42 +1374,64 @@ body {
       <a href="#" class="section-hd__aux">490 articles</a>
     </div>
 
-    <!-- Module 8 lead -->
-    <div class="feat-list__lead">
-      <span class="kicker" style="margin-bottom:12px;">Live Review</span>
-      <a class="feat-list__lead-hed" href="#">Sigur Rós Bring an Immersive Orchestral Experience to a Packed Vancouver Orpheum</a>
-      <p class="feat-list__lead-exc">The band played without a setlist, drawing from every era of their catalogue — Icelandic songs bleeding into each other until the room felt pressurised, as if the music had weather.</p>
-      <p class="feat-list__lead-byline">By <strong>Ryan Johnson</strong> · November 5, 2025</p>
+    <!-- Module 9: Pitchfork 3-col lead block -->
+    <div class="lead-block">
+
+      <div class="lead-block__col lead-block__col--center">
+        <div class="lead-block__main-img img-ph" style="aspect-ratio:4/3; background:linear-gradient(150deg,#1e1a2e,#2a2440);">[Center story image — 4:3]</div>
+        <span class="lead-block__main-kicker">Live Review</span>
+        <a class="lead-block__main-hed" href="#">Sigur Rós Bring an Immersive Orchestral Experience to a Packed Vancouver Orpheum</a>
+        <p class="lead-block__main-dek">The band played without a setlist, drawing from every era of their catalogue — Icelandic songs bleeding into each other until the room felt pressurised, as if the music had weather.</p>
+        <p class="lead-block__main-byline">By <strong>Ryan Johnson</strong> · November 5, 2025</p>
+      </div>
+
+      <div class="lead-block__col lead-block__col--left">
+        <div class="lead-block__small">
+          <div class="lead-block__small-img img-ph" style="background:linear-gradient(150deg,#1e2a1a,#2a3824);">[Image]</div>
+          <span class="lead-block__small-kicker">Album Review</span>
+          <a class="lead-block__small-hed" href="#">Alvvays — <em>Blue Rev</em>: Dream-Pop at the Edge of Recall</a>
+          <p class="lead-block__small-byline">By <strong>Vancouver Weekly</strong> · Oct 2022</p>
+        </div>
+        <div class="lead-block__small">
+          <div class="lead-block__small-img img-ph" style="background:linear-gradient(150deg,#2e1a1e,#3a2428);">[Image]</div>
+          <span class="lead-block__small-kicker">Interview</span>
+          <a class="lead-block__small-hed" href="#">Sharon Van Etten on Grief, Survival, and the Album She Needed to Hear</a>
+          <p class="lead-block__small-byline">By <strong>Jennifer McInnis</strong> · Feb 2020</p>
+        </div>
+      </div>
+
+      <div class="lead-block__col lead-block__col--right">
+        <span class="lead-block__list-label">The Latest</span>
+        <ul class="lead-block__list">
+          <li>
+            <span class="lead-block__list-kicker">Live Review</span>
+            <a class="lead-block__list-hed" href="#">Air Delivers a Dreamy Moon Safari Experience in Vancouver</a>
+            <p class="lead-block__list-byline">By <strong>Sharon Steele</strong> · Sep 2024</p>
+          </li>
+          <li>
+            <span class="lead-block__list-kicker">Album Review</span>
+            <a class="lead-block__list-hed" href="#">Death Cab for Cutie — <em>Asphalt Meadows</em></a>
+            <p class="lead-block__list-byline">By <strong>Vancouver Weekly</strong> · Sep 2022</p>
+          </li>
+          <li>
+            <span class="lead-block__list-kicker">Live Review</span>
+            <a class="lead-block__list-hed" href="#">Japandroids at the Commodore: Two Hours of Perfect Noise</a>
+            <p class="lead-block__list-byline">By <strong>Ryan Johnson</strong> · Jun 2013</p>
+          </li>
+          <li>
+            <span class="lead-block__list-kicker">Music Interview</span>
+            <a class="lead-block__list-hed" href="#">Feist on Solitude, the Body, and What Comes After</a>
+            <p class="lead-block__list-byline">By <strong>Vancouver Weekly</strong> · 2017</p>
+          </li>
+          <li>
+            <span class="lead-block__list-kicker">Album Review</span>
+            <a class="lead-block__list-hed" href="#">Phoebe Bridgers — <em>Punisher</em></a>
+            <p class="lead-block__list-byline">By <strong>Vancouver Weekly</strong> · 2020</p>
+          </li>
+        </ul>
+      </div>
+
     </div>
-    <ul class="feat-list__items" style="margin-bottom:0;">
-      <li>
-        <div class="feat-list__item">
-          <span class="feat-list__item-kicker">Live Review</span>
-          <div>
-            <a class="feat-list__item-hed" href="#">Air Delivers a Dreamy Moon Safari Experience in Vancouver</a>
-            <p class="feat-list__item-byline"><strong>Sharon Steele</strong> · September 2024</p>
-          </div>
-        </div>
-      </li>
-      <li>
-        <div class="feat-list__item">
-          <span class="feat-list__item-kicker">Interview</span>
-          <div>
-            <a class="feat-list__item-hed" href="#">Sharon Van Etten on Grief, Survival, and Making the Album She Needed to Hear</a>
-            <p class="feat-list__item-byline"><strong>Jennifer McInnis</strong> · February 2020</p>
-          </div>
-        </div>
-      </li>
-      <li>
-        <div class="feat-list__item">
-          <span class="feat-list__item-kicker">Live Review</span>
-          <div>
-            <a class="feat-list__item-hed" href="#">Japandroids at the Commodore: Two Hours of Perfect Noise</a>
-            <p class="feat-list__item-byline"><strong>Ryan Johnson</strong> · June 2013</p>
-          </div>
-        </div>
-      </li>
-    </ul>
 
     <div class="composed-gap"></div>
 
