@@ -810,7 +810,6 @@ Post deduplication across zones via `$used_ids` → `post__not_in` in each succe
 
 ### Still pending for this section
 - Eyebrow tab: solid black overlapping label on image cards (Zone D) — approved, not yet built
-- 3-col Pitchfork lead block (see below) — prototyped in mockup, not yet ported live
 - Single article template (`single.php`)
 - out-n-about, must-see-films sections need same styling pass
 
@@ -818,18 +817,110 @@ Post deduplication across zones via `$used_ids` → `post__not_in` in each succe
 
 ## Design Direction: Pitchfork 3-Column Lead Block — 2026-06-17
 
-**Status: APPROVED IN MOCKUP (`text-modules-preview.html`, Module 9). PENDING port to live `a-la-music.php`.**
+**Status: LIVE in `a-la-music.php`.**
 
-Replaces the single hero as the top zone of section fronts. Final approved structure:
+Symmetric 3-col lead block replaced the single hero as Zone A of section fronts. Structure:
 
-- **Left column**: text-only headline list, ~5 items, kicker + headline + byline, no images, thin horizontal rules between items.
-- **Center column**: single featured story with image (4:3) as the sole visual anchor — bigger headline + dek. Not a full-width dominant hero.
-- **Right column**: identical structure to left — text-only headline list, ~5 items, same treatment.
-- Thin vertical rules divide the 3 columns.
-- Symmetric layout: text list | image anchor | text list. Intentionally distinct from Pitchfork's asymmetric design.
+- **Left column**: text-only headline list, 5 items, kicker + headline + byline, no images
+- **Center column**: featured story — image (natural aspect ratio, uncropped, `width:100%; height:auto`) + headline + dek + byline + divider + second text-only story stacked below
+- **Right column**: text-only headline list, 5 items, same treatment as left
+- Thin vertical rules divide columns. 3-col at 1024px+, mobile collapses center-first.
 
-**Design rationale**: flanks never depend on images that may not exist (image-poor archive). All 10 side-column stories are fully readable as pure text. The single center image carries all visual weight — one strong anchor instead of spreading image dependency across the zone.
+Post deduplication across zones via `$used_ids` → `post__not_in` in each successive WP_Query.
 
-**Responsive collapse**: single column on mobile/tablet — center story first, then left list, then right list. 3-col at 1024px+. Grid-area CSS in mockup handles column reordering.
+---
 
-**Next step**: port to live `a-la-music.php` — replace current Zone A (single hero) with this 3-col lead block.
+## Section geometric marks — Direction A: Paired Bars — 2026-06-17
+
+**Status: LIVE in `section-landing.css`.**
+
+Replaced placeholder primitive shapes (circle/square/triangle/diamond) with Direction A: Paired Bars. Implemented via `::before`/`::after` pseudo-elements — no extra markup. Each mark uses two rectangles arranged differently per section:
+
+- **A La Music**: 2 equal horizontal bars stacked (red #C41230)
+- **Photography**: tall + short bar side by side (slate blue #2A4A6B)
+- **Food & Drink**: full-width bar + shorter bar indented right (amber #8B5E3C)
+- **Out N About**: 3 descending bars — staircase (forest green #2E6B4A); implemented via span element + 2 pseudo-elements
+
+Three design directions were prototyped in `text-modules-preview.html` (Directions A/B/C) before Direction A was chosen.
+
+---
+
+## Section-front rollout — Photography, Food & Drink, Out N About (2026-06-17)
+
+**Status: COMPLETE.** All three sections now use the same four-zone PHP template system as A La Music.
+
+| Section | File | Category IDs | Post pool |
+|---|---|---|---|
+| Photography | `section-parts/photography.php` | 6 | 143 |
+| Food & Drink | `section-parts/food-drink.php` | 13, 14 | 27 (all 22 hungry-social posts are also in food-drink — net 27 unique) |
+| Out N About | `section-parts/out-n-about.php` | 17 | 211 |
+
+Food & Drink Zone D renders empty (graceful — `if ($grid_posts)` guard) because 27 posts are exhausted by Zones A–C. All other zones fill normally.
+`out-n-about.php` supersedes the old `out-n-about.html` — `category.php` checks `.php` first.
+
+---
+
+## Section-front heading fix — 2026-06-18
+
+**Root cause:** Category `name` values stored lowercase in the database (`food drink`, `out n about`, `photography`, `must see films`) — a Wayback import artifact. The heading in `category.php` used `$cat->name` directly, so WP returned the stored lowercase string.
+
+**Fix:** Added `$section_display_names` map in `category.php` keyed by slug → proper display name. Heading now uses `$section_display_names[$slug] ?? $cat->name`. No database changes; no CSS changes (`.vw-section-header__title` had no `text-transform` applied).
+
+```
+'a-la-music'    => 'A La Music'
+'photography'   => 'Photography'
+'food-drink'    => 'Food & Drink'
+'out-n-about'   => 'Out N About'
+'must-see-films' => 'Must See Films'
+```
+
+---
+
+## Photography section-front diagnostic findings — 2026-06-18 (read-only)
+
+### 1. Photography duplicate titles — DIFFERENT post IDs (Wayback import duplicates)
+
+The repeated titles are two distinct post IDs imported from different Wayback snapshots of the same page. The template's `$used_ids` dedup prevents the same ID appearing twice per load — it cannot prevent two separate IDs with identical titles. Both IDs are now in Photography (after the P1-additive re-file), so one lands in an early zone and the other in a later zone.
+
+Confirmed duplicate pairs (title, both IDs, publish date):
+
+| Title | ID 1 (author) | ID 2 (author) | Date |
+|---|---|---|---|
+| Photos: Alan Doyle \| Queen Elizabeth Theatre | 228 (Photography) | 67485 (Tom Paillé) | 2020-03-10 |
+| Photos: Brad Paisley \| Abbotsford Centre | 231 (Photography) | 67524 (Tom Paillé) | 2020-03-09 |
+| Photos: The Strokes \| Rogers Arena | 234 (Ryan Johnson) | 67874 (Ryan Johnson) | 2020-03-06 |
+| Photos: Black Label Society \| Vogue Theatre | 237 (Ryan Johnson) | 67520 (Ryan Johnson) | 2020-03-06 |
+| Photos: Doug and The Slugs \| 41st Anniversary | 240 | 67571 | 2020-03-03 |
+| Photos: Antibalas \| The Rickshaw Theatre | 243 | 67495 | 2020-02-23 |
+| Photos: Platinum Blonde \| The Commodore Ballroom | 246 | 67788 | 2020-02-22 |
+| Photos: WWE Friday Night SmackDown \| Rogers Arena | 249 | 67914 | 2020-02-15 |
+| Photos: BATTLEWORLD '88 Wrestling \| Rickshaw Theatre | 1429 | 67508 | 2020-02-03 |
+| Photos: Sinéad O'Connor \| Vogue Theatre | 1433 | 67821 | 2020-02-02 |
+| Photos: ALEXISONFIRE with The Distillers \| Pacific Coliseum | 1438 | 67487 | 2020-01-26 |
+| Photos: King Princess \| Queen Elizabeth Theatre | 1442 | 66854 | 2020-01-19 |
+| Photos: Tebey \| Commodore Ballroom | 1447 | 67838 | 2020-01-18 |
+
+Pattern: lower IDs were likely imported directly from the 2019 SQL dump; higher IDs (`67xxx`, `66xxx`) were imported from the Wayback HTML crawl. Fix = duplicate post cleanup pass (deferred, separate from this session).
+
+### 2. "By Photography" byline — real WP user accounts, not a fallback
+
+Not a missing-author fallback. Two user accounts with `display_name = 'Photography'`:
+
+| User ID | Login | display_name | Posts |
+|---|---|---|---|
+| 171 | Photography Contributing Editor | Photography | 9 |
+| 318 | photography | Photography | 1 |
+
+**Total: 10 posts** in the Photography section show "By Photography". These are organizational accounts used during original site operation (probably a catch-all for gallery posts without a named photographer). Affects only the Photography section — no other section has a user account named after it. Fix options: (a) update both accounts' `display_name` to a real name or "VW Photography Editor", or (b) suppress byline when `display_name` matches category name. Deferred.
+
+### 3. Junk excerpts — two distinct sources
+
+Both cases: `post_excerpt` field is empty → template falls back to stripping `post_content`. The pollution is in the content, not in a template bug.
+
+**"Comment Comment Comment…" (Chantal Kraviazuk, ID 222 and similar JIG2 gallery posts):**
+`post_content` is a Justified Image Grid (JIG2) plugin layout with Facebook SDK markup embedded (`class="_53f _53fl sgs-comment"`). These `<a>` elements have visible text "Comment" — once per image in the gallery. After `strip_shortcodes` + `wp_strip_all_tags`, the Facebook SDK anchor text survives as plain text. `wp_trim_words(…, 25)` picks up 25 of these "Comment" tokens as the excerpt. Source: **Facebook SDK/JIG2 remnant text in `post_content`; `post_excerpt` is empty.** Affects the 19 `gallery-jig-error` posts identified in the Photography re-file audit.
+
+**"Photo from firecrustpizzeria.com…" (ID 1626 "Break your fast, not your wallet" and similar):**
+`post_content` begins with `<figcaption class="wp-caption-text">Photo from firecrustpizzeria.com</figcaption>` before the article body paragraphs. After `wp_strip_all_tags`, the first text extracted is the credit line. `wp_trim_words` picks this up as the excerpt start. Source: **`<figcaption>` image credit appears first in `post_content` before the article text; `post_excerpt` is empty.** Affects any post where the Wayback import preserved a leading caption before the first paragraph.
+
+**Fix path (deferred):** Set a manual `post_excerpt` on affected posts, OR strip `<figcaption>` content before excerpt extraction in `$vw_get_excerpt`. The 19 JIG2 posts are the bigger group; the figcaption issue is sporadic.
