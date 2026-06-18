@@ -924,3 +924,45 @@ Both cases: `post_excerpt` field is empty → template falls back to stripping `
 `post_content` begins with `<figcaption class="wp-caption-text">Photo from firecrustpizzeria.com</figcaption>` before the article body paragraphs. After `wp_strip_all_tags`, the first text extracted is the credit line. `wp_trim_words` picks this up as the excerpt start. Source: **`<figcaption>` image credit appears first in `post_content` before the article text; `post_excerpt` is empty.** Affects any post where the Wayback import preserved a leading caption before the first paragraph.
 
 **Fix path (deferred):** Set a manual `post_excerpt` on affected posts, OR strip `<figcaption>` content before excerpt extraction in `$vw_get_excerpt`. The 19 JIG2 posts are the bigger group; the figcaption issue is sporadic.
+
+---
+
+## Photo rights position: Facebook archive galleries — 2026-06-18
+
+This entry records the working rights position for republishing the Vancouver Weekly Facebook photo archive on the rebuilt site.
+
+### Position
+
+Photographers retain copyright in their concert and event photos. Vancouver Weekly holds a license to display them as editorial content.
+
+**Basis:**
+
+1. Show access was obtained via VW editorial requests to publishers, agents, labels, and venues, in VW's name, so photographers could shoot on VW's behalf for VW to publish.
+2. VW has email correspondence with each photographer granting access to the photos.
+
+Together these support a documented license to publish the work as VW editorial content.
+
+**Standing practice:** For any use beyond editorial display (print, or other formats), VW requests permission from the photographer on a case-by-case basis. This practice defines the license scope.
+
+### Scope
+
+| Use | Covered |
+|---|---|
+| Republishing archived galleries as editorial content, with photographer credit, on the rebuilt site (same editorial use, new software) | ✓ OK |
+| Selling or licensing the photos to third parties | ✗ Not covered without fresh permission |
+| Commercial or sponsored reuse beyond editorial display | ✗ Not covered without fresh permission |
+| Print or alternate formats | ✗ Not covered without fresh permission |
+
+### Evidence to preserve
+
+Collect the per-photographer access emails into one location (e.g. a `/rights` folder or a tracked document) so the permission record is retained and not lost in old inboxes.
+
+### Open items before public launch
+
+- Confirm the photo license transfers from Vancouver Weekly Corp. to Brand Megaphone Media Inc. as part of the asset/trademark transfer.
+
+### Notes
+
+- "Published in Canada" sets governing law (BC), not ownership. Not relied on as a rights basis here.
+- Photos remaining reachable at old URLs is a technical continuity fact, not a rights basis. Not relied on here.
+- **This is a documented working position, not legal advice. Confirm with counsel before commercial use.**
