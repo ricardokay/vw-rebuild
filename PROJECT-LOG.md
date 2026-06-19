@@ -1037,3 +1037,15 @@ UPDATE wptg_posts SET post_author = 171 WHERE ID = 60290;
 UPDATE wptg_users SET display_name = 'Ben Hartley' WHERE ID = 408;
 UPDATE wptg_users SET display_name = 'Timothy Nyguyen' WHERE ID = 372;
 ```
+
+---
+
+## 2026-06-18 — Session end / resume here
+
+Account hygiene complete. 9 DB writes applied and committed (`c7efc0e`). Two 144 MB pre-cleanup backups taken (`db-backups/` and iCloud). Reversal SQL logged in the entry above.
+
+**ATTRIBUTION RULE (do not violate next session):** the real photographer is NOT the Facebook uploader (often Ryan Johnson, who was photo editor and uploaded everyone's work) and NOT the catch-all "Photography" account. Author/credit comes from the existing WP author field where present (100% reliable where a body credit exists), and for uncredited catch-all posts, from the matched FB album description.
+
+**Next task:** rewritten single-album gallery import dry-run for the Elliott Brood album → repair JIG2 post 67693 in place (preserve its frozen URL). It must KEEP the existing post author and only assign credit where it is currently missing. Per the Elliott Brood album, the photographer IS Ryan Johnson in this specific case (FB album credited to him), so 67693's author may end up Ryan — but that is because the album credits him, NOT because he was the uploader. Do not generalize "set author to Ryan" to other albums. Read-only dry-run first, then gate the import behind a fresh DB backup.
+
+Also note: working tree has unrelated uncommitted changes (`VW-MASTER-PLAN.md`, `text-modules-preview.html` modified; logo files, regen logs, screenshots, `uncategorized-review.csv` untracked) — none related to today's work, left as-is.
