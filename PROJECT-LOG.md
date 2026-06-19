@@ -1107,3 +1107,35 @@ WP-CLI could not connect to the database: `DB_HOST=localhost` in wp-config.php f
 ```
 
 Verified with `wp option get siteurl` returning `http://vancouverweekly-local.local`, exit 0. wp-config.php is not modified. These flags are required for all Gate 2 `wp media import` and `wp post update` calls.
+
+---
+
+## 2026-06-19 — Elliott Brood post 67693 repair: COMPLETE
+
+**Status:** Published on local. All 5 gates passed with verification.
+
+- **Content:** Dead JIG2 `jigSgConnect` markup replaced with native `<!-- wp:gallery -->` block (3-col, inner `wp:image` blocks), 21 images in FB album JSON order
+- **post_author:** 172 (Ryan Johnson) — per FB album credit, not uploader identity
+- **post_excerpt:** "Photos by Ryan Johnson"
+- **Featured image:** attachment 73141 (`1322623491180260.jpg`, FB album cover photo)
+- **Categories:** Uncategorized (1) + Photography (6)
+- **post_date:** 2017-10-02 08:55:56 — preserved, unchanged through publish
+- **Slug/URL:** `photos-of-elliott-brood-at-the-commodore-ballroom-in-vancouver58522-2/` — frozen, HTTP 200 confirmed
+- **Attachment IDs:** 73122–73142 (in FB album order), logged to `db-backups/post-67693-attachment-ids.txt`
+- **Metadata per attachment:** caption "Photo by Ryan Johnson", alt_text blank, `_needs_alt_review=1`
+- **Reversal path:** documented in the dry-run entry above (2026-06-18)
+- **Pre-repair DB backup:** `db-backups/vancouverweekly_local_2026-06-18_183819_pre-67693-repair.sql` (144 MB, also in iCloud)
+
+**Lessons learned (apply to remaining ~547 album imports):**
+
+1. **WP-CLI socket flags required on every call.** `DB_HOST=localhost` forces TCP; Local only listens on a Unix socket. Use the `WP()` wrapper function with `-d mysqli.default_socket` and `-d pdo_mysql.default_socket` on every invocation.
+
+2. **Category assignment trap.** `wp post term add <id> category 6` treats a bare number as a slug, not a term_id, and silently creates a junk term named "6". Always add by slug (`wp post term add <id> category photography`) or pass `--by=term_id` explicitly. Verify terms with a direct DB query after — not just `wp post term list`, which can display term_taxonomy_id in the term_id column and mislead.
+
+3. **Gallery image src: use the real attachment GUID.** Build `src=` from the actual uploaded URL (`wp post list --fields=ID,guid`), not from a reconstructed `BASE/filename` string. WordPress may rename files on collision. It worked here because the `uploads/2017/10/` folder was clean, but at scale this is a real risk.
+
+4. **Preview URL requires a logged-in admin session.** `?p=ID&preview=true` returns 404 for anonymous requests — that is not a repair failure. Always preview as a logged-in admin in the browser.
+
+5. **Gate sequence is the right template.** Backup → extract to scratch → import+draft (Gate 2) → fields+content (Gate 3) → publish (Gate 4), with per-gate reversals, worked cleanly. Use this pattern for the remaining albums.
+
+**Next:** This repair is the proof-of-concept for single-album gallery restoration. The remaining ~547 Facebook albums can follow the same 5-gate pattern.
