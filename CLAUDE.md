@@ -17,11 +17,12 @@ This file governs all Claude Code sessions on this project. Rules here override 
 **In progress:** ~547 remaining Facebook album gallery imports
 
 **Next:**
-1. Read-only image-resolution survey across full FB export (are other albums 800px like Elliott Brood, or higher-res?)
-2. Album inventory/classification CSV: REPAIR vs ADD per album, credited vs uncredited, photo counts
-3. Batch of ~10 deliberately varied albums to prove 5-gate pattern generalizes before full run
+1. Push 13 local commits to GitHub (no secrets/SQL to remote — verify first)
+2. Run the read-only image-resolution survey across the FB export (prompt is ready)
+3. Album inventory/classification CSV (REPAIR vs ADD)
+4. Batch of ~10 varied albums to prove the 5-gate pattern
 
-**Blocked:** Nothing currently blocking.
+**Blocked:** Nothing blocking. Housekeeping done this session: permissions audited (no auto-approvals), working-tree diff explained as benign pre-existing files, loose files gitignored + committed (c82a1e9). Two pending non-urgent items: push to GitHub, remove skipDangerousModePermissionPrompt from global settings.
 
 ---
 
