@@ -1094,3 +1094,16 @@ Account hygiene complete. 9 DB writes applied and committed (`c7efc0e`). Two 144
 Status: dry-run complete. Awaiting go for actual repair.
 
 Also note: working tree has unrelated uncommitted changes (`VW-MASTER-PLAN.md`, `text-modules-preview.html` modified; logo files, regen logs, screenshots, `uncategorized-review.csv` untracked) — none related to today's work, left as-is.
+
+---
+
+## 2026-06-18 — WP-CLI DB connection fix (runtime-only, no wp-config.php change)
+
+WP-CLI could not connect to the database: `DB_HOST=localhost` in wp-config.php forces a TCP connection to 127.0.0.1:3306, but Local only listens on a Unix socket. Fix is runtime-only — add two `-d` flags to every WP-CLI invocation:
+
+```
+-d mysqli.default_socket="/Users/ricardokhayatte/Library/Application Support/Local/run/HKOO9D7DI/mysql/mysqld.sock"
+-d pdo_mysql.default_socket="/Users/ricardokhayatte/Library/Application Support/Local/run/HKOO9D7DI/mysql/mysqld.sock"
+```
+
+Verified with `wp option get siteurl` returning `http://vancouverweekly-local.local`, exit 0. wp-config.php is not modified. These flags are required for all Gate 2 `wp media import` and `wp post update` calls.
