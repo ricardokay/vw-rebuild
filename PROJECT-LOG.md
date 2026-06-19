@@ -1048,4 +1048,44 @@ Account hygiene complete. 9 DB writes applied and committed (`c7efc0e`). Two 144
 
 **Next task:** rewritten single-album gallery import dry-run for the Elliott Brood album → repair JIG2 post 67693 in place (preserve its frozen URL). It must KEEP the existing post author and only assign credit where it is currently missing. Per the Elliott Brood album, the photographer IS Ryan Johnson in this specific case (FB album credited to him), so 67693's author may end up Ryan — but that is because the album credits him, NOT because he was the uploader. Do not generalize "set author to Ryan" to other albums. Read-only dry-run first, then gate the import behind a fresh DB backup.
 
+---
+
+## 2026-06-18 — Elliott Brood post 67693 repair: dry-run plan complete
+
+**Source:** FB export zip `facebook-VancouverWeekly-2026-06-18-54FRaXvE.zip`, album path `this_profile's_activity_across_facebook/posts/media/ElliottBrood_1322622027847073/`, 21 JPEGs ~1.56 MB total. FB album description: "Photos by Ryan Johnson // Sept.28/2017".
+
+**Current state of 67693:**
+- Slug (FROZEN): `photos-of-elliott-brood-at-the-commodore-ballroom-in-vancouver58522-2`
+- post_date: 2017-10-02, post_status: publish
+- post_author: ID 1 ("Vancouver Weekly") — catch-all admin
+- Category: Uncategorized only (term_id 1); no Photography category
+- Featured image: not set (`_thumbnail_id` absent)
+- Existing attachments parented to 67693: none
+- Content: dead JIG2 `jigSgConnect` markup. The `<noscript>` fallback preserved 21 `<img>` tags with Wayback-proxied fbcdn URLs (all dead). Every image alt already reads "Photos by Ryan Johnson"; one reads "ELLIOTT BROOD @COMMODORE SEPT.28/2017 / Photo by Ryan Johnson Sept.28 / 2017". Footer has Ryan Johnson author bio and tags (ryan-johnson, rynstein, concert-photography, elliott-brood, commodore-ballroom, etc.).
+
+**What the repair changes:**
+1. `post_content` — replace entire JIG2 HTML with a native `<!-- wp:gallery -->` block, 21 images in FB album JSON order
+2. `post_author` — 1 → **172 (Ryan Johnson)**; correct because the FB album credits him, not because he uploaded it
+3. `post_excerpt` — empty → "Photos by Ryan Johnson"
+4. `_thumbnail_id` — set to attachment ID of cover photo `1322623491180260.jpg` (photo #20, designated as FB album cover)
+5. Category — add Photography (term_id 6) alongside existing Uncategorized
+
+**What is NOT changed:** slug, post_name, post_date, post_title, all existing tags, Uncategorized category.
+
+**Image handling:** Stage 21 JPEGs from zip to `/tmp/elliott-brood-import/` (scratch, never wp-content until approved). `wp media import` uploads to `uploads/YYYY/MM/`; each attachment gets `post_parent=67693`, `post_author=172`, caption and alt_text "Photo by Ryan Johnson".
+
+**Reversibility:**
+- Before any write: full DB backup (both destinations) + isolated text backup of current post_content → `db-backups/post-67693-jig2-content.txt`
+- Log all 21 attachment IDs to `db-backups/post-67693-attachment-ids.txt` immediately after import
+- Reverse without full DB restore: restore post_content from text file, reset author/excerpt, delete `_thumbnail_id` meta, remove Photography term, `wp media delete` the 21 attachment IDs from the log
+
+**5-gate sequence (for actual repair):**
+- Gate 0 — Fresh DB backup (both destinations, confirm ≥ 140 MB) + text backup of current post_content. **STOP.**
+- Gate 1 — Extract 21 JPEGs to `/tmp/elliott-brood-import/`, confirm count = 21. **STOP.**
+- Gate 2 — `wp post update 67693 --post_status=draft`; `wp media import` 21 files parented to 67693; set caption + alt on each; log attachment IDs. Confirm 21 attachment rows in DB. **STOP.**
+- Gate 3 — Set author, excerpt, featured image, Photography category, new gallery block content. Preview in browser as draft. **STOP.**
+- Gate 4 — `wp post update 67693 --post_status=publish` only after visual approval.
+
+Status: dry-run complete. Awaiting go for actual repair.
+
 Also note: working tree has unrelated uncommitted changes (`VW-MASTER-PLAN.md`, `text-modules-preview.html` modified; logo files, regen logs, screenshots, `uncategorized-review.csv` untracked) — none related to today's work, left as-is.
