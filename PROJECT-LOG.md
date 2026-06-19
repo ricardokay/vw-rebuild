@@ -1139,3 +1139,58 @@ Verified with `wp option get siteurl` returning `http://vancouverweekly-local.lo
 5. **Gate sequence is the right template.** Backup → extract to scratch → import+draft (Gate 2) → fields+content (Gate 3) → publish (Gate 4), with per-gate reversals, worked cleanly. Use this pattern for the remaining albums.
 
 **Next:** This repair is the proof-of-concept for single-album gallery restoration. The remaining ~547 Facebook albums can follow the same 5-gate pattern.
+
+---
+
+## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
+
+**These are unscheduled ideas and open questions — NOT committed work, NOT active plan items. Nothing here is prioritized or approved. Captured so they survive context loss.**
+
+---
+
+### 1. Next session (concrete, near-term)
+
+Two read-only surveys before any bulk import:
+- **Image-resolution survey** across the full FB export: learn whether other albums are all 800px (like Elliott Brood) or whether higher-res originals exist (e.g. noted 2048px shots). Determines whether it's worth waiting for high-res before importing.
+- **Album inventory/classification CSV:** REPAIR vs ADD per album, credited vs uncredited photographer, photo counts, messy-name flags. Needed before any batch run.
+
+Then a batch of ~10 **deliberately varied** albums (oldest, newest, uncredited, special-char photographer name, very large, very small, clean-add, middle repair) to prove the 5-gate pattern generalizes before committing to a full run.
+
+Decisions to lock before the batch:
+- Attribution rule for fully-uncredited albums (no FB album description credit, no WP author match)
+- Repair-vs-add code paths (same gate sequence, different post target)
+- Automation level: approve per album-checkpoint, not per command
+
+---
+
+### 2. Phased launch model
+
+- Decouple "all 548 galleries imported" from "site live." Launch on core site + a strong subset of galleries; keep importing the rest after go-live. Drafts and ongoing imports don't block launch.
+- Write a "launch-blocking vs post-launch" line early so design polish doesn't expand scope indefinitely.
+- Lock structural decisions pre-launch (URL/permalink structure, deployment plan, hosting). Defer design refinement, image quality upgrades, and remaining gallery imports to post-launch in-place iteration.
+
+---
+
+### 3. High-res image swap (later quality upgrade)
+
+If the photo editor delivers high-res originals, replace images in place via file-level swap + `wp media regenerate`. Attachment IDs stay stable, so posts, captions, attribution, and gallery layout are untouched.
+
+**Critical matching key:** ask the editor to preserve the original 16-digit Facebook filenames OR provide an old-name-to-new-file mapping. Without it, matching 547 albums' worth of images becomes much harder. Do folder-at-a-time, reversible (back up originals first).
+
+Confirm that high-res originals actually exist before planning this — coverage may be partial.
+
+---
+
+### 4. Live-site migration (own gated project)
+
+The old live site is pharma-spam compromised. Approach:
+- Take a full forensic backup (DB + files), store **cold/inert/offline**, never restore to live, never copy old-to-new. The clean rebuild is the source of truth; data flows rebuild-to-live only.
+- Map the infection's entry point before cutover so the clean site isn't re-compromised the same way.
+- Cutover is the highest-stakes, least-reversible step in the whole project: full backups of both sites, tested rollback plan, maintenance window, verification checklist before DNS flip. First step is hosting/DNS discovery.
+
+---
+
+### 5. Future features (speculative — validate against real traffic first)
+
+- **User personalization:** saved items, follow topics/photographers, dark mode, personalized feed. Adds accounts, privacy obligations, and moderation maintenance. Do not build until there is evidence of demand.
+- **AI navigation assistant:** technically feasible via Anthropic API. Build only AFTER good conventional search and IA are in place and real user behavior shows the need. **Must** be grounded strictly in published content with source citations — never free-form answers about Vancouver music/events (credibility and liability risk). Squarely a step-4 item, not launch-related.
