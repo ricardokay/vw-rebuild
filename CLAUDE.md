@@ -4,6 +4,27 @@ This file governs all Claude Code sessions on this project. Rules here override 
 
 ---
 
+## CURRENT STATE *(overwrite this section each session — do not append)*
+
+**Done:**
+- Phase 1: 2,789 posts imported (Wayback recovery)
+- Phase 2: 3,585 images imported + thumbnail regen; featured-image back-fill (Option C) applied
+- Phase 3: child theme + all 4 section fronts live (A La Music, Photography, Food & Drink, Out N About)
+- Spam cleanup: 297 posts trashed; vw-security plugin active; XML-RPC disabled
+- Photographer account cleanup: duplicate accounts consolidated, display names corrected (2026-06-18)
+- Elliott Brood gallery repair (post 67693): COMPLETE — JIG2 → native `wp:gallery`, 21 images, author/excerpt/featured image/categories all set, published, HTTP 200 confirmed (2026-06-19)
+
+**In progress:** ~547 remaining Facebook album gallery imports
+
+**Next:**
+1. Read-only image-resolution survey across full FB export (are other albums 800px like Elliott Brood, or higher-res?)
+2. Album inventory/classification CSV: REPAIR vs ADD per album, credited vs uncredited, photo counts
+3. Batch of ~10 deliberately varied albums to prove 5-gate pattern generalizes before full run
+
+**Blocked:** Nothing currently blocking.
+
+---
+
 ## HARD CONSTRAINTS: URLs (NEVER CHANGE)
 
 **Permalink structure is FROZEN at `/%postname%/`**
@@ -124,3 +145,4 @@ These contain credentials or PII (user emails, hashed passwords). The SQL dump i
 - Keep responses concise. No trailing summaries ("Here's what I did...") — the diff speaks.
 - No comments in code unless the WHY is non-obvious.
 - No placeholder/TODO code in committed files.
+- Verify completion end-to-end against rendered output or the DB before marking any task done or logging it complete. Never accept "done" on faith.
