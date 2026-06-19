@@ -90,3 +90,15 @@ npm-debug.log*
 .vscode/
 .idea/
 *.swp
+
+# ----------------------------------------------------------------
+# WORKING FILES / DESIGN ASSETS — large binaries & local artifacts
+# (never commit: design source files, logo bundle, run logs,
+#  full-page screenshots, working CSV review exports)
+# ----------------------------------------------------------------
+*.psd
+*.eps
+VancouverWeekly_Logos/
+*.log
+screencapture-*.png
+uncategorized-review.csv
