@@ -966,3 +966,74 @@ Collect the per-photographer access emails into one location (e.g. a `/rights` f
 - "Published in Canada" sets governing law (BC), not ownership. Not relied on as a rights basis here.
 - Photos remaining reachable at old URLs is a technical continuity fact, not a rights basis. Not relied on here.
 - **This is a documented working position, not legal advice. Confirm with counsel before commercial use.**
+
+---
+
+## 2026-06-18 — Photographer account cleanup: duplicate consolidation + display-name fixes
+
+### What changed
+
+Applied 9 DB writes in a single transaction after a full dry-run plan approved by Ricardo. Two categories of change: (1) stray posts moved from dormant duplicate accounts to the canonical active account for each photographer; (2) two display-name corrections.
+
+**Pre-operation backup:**
+- `db-backups/vancouverweekly_local_2026-06-18_174332_pre-account-cleanup.sql` (144 MB)
+- `~/Library/Mobile Documents/com~apple~CloudDocs/vw-rebuild-backups/local-2026-06-18_174332-pre-account-cleanup.sql` (144 MB)
+
+### Post reassignments (7 posts)
+
+| Post ID | Post title | From (dormant) | To (active) |
+|---|---|---|---|
+| 65478 | A reckless experiment in dialogue and music with an audience | ID 276 (sharon.steele) | ID 178 (Sharon Steele) |
+| 65551 | An Evening of Sweet Surprises: Ry X at the Rio Theatre | ID 288 (mariko.margetson) | ID 218 (Mariko Margetson) |
+| 65867 | Chain and the Gang, Invisible Rays, Scotty P. & the Virgins at Electric Owl Social Club | ID 317 (jon.vincent) | ID 129 (Jon Vincent) |
+| 65871 | Chantal Kraviazuk @ The Massey Theatre in New Westminster | ID 318 (photography) | ID 171 (Photography Contributing Editor) |
+| 66069 | Descendents – First of two SOLD OUT shows at The Commodore Ballroom | ID 330 (peter.ruttan) | ID 188 (Peter Ruttan) |
+| 67473 | Photo highlights of Rifflandia Music Festival 2015, part one | ID 371 (erik.lyon) | ID 128 (Erik Lyon) |
+| 60290 | Photos: A Tribe Called Red @ The Commodore Ballroom | ID 171 (Photography — catch-all) | ID 218 (Mariko Margetson) — credit restored via FB export album ID match |
+
+### Display-name corrections (2 accounts)
+
+| User ID | Login | Before | After |
+|---|---|---|---|
+| 408 | ben.hartley | Ben Hartley | Ben Hartley-Marjoram |
+| 372 | timothy.nyguyen | Timothy Nyguyen | Timothy Nguyên |
+
+Ryan Johnson (ID 172) display_name left unchanged as "Ryan Johnson" per decision.
+
+### Before / after post counts per affected account
+
+| ID | Display name | Before | After |
+|---|---|---|---|
+| 128 | Erik Lyon (active) | 4 | **5** |
+| 371 | Erik Lyon (dormant) | 1 | 0 |
+| 129 | Jon Vincent (active) | 2 | **3** |
+| 317 | Jon Vincent (dormant) | 1 | 0 |
+| 218 | Mariko Margetson (active) | 7 | **9** |
+| 288 | Mariko Margetson (dormant) | 1 | 0 |
+| 188 | Peter Ruttan (active) | 4 | **5** |
+| 330 | Peter Ruttan (dormant) | 1 | 0 |
+| 171 | Photography / active catch-all | 10 | 10 |
+| 318 | Photography (dormant) | 1 | 0 |
+| 178 | Sharon Steele (active) | 21 | **22** |
+| 276 | Sharon Steele (dormant) | 1 | 0 |
+
+Jennifer McInnis (ID 137 active / 246 dormant) and Ryan Johnson (ID 172 active / 248 dormant) had 0 stray posts — no changes.
+
+### How to reverse (complete undo)
+
+Restore from either backup above, or apply these exact reversal statements:
+
+```sql
+-- Reverse post_author reassignments
+UPDATE wptg_posts SET post_author = 276 WHERE ID = 65478;
+UPDATE wptg_posts SET post_author = 288 WHERE ID = 65551;
+UPDATE wptg_posts SET post_author = 317 WHERE ID = 65867;
+UPDATE wptg_posts SET post_author = 318 WHERE ID = 65871;
+UPDATE wptg_posts SET post_author = 330 WHERE ID = 66069;
+UPDATE wptg_posts SET post_author = 371 WHERE ID = 67473;
+UPDATE wptg_posts SET post_author = 171 WHERE ID = 60290;
+
+-- Reverse display_name corrections
+UPDATE wptg_users SET display_name = 'Ben Hartley' WHERE ID = 408;
+UPDATE wptg_users SET display_name = 'Timothy Nyguyen' WHERE ID = 372;
+```
