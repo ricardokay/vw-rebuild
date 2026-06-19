@@ -1072,7 +1072,7 @@ Account hygiene complete. 9 DB writes applied and committed (`c7efc0e`). Two 144
 
 **What is NOT changed:** slug, post_name, post_date, post_title, all existing tags, Uncategorized category.
 
-**Image handling:** Stage 21 JPEGs from zip to `/tmp/elliott-brood-import/` (scratch, never wp-content until approved). `wp media import` uploads to `uploads/YYYY/MM/`; each attachment gets `post_parent=67693`, `post_author=172`, caption and alt_text "Photo by Ryan Johnson".
+**Image handling:** Stage 21 JPEGs from zip to `/tmp/elliott-brood-import/` (scratch, never wp-content until approved). `wp media import` uploads to `uploads/YYYY/MM/`; each attachment gets `post_parent=67693`, `post_author=172`, caption "Photo by Ryan Johnson"; alt_text blank with `_needs_alt_review` meta flag set. Credit lives in the caption; images stay in the alt-review queue.
 
 **Reversibility:**
 - Before any write: full DB backup (both destinations) + isolated text backup of current post_content → `db-backups/post-67693-jig2-content.txt`
@@ -1081,10 +1081,15 @@ Account hygiene complete. 9 DB writes applied and committed (`c7efc0e`). Two 144
 
 **5-gate sequence (for actual repair):**
 - Gate 0 — Fresh DB backup (both destinations, confirm ≥ 140 MB) + text backup of current post_content. **STOP.**
+  - *Reversal:* None needed; nothing written to DB yet, backups are additive.
 - Gate 1 — Extract 21 JPEGs to `/tmp/elliott-brood-import/`, confirm count = 21. **STOP.**
-- Gate 2 — `wp post update 67693 --post_status=draft`; `wp media import` 21 files parented to 67693; set caption + alt on each; log attachment IDs. Confirm 21 attachment rows in DB. **STOP.**
+  - *Reversal:* Delete scratch dir `/tmp/elliott-brood-import/`. Nothing in wp-content or DB yet.
+- Gate 2 — `wp post update 67693 --post_status=draft`; `wp media import` 21 files parented to 67693; set caption on each; set `_needs_alt_review` flag; leave alt_text blank; log attachment IDs. Confirm 21 attachment rows in DB. **STOP.**
+  - *Reversal:* `wp media delete` the 21 IDs from `db-backups/post-67693-attachment-ids.txt`, then `wp post update 67693 --post_status=publish` to restore prior status.
 - Gate 3 — Set author, excerpt, featured image, Photography category, new gallery block content. Preview in browser as draft. **STOP.**
+  - *Reversal:* Restore `post_content` from `db-backups/post-67693-jig2-content.txt`; reset `post_author` to 1; clear `post_excerpt`; delete `_thumbnail_id` meta; remove Photography term (6) leaving Uncategorized.
 - Gate 4 — `wp post update 67693 --post_status=publish` only after visual approval.
+  - *Reversal:* `wp post update 67693 --post_status=draft`.
 
 Status: dry-run complete. Awaiting go for actual repair.
 
