@@ -1158,6 +1158,17 @@ Returned to the project after a ~2.5 week gap. Housekeeping and environment-safe
 ### Lesson learned
 **Verify the environment at the start of every session before any file or DB work.** Run `pwd` / `whoami` (and confirm the Local support paths exist) first. If `pwd` shows `/home/user` or the project/Local paths are missing, the session is a remote sandbox and cannot do this project's local file or database work — stop before attempting it.
 
+### Resolution survey (read-only) — FB album export
+
+Ran a read-only pixel-dimension survey of the Meta export (`facebook-VancouverWeekly-2026-06-18-54FRaXvE.zip`, 2.34 GB, not unpacked). Read actual JPEG SOF header dimensions by streaming files through `unzip -p` — nothing extracted or written to the archive.
+
+- **Inventory:** 557 album folders, 15,883 images (15,818 `.jpg` + 65 `.png`) — slightly above the earlier ~548/~15,500 estimate.
+- **Sample:** every ~28th album (20 albums, 60 images) for representative spread.
+- **Finding: images are NOT 800px-capped.** Long-edge range 800–2048px, most common 1200px, with a strong 2048px cluster (several whole albums at 2048: Skookum, Tech N9ne, Tift Merritt, Vancouver Folk, David Newberry). ~93% of the sample (56/60) exceeds 800px on the long edge. Resolution is consistent within each album.
+- **Elliott Brood's 800px was a low-end outlier**, not representative of the set.
+- **Caveat:** 2048px is Meta's *export* ceiling, not proof of press-original quality. True high-res originals (if any) may live in the Vancouver Weekly Gmail/Drive, not the FB export. Confirm before planning any high-res swap.
+- Findings written to `fb-resolution-survey.md`; committed and pushed (`843ed54`).
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)

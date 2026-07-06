@@ -13,16 +13,16 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - Spam cleanup: 297 posts trashed; vw-security plugin active; XML-RPC disabled
 - Photographer account cleanup: duplicate accounts consolidated, display names corrected (2026-06-18)
 - Elliott Brood gallery repair (post 67693): COMPLETE — JIG2 → native `wp:gallery`, 21 images, author/excerpt/featured image/categories all set, published, HTTP 200 confirmed (2026-06-19)
+- Session housekeeping (2026-07-06): all local commits pushed to GitHub (remote current); environment verified as real Mac filesystem (not a web sandbox); safety flag `skipDangerousModePermissionPrompt` removed from global settings; working tree clean.
+- Resolution survey COMPLETE (2026-07-06): read actual pixel dims from the FB export. Images are NOT 800px-capped — long-edge ranges 800–2048px, most common 1200px, with a strong 2048px cluster (whole albums at 2048). ~93% of the sample exceeds 800px. Elliott Brood's 800px was a low-end outlier. Findings: `fb-resolution-survey.md`.
 
-**In progress:** ~547 remaining Facebook album gallery imports
+**In progress:** ~557 remaining Facebook album galleries (557 albums / 15,883 images confirmed in the export)
 
 **Next:**
-1. Push 13 local commits to GitHub (no secrets/SQL to remote — verify first)
-2. Run the read-only image-resolution survey across the FB export (prompt is ready)
-3. Album inventory/classification CSV (REPAIR vs ADD)
-4. Batch of ~10 varied albums to prove the 5-gate pattern
+1. REPAIR-vs-ADD album inventory/classification (record each album's long-edge ceiling)
+2. Prove the 5-gate gallery pattern on a ~10-album varied batch before scaling
 
-**Blocked:** Nothing blocking. Housekeeping done this session: permissions audited (no auto-approvals), working-tree diff explained as benign pre-existing files, loose files gitignored + committed (c82a1e9). Two pending non-urgent items: push to GitHub, remove skipDangerousModePermissionPrompt from global settings.
+**Blocked:** Nothing blocking. This session's pending items are all cleared (pushed to GitHub, safety flag removed). Working tree clean, local == origin/main.
 
 ---
 
