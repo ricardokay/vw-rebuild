@@ -1142,6 +1142,24 @@ Verified with `wp option get siteurl` returning `http://vancouverweekly-local.lo
 
 ---
 
+## 2026-07-06 — Session: return after gap, GitHub push, environment verification, working-tree cleanup
+
+Returned to the project after a ~2.5 week gap. Housekeeping and environment-safety session; no DB writes.
+
+### What happened
+- **Pushed 14 stale local commits to GitHub** (`5be6fcd..a81f414`) via Mac Terminal. Local `main` was ahead of `origin/main`; remote now current through `a81f414`.
+- **Caught a remote-sandbox Claude Code session.** A Claude Code "on the web" session was running in a remote sandbox (`/home/user`, root user, a fresh git clone) — it **cannot** touch the real Mac filesystem or the Local WordPress DB. Confirmed the desktop Claude Code app runs against the real Mac filesystem (`/Users/ricardokhayatte/...`, Local's `lightning-services`/`run` present).
+- **Committed two leftover June working-tree files** in separate scoped commits:
+  - `VW-MASTER-PLAN.md` → `5fff3fa` (Phase 2 status expansion)
+  - `text-modules-preview.html` → `47b533c` (prototype markup on the design scratch file)
+  - Working tree now clean.
+- **Restored a dropped bullet.** "Mobile-first responsive design" had been dropped from the VW-MASTER-PLAN Phase 2 list during a rewrite; re-added to the Phase 2 "Remaining" list before committing.
+
+### Lesson learned
+**Verify the environment at the start of every session before any file or DB work.** Run `pwd` / `whoami` (and confirm the Local support paths exist) first. If `pwd` shows `/home/user` or the project/Local paths are missing, the session is a remote sandbox and cannot do this project's local file or database work — stop before attempting it.
+
+---
+
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
 
 **These are unscheduled ideas and open questions — NOT committed work, NOT active plan items. Nothing here is prioritized or approved. Captured so they survive context loss.**
