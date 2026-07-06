@@ -578,6 +578,246 @@ body {
 .lead-block__list-hed:hover { opacity: 0.7; }
 .lead-block__list-byline { font: 400 11px/1 var(--sans); color: var(--muted); }
 .lead-block__list-byline strong { font-weight: 600; color: var(--ink); }
+
+/* ── Geometric Mark Design Directions ───────────────────────── */
+.marks-preview {
+  padding: 48px 0;
+  border-top: 2px solid var(--ink);
+  margin-top: 80px;
+}
+
+.marks-preview__header {
+  margin-bottom: 56px;
+}
+
+.marks-preview__title {
+  font: 700 11px/1 var(--sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 10px;
+}
+
+.marks-preview__note {
+  font: 400 13px/1.6 var(--sans);
+  color: var(--muted);
+  max-width: 560px;
+}
+
+.marks-direction {
+  margin-bottom: 64px;
+  padding: 36px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+}
+
+.marks-direction__header {
+  margin-bottom: 8px;
+}
+
+.marks-direction__name {
+  font: 700 13px/1 var(--sans);
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.marks-direction__desc {
+  font: 400 12px/1.6 var(--sans);
+  color: var(--muted);
+  max-width: 560px;
+  margin-bottom: 36px;
+}
+
+.marks-set {
+  display: flex;
+  gap: 64px;
+  align-items: flex-end;
+}
+
+.marks-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.marks-item__label {
+  font: 600 9px/1 var(--sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #aaa;
+}
+
+/* ── Direction A: Paired Bars ────────────────────────────────── */
+/* All marks use the same 4px-tall rectangular bars in different arrangements */
+
+.mark-a {
+  display: flex;
+  gap: 4px;
+}
+
+/* A La Music: 2 equal horizontal bars stacked */
+.mark-a--music {
+  flex-direction: column;
+  width: 26px;
+}
+.mark-a--music .bar {
+  height: 6px;
+  width: 26px;
+  background: #C41230;
+}
+
+/* Photography: 1 tall + 1 short bar, side by side (column heights) */
+.mark-a--photo {
+  flex-direction: row;
+  align-items: flex-end;
+}
+.mark-a--photo .bar-tall {
+  width: 7px;
+  height: 22px;
+  background: #2A4A6B;
+}
+.mark-a--photo .bar-short {
+  width: 7px;
+  height: 11px;
+  background: #2A4A6B;
+}
+
+/* Food & Drink: 2 bars, top bar full, lower bar indented right */
+.mark-a--food {
+  flex-direction: column;
+  width: 26px;
+}
+.mark-a--food .bar-full {
+  height: 6px;
+  width: 26px;
+  background: #8B5E3C;
+}
+.mark-a--food .bar-indent {
+  height: 6px;
+  width: 16px;
+  background: #8B5E3C;
+  align-self: flex-end;
+}
+
+/* Out N About: 3 bars descending in width (stepped staircase) */
+.mark-a--out {
+  flex-direction: column;
+  gap: 3px;
+  width: 26px;
+}
+.mark-a--out .bar-w1 { height: 5px; width: 26px; background: #2E6B4A; }
+.mark-a--out .bar-w2 { height: 5px; width: 18px; background: #2E6B4A; }
+.mark-a--out .bar-w3 { height: 5px; width: 10px; background: #2E6B4A; }
+
+/* ── Direction B: Double Vision ──────────────────────────────── */
+/* Fill + offset outline — each section gets a different base shape */
+
+.mark-b {
+  position: relative;
+}
+
+/* A La Music: square */
+.mark-b--music {
+  width: 28px;
+  height: 28px;
+}
+.mark-b--music .b-outline {
+  position: absolute;
+  inset: 0;
+  border: 2.5px solid #C41230;
+  transform: translate(5px, 5px);
+}
+.mark-b--music .b-fill {
+  position: absolute;
+  inset: 0;
+  background: #C41230;
+}
+
+/* Photography: portrait rectangle */
+.mark-b--photo {
+  width: 20px;
+  height: 28px;
+}
+.mark-b--photo .b-outline {
+  position: absolute;
+  inset: 0;
+  border: 2.5px solid #2A4A6B;
+  transform: translate(5px, 5px);
+}
+.mark-b--photo .b-fill {
+  position: absolute;
+  inset: 0;
+  background: #2A4A6B;
+}
+
+/* Food & Drink: landscape rectangle */
+.mark-b--food {
+  width: 32px;
+  height: 20px;
+}
+.mark-b--food .b-outline {
+  position: absolute;
+  inset: 0;
+  border: 2.5px solid #8B5E3C;
+  transform: translate(5px, 5px);
+}
+.mark-b--food .b-fill {
+  position: absolute;
+  inset: 0;
+  background: #8B5E3C;
+}
+
+/* Out N About: diamond (rotated square) */
+.mark-b--out {
+  width: 22px;
+  height: 22px;
+}
+.mark-b--out .b-outline {
+  position: absolute;
+  inset: 0;
+  border: 2.5px solid #2E6B4A;
+  transform: translate(5px, 5px) rotate(45deg);
+}
+.mark-b--out .b-fill {
+  position: absolute;
+  inset: 0;
+  background: #2E6B4A;
+  transform: rotate(45deg);
+}
+
+/* Spacer inside .mark-b to push the container tall enough */
+.mark-b-spacer {
+  visibility: hidden;
+  display: block;
+}
+
+/* ── Direction C: Chamfered Shard ────────────────────────────── */
+/* Same 24×24 block, one corner cut via clip-path — cut location varies per section */
+
+.mark-c {
+  width: 24px;
+  height: 24px;
+}
+
+.mark-c--music {
+  background: #C41230;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+}
+.mark-c--photo {
+  background: #2A4A6B;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+}
+.mark-c--food {
+  background: #8B5E3C;
+  clip-path: polygon(9px 0, 100% 0, 100% 100%, 0 100%, 0 9px);
+}
+.mark-c--out {
+  background: #2E6B4A;
+  /* both top corners cut — pentagon */
+  clip-path: polygon(9px 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%, 0 9px);
+}
 </style>
 </head>
 <body>
@@ -1559,6 +1799,143 @@ body {
 
   </div><!-- .composed -->
 </div>
+
+
+<!-- ── Geometric Mark Design Directions ──────────────────────── -->
+<div class="marks-preview">
+
+  <div class="marks-preview__header">
+    <p class="marks-preview__title">Section Geometric Marks — Design Directions</p>
+    <p class="marks-preview__note">Three directions, each showing all four section marks as a coordinated family. Do not apply to live site until a direction is chosen.</p>
+  </div>
+
+  <!-- Direction A: Paired Bars -->
+  <div class="marks-direction">
+    <div class="marks-direction__header">
+      <p class="marks-direction__name">Direction A — Paired Bars</p>
+    </div>
+    <p class="marks-direction__desc">Two bold rectangles arranged differently per section. The arrangement logic echoes WEEKLY's strong horizontal letterforms — each mark feels like a graphic logotype fragment. Graphic and editorial, no curves anywhere.</p>
+
+    <div class="marks-set">
+
+      <div class="marks-item">
+        <div class="mark-a mark-a--music">
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+        <span class="marks-item__label">A La Music</span>
+      </div>
+
+      <div class="marks-item">
+        <div class="mark-a mark-a--photo">
+          <div class="bar-tall"></div>
+          <div class="bar-short"></div>
+        </div>
+        <span class="marks-item__label">Photography</span>
+      </div>
+
+      <div class="marks-item">
+        <div class="mark-a mark-a--food">
+          <div class="bar-full"></div>
+          <div class="bar-indent"></div>
+        </div>
+        <span class="marks-item__label">Food &amp; Drink</span>
+      </div>
+
+      <div class="marks-item">
+        <div class="mark-a mark-a--out">
+          <div class="bar-w1"></div>
+          <div class="bar-w2"></div>
+          <div class="bar-w3"></div>
+        </div>
+        <span class="marks-item__label">Out N About</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Direction B: Double Vision -->
+  <div class="marks-direction">
+    <div class="marks-direction__header">
+      <p class="marks-direction__name">Direction B — Double Vision</p>
+    </div>
+    <p class="marks-direction__desc">One geometric form per section — rendered twice: filled solid in front, same shape as an open outline offset 5px behind. Creates layered depth. Each section gets a distinct base form (square / portrait rect / landscape rect / diamond).</p>
+
+    <div class="marks-set">
+
+      <div class="marks-item">
+        <div class="mark-b mark-b--music" style="margin-bottom: 5px; margin-right: 5px;">
+          <div class="b-outline"></div>
+          <div class="b-fill"></div>
+          <div class="mark-b-spacer" style="width: 28px; height: 28px;"></div>
+        </div>
+        <span class="marks-item__label">A La Music</span>
+      </div>
+
+      <div class="marks-item">
+        <div class="mark-b mark-b--photo" style="margin-bottom: 5px; margin-right: 5px;">
+          <div class="b-outline"></div>
+          <div class="b-fill"></div>
+          <div class="mark-b-spacer" style="width: 20px; height: 28px;"></div>
+        </div>
+        <span class="marks-item__label">Photography</span>
+      </div>
+
+      <div class="marks-item">
+        <div class="mark-b mark-b--food" style="margin-bottom: 5px; margin-right: 5px;">
+          <div class="b-outline"></div>
+          <div class="b-fill"></div>
+          <div class="mark-b-spacer" style="width: 32px; height: 20px;"></div>
+        </div>
+        <span class="marks-item__label">Food &amp; Drink</span>
+      </div>
+
+      <div class="marks-item">
+        <div class="mark-b mark-b--out" style="margin-bottom: 5px; margin-right: 5px;">
+          <div class="b-outline"></div>
+          <div class="b-fill"></div>
+          <div class="mark-b-spacer" style="width: 22px; height: 22px;"></div>
+        </div>
+        <span class="marks-item__label">Out N About</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Direction C: Chamfered Shard -->
+  <div class="marks-direction">
+    <div class="marks-direction__header">
+      <p class="marks-direction__name">Direction C — Chamfered Shard</p>
+    </div>
+    <p class="marks-direction__desc">Same 24×24 solid rectangle for every section — but each has a different corner clipped at 45°. The clip location is the differentiator: top-right / bottom-left / top-left / both-top-corners. Badge-like and slightly raw, feels crafted not computed.</p>
+
+    <div class="marks-set">
+
+      <div class="marks-item">
+        <div class="mark-c mark-c--music"></div>
+        <span class="marks-item__label">A La Music</span>
+      </div>
+
+      <div class="marks-item">
+        <div class="mark-c mark-c--photo"></div>
+        <span class="marks-item__label">Photography</span>
+      </div>
+
+      <div class="marks-item">
+        <div class="mark-c mark-c--food"></div>
+        <span class="marks-item__label">Food &amp; Drink</span>
+      </div>
+
+      <div class="marks-item">
+        <div class="mark-c mark-c--out"></div>
+        <span class="marks-item__label">Out N About</span>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- .marks-preview -->
+
 
 </div><!-- .wrap -->
 </body>
