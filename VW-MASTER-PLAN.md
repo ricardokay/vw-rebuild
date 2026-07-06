@@ -1,5 +1,5 @@
 # Vancouver Weekly: Master Project Plan
-Last updated: June 13, 2026 (updated same day)
+Last updated: June 17, 2026
 
 ---
 
@@ -530,11 +530,28 @@ No action needed on these until the inventory is complete and the recordings are
 - 197 skipped — no recoverable article body (pages, event listings, Wayback artifacts); all intentional, no data loss
 - Import ran 10:47am–12:27pm on June 13, 2026 (~100 minutes)
 
-**Phase 2: Rebuild and design** (next)
-- Fix image path issues
-- Homepage, navigation, section fronts
-- Pitchfork-inspired child theme
+**Phase 2: Rebuild and design** (in progress)
+
+Completed:
+- Child theme `vancouver-weekly` on Newspack parent — live locally
+- Navigation (`vw-nav`) with logo + section links
+- Section landing system: `category.php` routing to `section-parts/{slug}.php`
+- A La Music section front (`a-la-music.php`) — fully styled:
+  - Zone A: symmetric 3-col lead block (text list | image anchor | text list), 5 posts per flank, 2 stories in center, post deduplication
+  - Zone B–D: Newspack Homepage Posts modules
+- Image quality tiers (`vw_image_tier()`): tier 0/1/2/3 by file size
+- Section geometric marks (Direction A: Paired Bars) — live, pure CSS pseudo-elements
+- Off-white page ground (`#F7F6F4`), design tokens as CSS variables
+- Bylines: `By <strong>Name</strong>` pattern, grouped under headline on text cards
+- Three design directions prototyped in `text-modules-preview.html` before Direction A was chosen
+
+Remaining:
+- Eyebrow tab (solid black label overlapping image cards in Zone D)
+- out-n-about, must-see-films section fronts (same pattern as a-la-music)
+- Single article template (`single.php`)
+- Homepage
 - Mobile-first responsive design
+- Facebook dead-image cleanup
 - Yoast SEO configuration
 - Structured data and sitemap
 
