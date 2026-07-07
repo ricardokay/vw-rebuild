@@ -9,20 +9,27 @@ This file governs all Claude Code sessions on this project. Rules here override 
 **Done:**
 - Phase 1: 2,789 posts imported (Wayback recovery)
 - Phase 2: 3,585 images imported + thumbnail regen; featured-image back-fill (Option C) applied
-- Phase 3: child theme + all 4 section fronts live (A La Music, Photography, Food & Drink, Out N About)
+- Phase 3: child theme + all 4 section fronts live (A La Music, Photography, Food & Drink, Out N About) — chrome (vw-nav header + Newspack) confirmed native on all templates via live HTTP check
 - Spam cleanup: 297 posts trashed; vw-security plugin active; XML-RPC disabled
 - Photographer account cleanup: duplicate accounts consolidated, display names corrected (2026-06-18)
-- Elliott Brood gallery repair (post 67693): COMPLETE — JIG2 → native `wp:gallery`, 21 images, author/excerpt/featured image/categories all set, published, HTTP 200 confirmed (2026-06-19)
-- Session housekeeping (2026-07-06): all local commits pushed to GitHub (remote current); environment verified as real Mac filesystem (not a web sandbox); safety flag `skipDangerousModePermissionPrompt` removed from global settings; working tree clean.
-- Resolution survey COMPLETE (2026-07-06): read actual pixel dims from the FB export. Images are NOT 800px-capped — long-edge ranges 800–2048px, most common 1200px, with a strong 2048px cluster (whole albums at 2048). ~93% of the sample exceeds 800px. Elliott Brood's 800px was a low-end outlier. Findings: `fb-resolution-survey.md`.
+- Elliott Brood gallery repair (post 67693): COMPLETE (2026-06-19)
+- Session 2026-07-06: pushed all commits to GitHub; env verified as real Mac; `skipDangerousModePermissionPrompt` removed from global settings; FB resolution survey (`fb-resolution-survey.md`, images NOT 800px-capped, long-edge 800–2048, common 1200)
+- Album classification COMPLETE (`fb-album-inventory.csv`, 563 albums): **REPAIR 374 / ADD 15 / NEEDS_REVIEW 174**. Token-set title match + date disambiguation; marker set expanded with `fbcdn` (3 loose markers tested + rejected); hand-review caught headliner-dilution false-buckets (7 ADD + 48 partial-match → REPAIR).
+- Broken-gallery universe: **~687 published posts carry a dead-gallery marker (19% of 3,580)**. Analysis: only **~190 are design-fixable** (171 usable featured image on disk + 19 real articles once orphaned captions are stripped); **~497 are caption-only/thin** and need the Facebook album import, NOT a display fallback. **Caption-stripping is required** in any fallback rendering (165k caption words were inflating "text-forward" counts). Fallback design preview: `fallback-preview.html`.
 
-**In progress:** ~557 remaining Facebook album galleries (557 albums / 15,883 images confirmed in the export)
+**In progress:** ~547 remaining Facebook album gallery imports/repairs (quality backlog — see inventory CSV)
 
 **Next:**
-1. REPAIR-vs-ADD album inventory/classification (record each album's long-edge ceiling)
-2. Prove the 5-gate gallery pattern on a ~10-album varied batch before scaling
+1. Rebuild homepage (page 9) Newspack-native via Claude Design → port to child theme
+2. Build local→production deploy tooling (greenfield)
 
-**Blocked:** Nothing blocking. This session's pending items are all cleared (pushed to GitHub, safety flag removed). Working tree clean, local == origin/main.
+**LAUNCH BLOCKERS (real):**
+1. **Homepage** — page 9 is still the old Elementor build (the failed agency restoration this project replaces). Rebuild Newspack-native, switch its page template off `elementor_header_footer`, handle 2 Elementor articles (65340, 65350), then deactivate Elementor Pro / ElementsKit / Essential Addons. **Extraction is homepage-only** — live-render check proved chrome is already native (vw-nav + Newspack); Elementor theme-builder header/footer + ElementsKit mega-menu are DORMANT (do not render). Launching on Elementor is rejected.
+2. **Deploy tooling** — greenfield. No CI / Dockerfile / deploy scripts / prod `wp-config` / Namecheap-DNS config in repo (only doc mentions). Full local→production go-live path unbuilt.
+
+Gallery repair/import = quality backlog, NOT a launch gate.
+
+**Blocked:** Nothing hard-blocking dev work. Local MySQL socket this session: run-ID `HKOO9D7DI` (`.../Local/run/HKOO9D7DI/mysql/mysqld.sock`) — the run-ID can change when Local restarts; re-detect the live socket each session before DB work. Working tree clean, local == origin/main.
 
 ---
 
