@@ -1191,6 +1191,16 @@ Hand-reviewed the buckets and found a recurring matcher weakness: album names ca
 - **Buckets now REPAIR 374 / ADD 15 / NEEDS_REVIEW 174.** Session bucket journey: 273/22/268 (initial) → 319/22/222 (fbcdn markers) → 326/15/222 (7 ADD false-ADDs) → 374/15/174 (48 partial-match dilution REPAIRs).
 - **Lesson for the matcher:** headliner-token weighting (match on the lead act, treat support/venue/tour tokens as secondary) would have caught all 55 up front. The remaining 174 NEEDS_REVIEW have no clean in-window broken headliner match (date-off repeats, matched-a-review, or genuinely ambiguous) and still need human eyes.
 
+### Launch-readiness audit — Elementor homepage + deploy gap
+
+Ran a read-only launch-readiness audit (DB SELECTs, theme file reads, git log, and live HTTP against the running Local site). Two real blockers identified: **(1) the homepage** and **(2) deploy tooling**. The gallery-repair backlog is a quality issue, not a launch blocker.
+
+- **HOMEPAGE — blocker.** The live front page is page 9, built in **Elementor** (author admin/ID 1, created 2024-06-10, i.e. the earlier failed agency restoration this rebuild exists to replace). It uses the `elementor_header_footer` page template and renders Elementor widget content. This contradicts the frozen architecture (no page builders; Newspack-native editorial layer). **Launching on the Elementor homepage is rejected** — it is the failed build this project replaces. Must be rebuilt Newspack-native before launch.
+- **ELEMENTOR SCOPE — smaller than the DB implied.** DB footprint *looked* site-wide: Elementor Pro theme-builder Header #11 + Footer #25, ElementsKit mega-menu, 18 `elementor_library` + 8 `elementskit_content` objects, and 2 Elementor-authored articles (65340, 65350). **But a live-render check (HTTP against the running site) proved the chrome is ALREADY NATIVE on every template** — homepage, single post, and section front all render `header class="vw-nav"` (child theme) + Newspack, with zero `elementor-location-header/footer` and zero ElementsKit markup. The Elementor theme-builder chrome and mega-menu are **dormant — they do not render** (child theme `header.php` wins). The only live Elementor is the **homepage body (page 9)** plus the 2 Elementor articles.
+- **EXTRACTION SCOPE — homepage-only.** To remove Elementor: rebuild page 9 Newspack-native, switch its page template off `elementor_header_footer`, handle the 2 Elementor posts (65340, 65350), then deactivate Elementor Pro / ElementsKit / Essential Addons. **The chrome needs no work — it is already native.** This substantially de-risks the earlier DB finding.
+- **DEPLOY — unbuilt (greenfield).** No CI, Dockerfile, deploy/rsync/ssh scripts, production `wp-config`, `.env`, or Namecheap/DNS config exist in the repo — only doc *mentions* of deploy/production in planning files. Full local→production go-live tooling is greenfield.
+- **CONTENT — visibly-broken number.** 687 of 3,580 published posts (19%) carry a dead-gallery marker = the count that would render visibly broken at launch. The other ~2,893 are clean. This is quality/backlog, not a hard launch gate.
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
