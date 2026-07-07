@@ -1205,6 +1205,16 @@ Ran a read-only launch-readiness audit (DB SELECTs, theme file reads, git log, a
 
 Session end: took a fresh verified two-location DB backup (`vancouverweekly_local_2026-07-06_pre-import-batch.sql`, ~144 MB, MD5-matched local + iCloud, ends with the `-- Dump completed` marker) as the restore point for all upcoming destructive work. Gallery-import test batch is the next action: dry-run 10 varied REPAIR albums, review, then execute one gated chunk. No imports run yet; DB unchanged this session (all DB work was read-only SELECTs).
 
+### Pre-launch cleanup task — comment spam
+
+Read-only SELECT confirmed: **5,899 total comments — 5,598 pending, 301 approved** (0 in spam/trash queues). Pending comments are visibly spam (crypto/Binance referral links, generic flattery, `shorturl.fm` links) imported alongside the Wayback-recovered posts. Pending do not display publicly, but the **301 approved need auditing** — some may be auto-approved spam that WOULD display to readers.
+
+- **Pre-launch task (gated destructive op, its own session):**
+  1. Back up, dry-run the pending-spam delete count, then purge the 5,598 pending.
+  2. Audit the 301 approved for real-vs-spam **before** deleting any.
+  3. Decide whether to disable comments on old recovered posts to stop recurrence.
+- **Cleanup track — this joins existing deferred items:** 808 Uncategorized posts (editorial review), 308 empty spam categories (bulk delete). Comment spam is now part of the same pre-launch cleanup track.
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
