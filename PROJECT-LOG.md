@@ -1229,6 +1229,13 @@ Read-only SELECT confirmed: **5,899 total comments — 5,598 pending, 301 approv
 - **Advertising/sponsorship placement is deferred as a CONFIGURABLE future feature** — added deliberately when the approach is decided, not guessed at now.
 - **Build constraint:** the article template and homepage are built single-column / content-focused **without assuming a sidebar**, but in a way that does **not preclude** adding sponsorship units or a sidebar later. Clean, flexible layout now; the ad/sponsorship layer is added as a feature when reached. **Check Newspack-native ad/sponsorship handling at that point before building custom.**
 
+### Design direction to explore — masonry / Pinterest-style collage (v2 / design phase)
+
+**Not v1.** A site-level image-presentation direction to mock up and test in the Claude Design phase: **masonry / Pinterest-style collage** — uneven-height tiles packed densely, rather than uniform feature-image rows.
+
+- **Rationale:** reads as more alive / "more vibe," especially on mobile for a younger audience scrolling a dense image wall; fits VW's photography-first positioning and large photo volume (15,000+). Suggested by Ricardo's daughter re: teen/mobile viewing habits.
+- **Scope note:** this is **site-level image presentation** (section fronts, homepage, archive browsing), **NOT the in-article gallery** (which is being finished now). Belongs in the Claude Design phase where it can be mocked up and tested on mobile before committing. Masonry done well is a real layout system (aspect-ratio handling, performance, responsive reflow), so scope it deliberately when reached. **Does not block v1.**
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
