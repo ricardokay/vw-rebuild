@@ -1219,7 +1219,7 @@ Read-only SELECT confirmed: **5,899 total comments — 5,598 pending, 301 approv
 
 **Mobile-responsive is a launch requirement across ALL templates, not a separate phase.** Every build step must be verified at mobile width (~375px) before it is considered done: homepage, article/single template, section fronts, and galleries. Checks: grid reflow, caption legibility, lightbox usability with touch/swipe/pinch, and no hover-dependent UI.
 
-- **Galleries specifically:** the gallery grid must reflow to 1–2 columns on mobile; captions must not rely on hover; the native lightbox must be touch-usable (swipe/pinch). To be verified when the caption + lightbox work is done.
+- **Galleries specifically:** the gallery grid must reflow to 1–2 columns on mobile; captions must not rely on hover; the native lightbox must be touch-usable — swipe/pinch, the close X reachable with a thumb, and tap-outside-to-close; and the bottom-center lightbox caption (from the planned credit-in-lightbox enhancement) must not crowd the native close/nav controls. To be verified when the caption + lightbox work is done.
 - This is the **"Mobile-first responsive design"** item in VW-MASTER-PLAN, now with a concrete per-template check (not a deferred phase — each template signs off at 375px).
 
 ---
