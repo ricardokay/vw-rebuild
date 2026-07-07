@@ -1222,6 +1222,13 @@ Read-only SELECT confirmed: **5,899 total comments — 5,598 pending, 301 approv
 - **Galleries specifically:** the gallery grid must reflow to 1–2 columns on mobile; captions must not rely on hover; the native lightbox must be touch-usable — swipe/pinch, the close X reachable with a thumb, and tap-outside-to-close; and the bottom-center lightbox caption (from the planned credit-in-lightbox enhancement) must not crowd the native close/nav controls. To be verified when the caption + lightbox work is done.
 - This is the **"Mobile-first responsive design"** item in VW-MASTER-PLAN, now with a concrete per-template check (not a deferred phase — each template signs off at 375px).
 
+### Decision — v1 launches AD-FREE
+
+**v1 launches ad-free. No display-ad sidebar in the first version.** Rationale: avoids a layer of layout/mobile complexity that would otherwise gate the article template and homepage; gives a cleaner reader experience for the relaunch; and matches the branded-sponsorship revenue model (sponsorships are content-woven, not sidebar display ads).
+
+- **Advertising/sponsorship placement is deferred as a CONFIGURABLE future feature** — added deliberately when the approach is decided, not guessed at now.
+- **Build constraint:** the article template and homepage are built single-column / content-focused **without assuming a sidebar**, but in a way that does **not preclude** adding sponsorship units or a sidebar later. Clean, flexible layout now; the ad/sponsorship layer is added as a feature when reached. **Check Newspack-native ad/sponsorship handling at that point before building custom.**
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
