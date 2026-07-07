@@ -1215,6 +1215,13 @@ Read-only SELECT confirmed: **5,899 total comments — 5,598 pending, 301 approv
   3. Decide whether to disable comments on old recovered posts to stop recurrence.
 - **Cleanup track — this joins existing deferred items:** 808 Uncategorized posts (editorial review), 308 empty spam categories (bulk delete). Comment spam is now part of the same pre-launch cleanup track.
 
+### Mobile-responsive — a per-template launch requirement
+
+**Mobile-responsive is a launch requirement across ALL templates, not a separate phase.** Every build step must be verified at mobile width (~375px) before it is considered done: homepage, article/single template, section fronts, and galleries. Checks: grid reflow, caption legibility, lightbox usability with touch/swipe/pinch, and no hover-dependent UI.
+
+- **Galleries specifically:** the gallery grid must reflow to 1–2 columns on mobile; captions must not rely on hover; the native lightbox must be touch-usable (swipe/pinch). To be verified when the caption + lightbox work is done.
+- This is the **"Mobile-first responsive design"** item in VW-MASTER-PLAN, now with a concrete per-template check (not a deferred phase — each template signs off at 375px).
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
