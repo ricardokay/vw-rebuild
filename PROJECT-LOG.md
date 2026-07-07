@@ -1201,6 +1201,10 @@ Ran a read-only launch-readiness audit (DB SELECTs, theme file reads, git log, a
 - **DEPLOY — unbuilt (greenfield).** No CI, Dockerfile, deploy/rsync/ssh scripts, production `wp-config`, `.env`, or Namecheap/DNS config exist in the repo — only doc *mentions* of deploy/production in planning files. Full local→production go-live tooling is greenfield.
 - **CONTENT — visibly-broken number.** 687 of 3,580 published posts (19%) carry a dead-gallery marker = the count that would render visibly broken at launch. The other ~2,893 are clean. This is quality/backlog, not a hard launch gate.
 
+### Session end — DB backup + next action
+
+Session end: took a fresh verified two-location DB backup (`vancouverweekly_local_2026-07-06_pre-import-batch.sql`, ~144 MB, MD5-matched local + iCloud, ends with the `-- Dump completed` marker) as the restore point for all upcoming destructive work. Gallery-import test batch is the next action: dry-run 10 varied REPAIR albums, review, then execute one gated chunk. No imports run yet; DB unchanged this session (all DB work was read-only SELECTs).
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
