@@ -1169,6 +1169,18 @@ Ran a read-only pixel-dimension survey of the Meta export (`facebook-VancouverWe
 - **Caveat:** 2048px is Meta's *export* ceiling, not proof of press-original quality. True high-res originals (if any) may live in the Vancouver Weekly Gmail/Drive, not the FB export. Confirm before planning any high-res swap.
 - Findings written to `fb-resolution-survey.md`; committed and pushed (`843ed54`).
 
+### Album inventory classification (REPAIR vs ADD vs NEEDS_REVIEW) — read-only
+
+Built a full classification of the 563 Facebook album JSONs in the export against the WordPress post archive, to decide per-album import strategy. Read-only throughout: SELECT-only DB access over Local's socket, album metadata parsed in-memory from the zip (no unpack), no DB writes, no post edits.
+
+- **Method:** strict token-set title matching (editorial affixes stripped — `Photos:`, `NN Photos of`, album-only `| venue | date`; empty-guard so a title is never stripped to nothing) with containment ≥0.80, plus post_date within ±7 days as a disambiguator (not a matcher). REPAIR = strong title + in-window date + a dead-gallery marker; ADD = no real title match; NEEDS_REVIEW = everything ambiguous (subtyped: date-off-repeat, partial-match, no-marker-match, no-date).
+- **Two matcher flaws caught during sample verification** (both were inflating ADD / hiding REPAIRs): the editorial-prefix `Photos:`/`NN Photos of` deflated title similarity, and short artist-name albums vs long descriptive titles scored near-zero under raw `difflib` ratio. Switching to affix-stripped token-set containment corrected the count from a provisional REPAIR 49 to 273.
+- **SCOPE FINDING — the dead-gallery marker set undercounted broken posts.** The original 5 markers (`jig2`, `[jig`, `facebook.com/vancouverweekly`, `graph.facebook`, `OAuthException`) missed a class of broken galleries that embed dead Facebook-CDN images. Verified candidate new markers on a 20-post sample: **`fbcdn` kept** (~95% genuinely-broken galleries — expired `scontent.xx.fbcdn.net` `<img>` sets, 8–25 images each); **`facebook.com/photo` (0 hits), bare `/plugins/` (matches legit `wp-content/plugins/`), and `facebook.com/plugins` (FB post embeds, not galleries) tested and excluded as imprecise.** Marked broken posts rose **583 → 687**.
+- **Final buckets: REPAIR 319 / ADD 22 / NEEDS_REVIEW 222** (563 total). The marker expansion moved **46** rows from `no-marker-match` → REPAIR (each a strong title + in-window date whose matched post carries an `fbcdn` dead gallery).
+- **The true broken-gallery universe is ~687 published posts, larger than the 583 the original markers implied.** Repair scope revised up accordingly — the remaining Facebook-gallery repair work is bigger than previously logged.
+- **Output:** `fb-album-inventory.csv` (committed `ab8a0b6`, then regenerated with expanded markers). The `marker` column records which pattern(s) fired per matched post so any REPAIR is traceable; 46 rows carry a `reclassified: fbcdn gallery` note in `reason`; 4 suspected false-ADDs (Hayley Kiyoko, Sting, Mother Mother, USS) are flagged for hand-review.
+- **Still requires human review before import:** the 22 ADD (esp. the 4 flagged) and the 222 NEEDS_REVIEW (triage by `needs_review_subtype`).
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
