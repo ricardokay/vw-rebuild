@@ -1181,6 +1181,16 @@ Built a full classification of the 563 Facebook album JSONs in the export agains
 - **Output:** `fb-album-inventory.csv` (committed `ab8a0b6`, then regenerated with expanded markers). The `marker` column records which pattern(s) fired per matched post so any REPAIR is traceable; 46 rows carry a `reclassified: fbcdn gallery` note in `reason`; 4 suspected false-ADDs (Hayley Kiyoko, Sting, Mother Mother, USS) are flagged for hand-review.
 - **Still requires human review before import:** the 22 ADD (esp. the 4 flagged) and the 222 NEEDS_REVIEW (triage by `needs_review_subtype`).
 
+### Hand-review of ADD + partial-match — headliner-dilution failure mode
+
+Hand-reviewed the buckets and found a recurring matcher weakness: album names carrying support-act / promoter / venue / tour tokens dilute token-set containment below the 0.80 REPAIR threshold, hiding a real headliner-to-broken-post match. Fixed the affected rows (read-only DB confirmation, no writes):
+
+- **22 ADD reviewed:** 7 were false-ADDs (a broken photo post existed on the headliner, same date) — reclassified ADD → REPAIR: Hayley Kiyoko→67591, Lissie→67641, Mother Mother→67722, Sting→67741, The Eagles→67853, Behemoth→67511, USS→67766. (3 beyond the 4 originally flagged.) Buckets went 319/22/222 → 326/15/222.
+- **98 partial-match re-scanned** with a headliner-only match (first act before pipe/comma/"with", minus venue/promoter/tour words) requiring date within ±7d + a broken marker. Found **48 more hidden REPAIRs**; reclassified partial-match → REPAIR.
+- **3 multi-day-festival mis-targets caught** where the coarse headliner matched the wrong day/part (distinct broken posts exist per day): **Rifflandia 2015 part 2 → 67474** (not part-one 67473), **Westward Day 3 → 68932** (not Day-2 68931, both "Busty" and "Charlotte" album folders).
+- **Buckets now REPAIR 374 / ADD 15 / NEEDS_REVIEW 174.** Session bucket journey: 273/22/268 (initial) → 319/22/222 (fbcdn markers) → 326/15/222 (7 ADD false-ADDs) → 374/15/174 (48 partial-match dilution REPAIRs).
+- **Lesson for the matcher:** headliner-token weighting (match on the lead act, treat support/venue/tour tokens as secondary) would have caught all 55 up front. The remaining 174 NEEDS_REVIEW have no clean in-window broken headliner match (date-off repeats, matched-a-review, or genuinely ambiguous) and still need human eyes.
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
