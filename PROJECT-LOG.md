@@ -1236,6 +1236,13 @@ Read-only SELECT confirmed: **5,899 total comments — 5,598 pending, 301 approv
 - **Rationale:** reads as more alive / "more vibe," especially on mobile for a younger audience scrolling a dense image wall; fits VW's photography-first positioning and large photo volume (15,000+). Suggested by Ricardo's daughter re: teen/mobile viewing habits.
 - **Scope note:** this is **site-level image presentation** (section fronts, homepage, archive browsing), **NOT the in-article gallery** (which is being finished now). Belongs in the Claude Design phase where it can be mocked up and tested on mobile before committing. Masonry done well is a real layout system (aspect-ratio handling, performance, responsive reflow), so scope it deliberately when reached. **Does not block v1.**
 
+### Article / single-post template — empty sidebar is the default, needs custom single.php
+
+**Observed:** single posts (e.g. draft 73383) render an **empty right sidebar column**. **Cause:** there is no custom `single.php` yet, so Newspack's default content+sidebar template renders and the sidebar column is empty (v1 is ad-free, no widgets). **Not a bug — it's the unstyled default.**
+
+- **Resolve in the article-template design work (Claude Design phase):** decide the article layout (full-width content vs centered with intentional margin — **not a dead sidebar column**), content measure/width, typography, and whether **galleries should break out WIDER than the text column** (magazine-style, relevant for a photography-forward publication). Aligns with the ad-free / no-assumed-sidebar decision already logged.
+- Custom `single.php` is already on the VW-MASTER-PLAN "Remaining" list; **this is the layout spec for it.**
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
