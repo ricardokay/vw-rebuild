@@ -1,0 +1,48 @@
+/* Vancouver Weekly — gallery + lightbox display
+   Change 1: hide the core white-overlay credit on GRID thumbnails.
+   The <figcaption> STAYS in the DOM (display:none, not removed) so the credit
+   is retained in markup and remains available to the lightbox caption JS. */
+.wp-block-gallery.has-nested-images figure.wp-block-image figcaption {
+	display: none;
+}
+
+/* Neutralize the WordPress-core dark gradient overlay drawn on grid figures. */
+.wp-block-gallery.has-nested-images figure.wp-block-image:has(figcaption)::before {
+	display: none;
+}
+
+/* Change 3: credit shown BOTTOM-CENTER while the native lightbox is open. It is a
+   BODY-LEVEL fixed element (NOT injected into the Preact-managed .wp-lightbox-overlay,
+   which would reconcile it away). position:fixed + a very high z-index float it over
+   the overlay; bottom-center + narrow keeps it clear of the native close X (top-right)
+   and prev/next arrows (left/right vertical-center). Shown/hidden by the JS. */
+.vw-lightbox-caption {
+	position: fixed;
+	left: 50%;
+	bottom: 24px;
+	transform: translateX(-50%);
+	max-width: 60%;
+	z-index: 2147483646; /* above the native lightbox overlay's dynamic z-index */
+	margin: 0;
+	padding: 6px 14px;
+	border-radius: 4px;
+	background: rgba(0, 0, 0, 0.55);
+	color: #fff;
+	font-family: Inter, system-ui, -apple-system, sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.4;
+	text-align: center;
+	pointer-events: none; /* taps pass through -> tap-outside-to-close still works */
+	-webkit-backdrop-filter: blur(2px);
+	backdrop-filter: blur(2px);
+}
+
+/* Mobile: sit lower and allow more width; still clear of the top-right close X. */
+@media (max-width: 480px) {
+	.vw-lightbox-caption {
+		bottom: 16px;
+		max-width: 84%;
+		font-size: 13px;
+	}
+}

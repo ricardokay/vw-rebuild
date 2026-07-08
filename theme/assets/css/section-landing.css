@@ -24,8 +24,9 @@
 }
 
 .vw-nav__inner {
-  max-width: 1100px;
-  margin: 0 auto;
+  /* No max-width — nav contents span nearly full viewport width */
+  width: 100%;
+  box-sizing: border-box;
   padding: 0 40px;
   height: 100px;
   display: flex;
@@ -78,6 +79,14 @@
 
 
 /* ── Page ground ─────────────────────────────────────────────── */
+/*
+   Override Newspack's body background (#fff) to our off-white.
+   Done via the Newspack CSS variable so all its own components
+   that reference it also update correctly.
+*/
+:root {
+  --newspack-theme-color-bg-body: #F7F6F4;
+}
 
 .vw-section-landing,
 .vw-article-page {
@@ -90,16 +99,16 @@
 /* ── Section header ──────────────────────────────────────────── */
 
 .vw-section-header {
-  padding: 60px 0 52px;
+  padding: 36px 0 28px;
 }
 
 .vw-section-header__inner {
-  max-width: 1100px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 40px;
+  text-align: center;
 }
 
-/* Red kicker — the section's only color element in the header */
 .vw-section-header__kicker {
   display: block;
   font-family: 'Inter', sans-serif;
@@ -107,32 +116,147 @@
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--vw-red);
+  color: var(--vw-kicker-ink);
   margin-bottom: 16px;
 }
 
-/* Section title — large, bold, near-black */
 .vw-section-header__title {
   font-family: 'PT Serif', Georgia, serif;
   font-weight: 700;
-  font-size: clamp(56px, 7.5vw, 100px);
-  line-height: 0.93;
-  letter-spacing: -0.02em;
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
   color: var(--vw-ink);
 }
 
 .vw-section-header__desc {
-  margin-top: 18px;
+  margin-top: 10px;
   font-family: 'Inter', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--vw-ink-muted);
+}
+
+
+/* ── Section geometric marks — Direction A: Paired Bars ──────── */
+/*
+   Two rectangles per section, arrangement varies. Pure CSS via
+   ::before / ::after — no extra markup needed.
+
+   A La Music  — 2 equal stacked bars            #C41230
+   Photography — tall + short bar, side by side   #2A4A6B
+   Food & Drink— full bar + shorter bar right     #8B5E3C
+   Out 'n About— 3 descending bars (staircase)    #2E6B4A
+*/
+
+.vw-section-mark {
+  display: block;
+  margin: 0 auto 14px;
+  position: relative;
+}
+
+/* A La Music: 2 equal horizontal bars stacked */
+.vw-section-mark--a-la-music {
+  width: 26px;
+  height: 16px;
+}
+.vw-section-mark--a-la-music::before,
+.vw-section-mark--a-la-music::after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 26px;
+  height: 6px;
+  background: #C41230;
+}
+.vw-section-mark--a-la-music::before { top: 0; }
+.vw-section-mark--a-la-music::after  { bottom: 0; }
+
+/* Photography: tall bar + short bar, side by side (like column heights) */
+.vw-section-mark--photography {
+  width: 18px;
+  height: 22px;
+}
+.vw-section-mark--photography::before {
+  content: '';
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 7px;
+  height: 22px;
+  background: #2A4A6B;
+}
+.vw-section-mark--photography::after {
+  content: '';
+  display: block;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 7px;
+  height: 11px;
+  background: #2A4A6B;
+}
+
+/* Food & Drink: full bar top, shorter bar indented to the right */
+.vw-section-mark--food-drink {
+  width: 26px;
+  height: 16px;
+}
+.vw-section-mark--food-drink::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 6px;
+  background: #8B5E3C;
+}
+.vw-section-mark--food-drink::after {
+  content: '';
+  display: block;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 6px;
+  background: #8B5E3C;
+}
+
+/* Out N About: 3 descending-width bars (staircase) via span + 2 pseudo-elements */
+.vw-section-mark--out-n-about {
+  width: 26px;
+  height: 5px;
+  background: #2E6B4A;
+  /* extra margin-bottom: 14px normal spacing + 16px for bars extending below the flow */
+  margin-bottom: 30px;
+}
+.vw-section-mark--out-n-about::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 8px;
+  left: 0;
+  width: 18px;
+  height: 5px;
+  background: #2E6B4A;
+}
+.vw-section-mark--out-n-about::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 16px;
+  left: 0;
+  width: 10px;
+  height: 5px;
+  background: #2E6B4A;
 }
 
 
 /* ── Feature story ───────────────────────────────────────────── */
 
 .vw-feature {
-  max-width: 1100px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 40px;
   display: grid;
@@ -162,7 +286,7 @@
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--vw-red);
+  color: var(--vw-kicker-ink);
   margin-bottom: 14px;
 }
 
@@ -187,14 +311,14 @@
 .vw-feature__byline {
   font-family: 'Inter', sans-serif;
   font-size: 12px;
-  color: var(--vw-ink-muted);
+  color: var(--vw-byline-ink);
 }
 
 
 /* ── Article grid ────────────────────────────────────────────── */
 
 .vw-grid-wrap {
-  max-width: 1100px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 52px 40px 100px;
 }
@@ -222,12 +346,14 @@
   display: block;
   margin-bottom: 18px;
   background: #ddd;
+  border: 1px solid var(--vw-border);
 }
 
 .vw-card__body {
   display: flex;
   flex-direction: column;
   flex: 1;
+  padding: 14px 16px 0;
 }
 
 .vw-card__cat {
@@ -237,7 +363,7 @@
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--vw-red);
+  color: var(--vw-kicker-ink);
   margin-bottom: 10px;
   text-decoration: none;
 }
@@ -260,7 +386,7 @@
 .vw-card__byline {
   font-family: 'Inter', sans-serif;
   font-size: 11px;
-  color: var(--vw-ink-muted);
+  color: var(--vw-byline-ink);
   margin-top: auto;
 }
 
@@ -269,15 +395,21 @@
 
 .vw-card--text {
   padding: 0;
+  border-left: 3px solid var(--vw-red);
 }
 
 .vw-card--text .vw-card__body {
-  padding: 24px 24px 24px 0;
+  padding: 32px 28px 32px 28px;
 }
 
 .vw-card--text .vw-card__hed {
   font-style: italic;
-  font-size: 24px;
+  font-size: 22px;
+  flex: none; /* don't stretch — keep headline grouped with byline below */
+}
+
+.vw-card--text .vw-card__byline {
+  margin-top: 8px; /* sit directly under headline, not bottom-pinned */
 }
 
 
@@ -297,7 +429,7 @@
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--vw-red);
+  color: var(--vw-kicker-ink);
   margin-bottom: 20px;
 }
 
@@ -453,6 +585,8 @@
 /* ── Responsive ──────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
+  .vw-nav__inner,
+  .vw-section-header__inner,
   .vw-feature,
   .vw-grid-wrap { padding-left: 24px; padding-right: 24px; }
   .vw-feature { grid-template-columns: 1fr; gap: 24px; }
@@ -469,4 +603,356 @@
   .vw-art-body { padding-left: 20px; padding-right: 20px; }
   .vw-grid { grid-template-columns: 1fr; }
   .vw-review-card__inner { flex-direction: column; gap: 20px; }
+}
+
+
+/* ================================================================
+   Section module system — zone wrappers, hero, feat-list, hl-list
+   Used by section-parts/*.php templates.
+   ================================================================ */
+
+
+/* ── Module wrapper ──────────────────────────────────────────── */
+
+.vw-module {
+  padding-top: 52px;
+  padding-bottom: 52px;
+}
+
+.vw-module + .vw-module {
+  border-top: 1px solid var(--vw-border);
+}
+
+.vw-module--last {
+  padding-bottom: 80px;
+}
+
+.vw-module--hero {
+  padding-bottom: 48px;
+}
+
+.vw-module__inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+
+/* ── Shared tokens ───────────────────────────────────────────── */
+
+.vw-kicker {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--vw-kicker-ink);
+  margin-bottom: 10px;
+}
+
+.vw-kicker--sm {
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+
+.vw-byline {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--vw-byline-ink);
+}
+
+.vw-byline--sm { font-size: 11px; }
+
+.vw-byline strong,
+.vw-card__byline strong { font-weight: 600; color: var(--vw-ink); }
+
+
+/* ── Zone A: Hero ────────────────────────────────────────────── */
+
+.vw-hero__img-wrap {
+  display: block;
+  margin-bottom: 22px;
+}
+
+.vw-hero__img {
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--vw-border);
+}
+
+.vw-hero__hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--vw-ink);
+  margin: 0 0 14px;
+}
+
+.vw-hero__hed a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vw-hero__hed a:hover { color: var(--vw-red); }
+
+.vw-hero__dek {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--vw-ink-muted);
+  max-width: 700px;
+  margin: 0 0 12px;
+}
+
+
+/* ── Zone A: Lead block (3-col symmetric) ───────────────────── */
+
+.vw-module--lead {
+  padding-bottom: 48px;
+}
+
+/* Mobile-first: single column, center first */
+.vw-lead-block {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.vw-lead-block__col--center { order: 1; }
+.vw-lead-block__col--left   { order: 2; }
+.vw-lead-block__col--right  { order: 3; }
+
+/* Desktop: symmetric 3-col grid with vertical rules */
+@media (min-width: 1024px) {
+  .vw-lead-block {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1fr;
+    grid-template-areas: "left center right";
+    gap: 0;
+    align-items: start;
+  }
+  .vw-lead-block__col--center {
+    order: unset;
+    grid-area: center;
+    border-left: 1px solid var(--vw-border);
+    border-right: 1px solid var(--vw-border);
+    padding: 0 28px;
+  }
+  .vw-lead-block__col--left  { order: unset; grid-area: left;  padding-right: 28px; }
+  .vw-lead-block__col--right { order: unset; grid-area: right; padding-left:  28px; }
+}
+
+/* Center col: image anchor (first story).
+   No forced aspect ratio — image displays at its natural proportions,
+   fully uncropped. Width is constrained to column width. */
+.vw-lead-block__main-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--vw-border);
+  margin-bottom: 14px;
+}
+
+.vw-lead-block__main-hed {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(18px, 1.8vw, 22px);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--vw-ink);
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.vw-lead-block__main-hed:hover { color: var(--vw-red); }
+
+.vw-lead-block__main-dek {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--vw-ink-muted);
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Center col: divider + second story */
+.vw-lead-block__divider {
+  border: none;
+  border-top: 1px solid var(--vw-border);
+  margin: 14px 0;
+}
+
+.vw-lead-block__sub-hed {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.28;
+  color: var(--vw-ink);
+  text-decoration: none;
+  margin-bottom: 6px;
+}
+
+.vw-lead-block__sub-hed:hover { color: var(--vw-red); }
+
+/* Side cols: text-only headline lists */
+.vw-lead-block__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 2px solid var(--vw-ink);
+}
+
+.vw-lead-block__list > li {
+  padding: 13px 0;
+  border-bottom: 1px solid var(--vw-border);
+}
+
+.vw-lead-block__list > li:last-child { border-bottom: none; }
+
+.vw-lead-block__list-hed {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.32;
+  color: var(--vw-ink);
+  text-decoration: none;
+  margin-bottom: 6px;
+}
+
+.vw-lead-block__list-hed:hover { color: var(--vw-red); }
+
+
+/* ── Zone B: Featured + list ─────────────────────────────────── */
+
+.vw-feat-list {
+  display: grid;
+  grid-template-columns: 58% 1fr;
+  gap: 44px;
+  align-items: start;
+}
+
+.vw-feat-list__lead-img-wrap {
+  display: block;
+  margin-bottom: 18px;
+}
+
+.vw-feat-list__lead-img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--vw-border);
+}
+
+.vw-feat-list__hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--vw-ink);
+  margin: 0 0 12px;
+}
+
+.vw-feat-list__hed a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vw-feat-list__hed a:hover { color: var(--vw-red); }
+
+.vw-feat-list__items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--vw-border);
+}
+
+.vw-feat-list__item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--vw-border);
+}
+
+.vw-feat-list__item-hed {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.28;
+  color: var(--vw-ink);
+  text-decoration: none;
+  margin-bottom: 6px;
+}
+
+.vw-feat-list__item-hed:hover { color: var(--vw-red); }
+
+
+/* ── Zone C: Headline list ───────────────────────────────────── */
+
+.vw-hl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 2px solid var(--vw-ink);
+}
+
+.vw-hl-item {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--vw-border);
+}
+
+.vw-hl-item__hed {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.22;
+  color: var(--vw-ink);
+  text-decoration: none;
+  margin-bottom: 6px;
+}
+
+.vw-hl-item__hed:hover { color: var(--vw-red); }
+
+@media (min-width: 1024px) {
+  .vw-hl-list--2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .vw-hl-list--2col > li:nth-child(odd) {
+    border-right: 1px solid var(--vw-border);
+  }
+  .vw-hl-list--2col > li:nth-child(odd)  .vw-hl-item { padding-right: 32px; }
+  .vw-hl-list--2col > li:nth-child(even) .vw-hl-item { padding-left:  32px; }
+  .vw-hl-list--2col > li:last-child .vw-hl-item,
+  .vw-hl-list--2col > li:nth-last-child(2):nth-child(odd) .vw-hl-item {
+    border-bottom: none;
+  }
+}
+
+
+/* ── Module responsive ───────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .vw-module__inner { padding-left: 24px; padding-right: 24px; }
+  .vw-feat-list { grid-template-columns: 1fr; gap: 0; }
+  .vw-feat-list__items { margin-top: 28px; }
+}
+
+@media (max-width: 600px) {
+  .vw-module { padding-top: 36px; padding-bottom: 36px; }
+  .vw-module__inner { padding-left: 20px; padding-right: 20px; }
+  .vw-hero__img { aspect-ratio: 16 / 9; }
 }

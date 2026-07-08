@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VW — Featured Image Fallback Options</title>
+<style>
+/* Self-hosted fonts — same files used by the live theme */
+@font-face {
+  font-family: 'PT Serif';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/pt-serif-bold-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'PT Serif';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/pt-serif-bold-italic-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin.woff2') format('woff2');
+}
+
+/* ── Design tokens — exact values from palette.css ───────────── */
+:root {
+  --vw-bg:         #FFFFFF;
+  --vw-bg-subtle:  #F7F6F4;
+  --vw-ink:        #1A161E;
+  --vw-ink-muted:  #767676;
+  --vw-border:     #E8E8E8;
+  --vw-kicker-ink: #1A1A1A;
+  --vw-byline-ink: #555555;
+  --vw-red:        #C41230;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+a { color: inherit; text-decoration: none; }
+
+body {
+  background: var(--vw-bg-subtle);
+  color: var(--vw-ink);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 40px 0 100px;
+}
+
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 40px; }
+
+/* ── Preview chrome ──────────────────────────────────────────── */
+.pg-header { margin-bottom: 40px; border-bottom: 2px solid var(--vw-ink); padding-bottom: 20px; }
+.pg-header h1 {
+  font: 700 26px/1.15 'PT Serif', Georgia, serif;
+  margin-bottom: 8px;
+}
+.pg-header p { font-size: 13px; line-height: 1.6; color: var(--vw-ink-muted); max-width: 700px; }
+.pg-header p + p { margin-top: 4px; }
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid var(--vw-border);
+  background: var(--vw-bg);
+  margin-bottom: 48px;
+}
+.legend__col {
+  padding: 20px 24px;
+  border-right: 1px solid var(--vw-border);
+}
+.legend__col:last-child { border-right: none; }
+.legend__letter {
+  display: inline-block;
+  width: 22px; height: 22px;
+  background: var(--vw-ink);
+  color: #fff;
+  font: 700 11px/22px 'Inter', sans-serif;
+  text-align: center;
+  margin-right: 8px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+.legend__title {
+  font: 600 13px/1 'Inter', sans-serif;
+  vertical-align: middle;
+  margin-bottom: 8px;
+  display: inline;
+}
+.legend__desc {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--vw-ink-muted);
+  margin-top: 10px;
+}
+.legend__warn {
+  display: block;
+  font-size: 11px;
+  color: #a05000;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.section-head {
+  font: 600 10px/1 'Inter', sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #aaa;
+  border-bottom: 1px solid var(--vw-border);
+  padding-bottom: 10px;
+  margin-bottom: 28px;
+  margin-top: 56px;
+}
+
+/* ── Reference grid (real images) ───────────────────────────── */
+.ref-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 300px);
+  gap: 24px;
+  margin-bottom: 8px;
+}
+.ref-note {
+  font-size: 11px;
+  color: var(--vw-ink-muted);
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* ── Comparison rows ─────────────────────────────────────────── */
+.cmp-row { margin-bottom: 48px; }
+
+.cmp-row__header {
+  background: var(--vw-bg);
+  border: 1px solid var(--vw-border);
+  border-bottom: 2px solid var(--vw-ink);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cmp-row__section {
+  font: 600 9px/1 'Inter', sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  flex-shrink: 0;
+}
+.cmp-row__id {
+  font: 400 10px/1 'Inter', sans-serif;
+  color: #ccc;
+  flex-shrink: 0;
+}
+.cmp-row__title {
+  font: 700 14px/1.3 'PT Serif', Georgia, serif;
+  flex: 1;
+}
+
+.cmp-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.cmp-col__label {
+  font: 600 9px/1 'Inter', sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #bbb;
+  margin-bottom: 10px;
+}
+
+/* ── LIVE CARD STYLES — exact copy from section-landing.css ───── */
+
+.vw-card {
+  background: var(--vw-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Real image (used for reference posts) */
+.vw-card__img {
+  width: 100%;
+  aspect-ratio: 3/2;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 18px;
+  border: 1px solid var(--vw-border);
+}
+
+/* Image-slot div (same geometry as img, for placeholder art) */
+.vw-card__img-slot {
+  width: 100%;
+  aspect-ratio: 3/2;
+  display: block;
+  margin-bottom: 18px;
+  border: 1px solid var(--vw-border);
+  overflow: hidden;
+  position: relative;
+}
+
+.vw-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 14px 16px 18px;
+}
+
+.vw-card__cat {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vw-kicker-ink);
+  margin-bottom: 10px;
+}
+
+.vw-card__hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  color: var(--vw-ink);
+  margin-bottom: 10px;
+  display: block;
+}
+
+.vw-card__excerpt {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--vw-ink-muted);
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.vw-card__byline {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: var(--vw-byline-ink);
+  margin-top: auto;
+  padding-top: 6px;
+}
+.vw-card__byline strong { font-weight: 600; color: var(--vw-ink); }
+
+
+/* ── Option A: Text-forward card (exact from section-landing.css) */
+.vw-card--text {
+  border-left: 3px solid var(--vw-red);
+}
+.vw-card--text .vw-card__body {
+  padding: 28px 24px 28px 24px;
+}
+.vw-card--text .vw-card__hed {
+  font-style: italic;
+  font-size: 20px;
+}
+.vw-card--text .vw-card__byline {
+  margin-top: 8px;
+  padding-top: 0;
+}
+
+
+/* ── Option B: Per-section art placeholder ───────────────────── */
+.vw-fb-art {
+  background: #ECEAE4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+}
+
+.vw-fb-art__mark { display: block; position: relative; }
+
+.vw-fb-art__name {
+  font: 600 8px/1 'Inter', sans-serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #bbb;
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+/* Music: 2 equal stacked bars */
+.vw-fb-art--music .vw-fb-art__mark {
+  width: 56px;
+  height: 30px;
+}
+.vw-fb-art--music .vw-fb-art__mark::before,
+.vw-fb-art--music .vw-fb-art__mark::after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 56px;
+  height: 11px;
+  background: var(--vw-red);
+  opacity: 0.5;
+}
+.vw-fb-art--music .vw-fb-art__mark::before { top: 0; }
+.vw-fb-art--music .vw-fb-art__mark::after  { bottom: 0; }
+
+/* Food & Drink: full bar + indented right bar */
+.vw-fb-art--food .vw-fb-art__mark {
+  width: 56px;
+  height: 30px;
+}
+.vw-fb-art--food .vw-fb-art__mark::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 56px; height: 11px;
+  background: #8B5E3C;
+  opacity: 0.55;
+}
+.vw-fb-art--food .vw-fb-art__mark::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 34px; height: 11px;
+  background: #8B5E3C;
+  opacity: 0.55;
+}
+
+/* Out N About: 3 descending bars (span = bar1, pseudo = bars 2+3) */
+.vw-fb-art--out .vw-fb-art__mark {
+  display: block;
+  width: 56px;
+  height: 10px;
+  background: #2E6B4A;
+  opacity: 0.55;
+  position: relative;
+  margin-top: 8px;
+}
+.vw-fb-art--out .vw-fb-art__mark::before {
+  content: '';
+  position: absolute;
+  top: 16px; left: 0;
+  width: 38px; height: 10px;
+  background: #2E6B4A;
+}
+.vw-fb-art--out .vw-fb-art__mark::after {
+  content: '';
+  position: absolute;
+  top: 32px; left: 0;
+  width: 20px; height: 10px;
+  background: #2E6B4A;
+}
+
+
+/* ── Option C: Duotone / tonal block ─────────────────────────── */
+.vw-card__dt-block {
+  aspect-ratio: 3/2;
+  background: var(--vw-red);
+  display: flex;
+  align-items: flex-end;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  position: relative;
+}
+/* Subtle gradient so headline is always readable */
+.vw-card__dt-block::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 60%);
+}
+.vw-card__dt-hed {
+  font: 700 19px/1.22 'PT Serif', Georgia, serif;
+  color: #fff;
+  display: block;
+  position: relative;
+  letter-spacing: -0.01em;
+}
+.vw-card--dt .vw-card__body {
+  padding: 12px 16px 18px;
+}
+
+
+/* ── Divider between sections ────────────────────────────────── */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--vw-border);
+  margin: 56px 0;
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Page header -->
+  <div class="pg-header">
+    <h1>Featured Image Fallback — Three Options</h1>
+    <p>7 real imageless posts pulled read-only from the local DB. 2 real-image posts shown as reference. Compare each treatment on the same actual content before choosing.</p>
+    <p>DB is unchanged. Do not implement until a direction is chosen.</p>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend__col">
+      <span class="legend__letter">A</span>
+      <span class="legend__title">Text-forward</span>
+      <span class="legend__desc">No image area at all. 3px red left border. Italic PT Serif headline. Headline and byline carry the full weight. Same card class (<code>.vw-card--text</code>) already live in Zone D.</span>
+    </div>
+    <div class="legend__col">
+      <span class="legend__letter">B</span>
+      <span class="legend__title">Per-section art</span>
+      <span class="legend__desc">Image slot filled with CSS-generated art keyed to section. Echoes the geometric mark system (Direction A — Paired Bars). No stock photo, no lorem image. Signals section identity without a real photograph.</span>
+    </div>
+    <div class="legend__col">
+      <span class="legend__letter">C</span>
+      <span class="legend__title">Duotone block</span>
+      <span class="legend__desc">Image slot = solid #C41230 block with the headline overlaid in white. Bold editorial. Below the block: category + byline only.</span>
+      <span class="legend__warn">⚠ Design brief constraint: "Never use [red] as a large background — accent only, not a ground." This direction requires an explicit decision to override that rule.</span>
+    </div>
+  </div>
+
+
+  <!-- REFERENCE: Posts with real images -->
+  <p class="section-head">Reference — two posts with real featured images (IDs 68672, 65849)</p>
+
+  <div class="ref-grid">
+
+    <!-- Real post 1: Tom Morello -->
+    <article class="vw-card">
+      <img
+        src="http://vancouverweekly-local.local/wp-content/uploads/2019/12/RLJ_7971-1024x684.jpg"
+        alt="Tom Morello at the Commodore"
+        class="vw-card__img"
+        loading="lazy"
+      >
+      <div class="vw-card__body">
+        <span class="vw-card__cat">Live Music Reviews</span>
+        <a class="vw-card__hed" href="#">Tom Morello | THE ATLAS UNDERGROUND LIVE | Commodore</a>
+        <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+      </div>
+    </article>
+
+    <!-- Real post 2: Caribou -->
+    <article class="vw-card">
+      <img
+        src="http://vancouverweekly-local.local/wp-content/uploads/2015/02/caribou02_thomas_neukum-1024x682.jpg"
+        alt="Caribou"
+        class="vw-card__img"
+        loading="lazy"
+      >
+      <div class="vw-card__body">
+        <span class="vw-card__cat">A La Music</span>
+        <a class="vw-card__hed" href="#">Caribou: an electronic dedication to love</a>
+        <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+      </div>
+    </article>
+
+  </div>
+  <p class="ref-note">These two cards show how a real-image post renders. Use them as the baseline when evaluating how each fallback sits beside a real photo in a mixed grid.</p>
+
+
+  <hr class="section-divider">
+
+
+  <!-- COMPARISON ROWS -->
+  <p class="section-head">Fallback comparison — 7 imageless posts from the local database</p>
+
+
+  <!-- ── Post 1: Dear Father premiere (ID 941) ── -->
+  <div class="cmp-row">
+    <div class="cmp-row__header">
+      <span class="cmp-row__section">A La Music</span>
+      <span class="cmp-row__id">ID 941</span>
+      <span class="cmp-row__title">Premiere – Dear Father shares new song "Haunt Me"</span>
+    </div>
+    <div class="cmp-cols">
+
+      <!-- A: Text-forward -->
+      <div>
+        <p class="cmp-col__label">A — Text-forward</p>
+        <article class="vw-card vw-card--text">
+          <div class="vw-card__body">
+            <span class="vw-card__cat">A La Music</span>
+            <a class="vw-card__hed" href="#">Premiere – Dear Father shares new song "Haunt Me"</a>
+            <span class="vw-card__byline">By <strong>William Cook</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <!-- B: Per-section art -->
+      <div>
+        <p class="cmp-col__label">B — Per-section art</p>
+        <article class="vw-card">
+          <div class="vw-card__img-slot vw-fb-art vw-fb-art--music">
+            <span class="vw-fb-art__mark"></span>
+            <span class="vw-fb-art__name">A La Music</span>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">A La Music</span>
+            <a class="vw-card__hed" href="#">Premiere – Dear Father shares new song "Haunt Me"</a>
+            <span class="vw-card__byline">By <strong>William Cook</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <!-- C: Duotone -->
+      <div>
+        <p class="cmp-col__label">C — Duotone block</p>
+        <article class="vw-card vw-card--dt">
+          <div class="vw-card__dt-block">
+            <a class="vw-card__dt-hed" href="#">Premiere – Dear Father shares new song "Haunt Me"</a>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">A La Music</span>
+            <span class="vw-card__byline">By <strong>William Cook</strong></span>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── Post 2: Trail of Dead livestream (ID 966) — LONG TITLE, NO EXCERPT ── -->
+  <div class="cmp-row">
+    <div class="cmp-row__header">
+      <span class="cmp-row__section">Music Editorials</span>
+      <span class="cmp-row__id">ID 966</span>
+      <span class="cmp-row__title">Trail of Dead announce upcoming livestream benefiting independent venues and record stores</span>
+    </div>
+    <div class="cmp-cols">
+
+      <div>
+        <p class="cmp-col__label">A — Text-forward</p>
+        <article class="vw-card vw-card--text">
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Music Editorials</span>
+            <a class="vw-card__hed" href="#">Trail of Dead announce upcoming livestream benefiting independent venues and record stores</a>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">B — Per-section art</p>
+        <article class="vw-card">
+          <div class="vw-card__img-slot vw-fb-art vw-fb-art--music">
+            <span class="vw-fb-art__mark"></span>
+            <span class="vw-fb-art__name">Music Editorials</span>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Music Editorials</span>
+            <a class="vw-card__hed" href="#">Trail of Dead announce upcoming livestream benefiting independent venues and record stores</a>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">C — Duotone block</p>
+        <article class="vw-card vw-card--dt">
+          <div class="vw-card__dt-block">
+            <a class="vw-card__dt-hed" href="#">Trail of Dead announce upcoming livestream benefiting independent venues and record stores</a>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Music Editorials</span>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── Post 3: Against Me interview (ID 67936) ── -->
+  <div class="cmp-row">
+    <div class="cmp-row__header">
+      <span class="cmp-row__section">Music Interviews</span>
+      <span class="cmp-row__id">ID 67936</span>
+      <span class="cmp-row__title">Play it like it's your last show – Andrew Seward of Against Me!</span>
+    </div>
+    <div class="cmp-cols">
+
+      <div>
+        <p class="cmp-col__label">A — Text-forward</p>
+        <article class="vw-card vw-card--text">
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Music Interviews</span>
+            <a class="vw-card__hed" href="#">Play it like it's your last show – Andrew Seward of Against Me!</a>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">B — Per-section art</p>
+        <article class="vw-card">
+          <div class="vw-card__img-slot vw-fb-art vw-fb-art--music">
+            <span class="vw-fb-art__mark"></span>
+            <span class="vw-fb-art__name">Music Interviews</span>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Music Interviews</span>
+            <a class="vw-card__hed" href="#">Play it like it's your last show – Andrew Seward of Against Me!</a>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">C — Duotone block</p>
+        <article class="vw-card vw-card--dt">
+          <div class="vw-card__dt-block">
+            <a class="vw-card__dt-hed" href="#">Play it like it's your last show – Andrew Seward of Against Me!</a>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Music Interviews</span>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── Post 4: Album review (ID 66057) ── -->
+  <div class="cmp-row">
+    <div class="cmp-row__header">
+      <span class="cmp-row__section">Album Reviews</span>
+      <span class="cmp-row__id">ID 66057</span>
+      <span class="cmp-row__title">Dear Father's new EP is sad, and for a good cause</span>
+    </div>
+    <div class="cmp-cols">
+
+      <div>
+        <p class="cmp-col__label">A — Text-forward</p>
+        <article class="vw-card vw-card--text">
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Album Reviews</span>
+            <a class="vw-card__hed" href="#">Dear Father's new EP is sad, and for a good cause</a>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">B — Per-section art</p>
+        <article class="vw-card">
+          <div class="vw-card__img-slot vw-fb-art vw-fb-art--music">
+            <span class="vw-fb-art__mark"></span>
+            <span class="vw-fb-art__name">Album Reviews</span>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Album Reviews</span>
+            <a class="vw-card__hed" href="#">Dear Father's new EP is sad, and for a good cause</a>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">C — Duotone block</p>
+        <article class="vw-card vw-card--dt">
+          <div class="vw-card__dt-block">
+            <a class="vw-card__dt-hed" href="#">Dear Father's new EP is sad, and for a good cause</a>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Album Reviews</span>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── Post 5: Food & Drink — VERY LONG TITLE (ID 1461) ── -->
+  <div class="cmp-row">
+    <div class="cmp-row__header">
+      <span class="cmp-row__section">Food &amp; Drink</span>
+      <span class="cmp-row__id">ID 1461</span>
+      <span class="cmp-row__title">New Vancouver startup brings together flowers, people, and the best plant-based pastries at Olive + Ruby this Valentine's Day</span>
+    </div>
+    <div class="cmp-cols">
+
+      <div>
+        <p class="cmp-col__label">A — Text-forward</p>
+        <article class="vw-card vw-card--text">
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Food &amp; Drink</span>
+            <a class="vw-card__hed" href="#">New Vancouver startup brings together flowers, people, and the best plant-based pastries at Olive + Ruby this Valentine's Day</a>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">B — Per-section art</p>
+        <article class="vw-card">
+          <div class="vw-card__img-slot vw-fb-art vw-fb-art--food">
+            <span class="vw-fb-art__mark"></span>
+            <span class="vw-fb-art__name">Food &amp; Drink</span>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Food &amp; Drink</span>
+            <a class="vw-card__hed" href="#">New Vancouver startup brings together flowers, people, and the best plant-based pastries at Olive + Ruby this Valentine's Day</a>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">C — Duotone block</p>
+        <article class="vw-card vw-card--dt">
+          <div class="vw-card__dt-block">
+            <a class="vw-card__dt-hed" href="#">New Vancouver startup brings together flowers, people, and the best plant-based pastries at Olive + Ruby this Valentine's Day</a>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Food &amp; Drink</span>
+            <span class="vw-card__byline">By <strong>Vancouver Weekly</strong></span>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── Post 6: Storm Crow bar (ID 12303) ── -->
+  <div class="cmp-row">
+    <div class="cmp-row__header">
+      <span class="cmp-row__section">Out N About</span>
+      <span class="cmp-row__id">ID 12303</span>
+      <span class="cmp-row__title">A Bar, a Beer, and a Barbarian – A Year of The Storm Crow</span>
+    </div>
+    <div class="cmp-cols">
+
+      <div>
+        <p class="cmp-col__label">A — Text-forward</p>
+        <article class="vw-card vw-card--text">
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Out N About</span>
+            <a class="vw-card__hed" href="#">A Bar, a Beer, and a Barbarian – A Year of The Storm Crow</a>
+            <span class="vw-card__byline">By <strong>Garin Fahlman</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">B — Per-section art</p>
+        <article class="vw-card">
+          <div class="vw-card__img-slot vw-fb-art vw-fb-art--out">
+            <span class="vw-fb-art__mark"></span>
+            <span class="vw-fb-art__name">Out N About</span>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Out N About</span>
+            <a class="vw-card__hed" href="#">A Bar, a Beer, and a Barbarian – A Year of The Storm Crow</a>
+            <span class="vw-card__byline">By <strong>Garin Fahlman</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">C — Duotone block</p>
+        <article class="vw-card vw-card--dt">
+          <div class="vw-card__dt-block">
+            <a class="vw-card__dt-hed" href="#">A Bar, a Beer, and a Barbarian – A Year of The Storm Crow</a>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Out N About</span>
+            <span class="vw-card__byline">By <strong>Garin Fahlman</strong></span>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── Post 7: Puccini / Out N About (ID 13254) ── -->
+  <div class="cmp-row">
+    <div class="cmp-row__header">
+      <span class="cmp-row__section">Out N About</span>
+      <span class="cmp-row__id">ID 13254</span>
+      <span class="cmp-row__title">Puccini's Classic Heroine has Arrived in Vancouver</span>
+    </div>
+    <div class="cmp-cols">
+
+      <div>
+        <p class="cmp-col__label">A — Text-forward</p>
+        <article class="vw-card vw-card--text">
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Out N About</span>
+            <a class="vw-card__hed" href="#">Puccini's Classic Heroine has Arrived in Vancouver</a>
+            <span class="vw-card__byline">By <strong>Anja Savcic</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">B — Per-section art</p>
+        <article class="vw-card">
+          <div class="vw-card__img-slot vw-fb-art vw-fb-art--out">
+            <span class="vw-fb-art__mark"></span>
+            <span class="vw-fb-art__name">Out N About</span>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Out N About</span>
+            <a class="vw-card__hed" href="#">Puccini's Classic Heroine has Arrived in Vancouver</a>
+            <span class="vw-card__byline">By <strong>Anja Savcic</strong></span>
+          </div>
+        </article>
+      </div>
+
+      <div>
+        <p class="cmp-col__label">C — Duotone block</p>
+        <article class="vw-card vw-card--dt">
+          <div class="vw-card__dt-block">
+            <a class="vw-card__dt-hed" href="#">Puccini's Classic Heroine has Arrived in Vancouver</a>
+          </div>
+          <div class="vw-card__body">
+            <span class="vw-card__cat">Out N About</span>
+            <span class="vw-card__byline">By <strong>Anja Savcic</strong></span>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- .wrap -->
+</body>
+</html>

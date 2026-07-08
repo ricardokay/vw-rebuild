@@ -31,6 +31,12 @@
   --vw-border:     #E8E8E8;   /* nav underline and any rare hairline needed */
 
 
+  /* ── Typography role colors ─────────────────────────────── */
+
+  --vw-kicker-ink: #1A1A1A;   /* category kickers — near-black uppercase */
+  --vw-byline-ink: #555555;   /* bylines/credits — secondary, quiet */
+
+
   /* ── Red accent ──────────────────────────────────────────── */
 
   --vw-red:        #C41230;
