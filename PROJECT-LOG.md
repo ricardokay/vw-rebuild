@@ -1284,6 +1284,13 @@ Bulk import of all clean REPAIR albums, done as **reversible DRAFTS** via the v3
 
 **NEXT MILESTONE (not started) — the PUBLISH/REPLACE step:** applying approved drafts onto the live published posts, preserving the frozen slug + date. **This is the first operation that modifies live content** — needs its own session, its own backup, a single-post test first, then halt-safe batching.
 
+### Backup to-do — off-machine image archive
+
+`wp-content/uploads/` is **17 GB** (11 GB re-derivable from the FB export zip via the import tool + `wp media regenerate`; ~6 GB original Wayback-recovered images). iCloud (`vw-rebuild-backups/`) now holds the **DB backups + reversal manifests + the FB export zip** (`source-exports/…54FRaXvE.zip`, MD5 `1de098699c67b533f198ec8c06d1457f`) — but **NOT** the full 17 GB uploads.
+
+- **To-do:** stand up a proper **off-machine uploads archive** on cheap bulk object storage — **Backblaze B2 or Wasabi** (a few dollars/month for ~17 GB). An external drive is a stopgap; B2/Wasabi is the durable answer and ties into the eventual production media strategy.
+- **Not blocking the publish step:** publish/replace modifies the DB (post_content), not the image files, and the DB is fully backed up (pre- and post-bulk `.sql`, two locations, MD5-verified). The imported images are also re-derivable from the FB zip (now off-machine on iCloud). The 17 GB archive is a durability upgrade, not a launch gate.
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
