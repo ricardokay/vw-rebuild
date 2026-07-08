@@ -1267,6 +1267,23 @@ Refines the earlier "Pagination / infinite-scroll plan" (2026-06-17). Infinite s
 - **"Done wrong"** = pure lazy JS infinite scroll (no real URLs, refresh loses place, footer unreachable, crawlers see only page 1). **Avoid.**
 - **Check Newspack-native pagination / load-more first** — it likely handles the URL layer correctly (the current interim "Load more" is the Homepage Posts block's `moreButton`).
 
+### Bulk gallery import — COMPLETE (drafts)
+
+Bulk import of all clean REPAIR albums, done as **reversible DRAFTS** via the v3 tool (`tools/vw_gallery_import.php`) driven by an unattended, chunked, halt-on-error runner:
+
+- **343 bulk drafts + 10,082 attachments** (247 path A / 96 path B), plus the earlier 15-album batch = **358 REPAIR posts drafted**. Of **364 unique REPAIR posts total: 358 drafted + 6 backlog.**
+- **Live posts UNTOUCHED throughout** — published-post count still **3,580**. All galleries exist as drafts beside untouched live posts; **nothing is published or visible yet.**
+- **Pre-bulk backup:** `db-backups/vancouverweekly_local_2026-07-07_pre-bulk-import.sql` (156,639,375 bytes, MD5 `f900df32ec02c771e7e95b813efcf34f`, local + iCloud).
+- **Reversal:** the full run's draft+attachment list is `/tmp/vw_bulk_created.json` (343 drafts + 10,082 atts). **`/tmp` is ephemeral** — copied to durable `db-backups/vw_bulk_created_2026-07-07.json` (+ `vw_manual_backlog_2026-07-07.json`, `vw_bulk_import_2026-07-07.php`) so the reversal survives a reboot.
+- **Halts during the run were the safety working, not failures:** the duplicate-guard caught stale test drafts (66353/67909/67771 from the v2 lightbox test), and the count-mismatch guard caught a same-name album (VFMF Day 2). Each halted the whole run cleanly; the run resumed after resolving.
+
+**MANUAL BACKLOG (6 posts not imported + 2 duplicate-draft cleanups):**
+- **Multi-album (album-merge decision):** 67730 (Bison / Black Wizard / Red Fang), 67694 (Father John Misty ×2), 67756 (Napalm Death / The Melvins), 68931 (Westward Day 2), 68932 (Westward Day 3).
+- **Same-name (pick correct folder):** 67903 (VFMF Day 2 — 35 vs 50 images).
+- **Duplicate-draft cleanup:** 73383 (dup of 74064, AC/DC 65497), 73318 (Westward 68931).
+
+**NEXT MILESTONE (not started) — the PUBLISH/REPLACE step:** applying approved drafts onto the live published posts, preserving the frozen slug + date. **This is the first operation that modifies live content** — needs its own session, its own backup, a single-post test first, then halt-safe batching.
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
