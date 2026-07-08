@@ -1255,6 +1255,18 @@ Read-only SELECT confirmed: **5,899 total comments — 5,598 pending, 301 approv
 
 **Caveat:** they're a dedicated concert-photography site; VW is a broader arts publication, so adopt the gallery treatment **without making the whole site photo-only**. The current VW gallery (grid-hide + native lightbox + per-image credit) is functionally solid; this is the **design-phase aspiration**, not a v1 blocker.
 
+### Infinite-scroll / load-more — permalink & URL requirements
+
+Refines the earlier "Pagination / infinite-scroll plan" (2026-06-17). Infinite scroll must be built **correctly, not naive JS-only** — and it must respect the frozen-URL architecture:
+
+1. **Frozen-permalink rule preserved.** Infinite scroll is a **browsing/display layer only**; it must **NEVER** alter existing posts' slugs / URLs / dates (the frozen architecture rule). It loads *lists*, it does not touch individual post permalinks.
+2. **Real paginated URLs underneath.** `/section/page/2/`, `/page/3/`, etc. must genuinely exist, render on direct load, and be crawlable. Infinite scroll is **progressive enhancement OVER working pagination** — strip the JS and it degrades to real pagination.
+3. **URL updates as you scroll** (History API) so refresh/bookmark preserves position, the back button behaves sanely, and content is never trapped in JS-only state.
+4. **SEO:** crawlers must reach paginated content via the real URLs behind the scroll.
+
+- **"Done wrong"** = pure lazy JS infinite scroll (no real URLs, refresh loses place, footer unreachable, crawlers see only page 1). **Avoid.**
+- **Check Newspack-native pagination / load-more first** — it likely handles the URL layer correctly (the current interim "Load more" is the Homepage Posts block's `moreButton`).
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
