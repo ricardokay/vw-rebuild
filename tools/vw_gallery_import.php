@@ -51,11 +51,10 @@ require_once ABSPATH . 'wp-admin/includes/image.php';
 global $wpdb; $wpdb->query("SET NAMES utf8mb4");
 
 $STAGE = '/tmp/vw_stage';   // staged FB export album folders (see USAGE)
+// $ALBUMS is the per-run batch config. Currently the 2-album lightbox test
+// batch (Path A Wintersleep + Path B AC/DC); edit per run.
 $ALBUMS = [
-  [66353, 'TheGrowlerswiththeGardenTwins_616788415097108',         'All photos by Jennifer McInnis (www.creativecopperimages.com). All rights reserved.'],
   [67771, 'WintersleepEveningHymnsWalrus_866133496829264',         'All photos by Ryan L. Johnson. All rights reserved.'],
-  [67909, 'VintageTrouble_1358888147553794',                       'Photos by Sharon Steele  / Nov.12 / 2017'],
-  [68931, 'WestwardMusicFestivalDay2ToucheAmore_1310288099080466', 'Photos by Quinn Middleton Sept. 15 / 2017'],
   [65497, 'ACDC_780839368692011',                                  'All photos by Jashua Peter Grafstein (JustJash.com). All rights reserved.'],
 ];
 
@@ -118,7 +117,7 @@ function vw_gallery_block($items, $caption) {
   $inner='';
   foreach ($items as $it) {
     $id=(int)$it['id']; $url=esc_url($it['url']); $cap=esc_html($caption);
-    $inner .= "\n<!-- wp:image {\"id\":$id,\"sizeSlug\":\"large\",\"linkDestination\":\"none\"} -->\n"
+    $inner .= "\n<!-- wp:image {\"id\":$id,\"sizeSlug\":\"large\",\"linkDestination\":\"none\",\"lightbox\":{\"enabled\":true}} -->\n"
       ."<figure class=\"wp-block-image size-large\"><img src=\"$url\" alt=\"\" class=\"wp-image-$id\"/>"
       ."<figcaption class=\"wp-element-caption\">$cap</figcaption></figure>\n<!-- /wp:image -->\n";
   }
