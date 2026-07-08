@@ -1243,6 +1243,18 @@ Read-only SELECT confirmed: **5,899 total comments — 5,598 pending, 301 approv
 - **Resolve in the article-template design work (Claude Design phase):** decide the article layout (full-width content vs centered with intentional margin — **not a dead sidebar column**), content measure/width, typography, and whether **galleries should break out WIDER than the text column** (magazine-style, relevant for a photography-forward publication). Aligns with the ad-free / no-assumed-sidebar decision already logged.
 - Custom `single.php` is already on the VW-MASTER-PLAN "Remaining" list; **this is the layout spec for it.**
 
+### Gallery design reference — Scene in the Dark
+
+**Reference for the Claude Design phase:** Scene in the Dark (sceneinthedark.com) concert-photo galleries — a strong model for VW gallery treatment. Key takeaways to consider for VW galleries specifically:
+
+1. **DARK theme for galleries/photography context** — a black ground makes concert photos pop, even if the rest of the site stays on the off-white `#F7F6F4` ground. **Highest-impact idea; explore a gallery-context dark mode.**
+2. **Large immersive grid tiles** (~3-per-row, generous size), not small thumbnails.
+3. **Designed gallery header block:** artist name (serif display), venue, date, photographer credit, over a hero image — gives the gallery an identity beyond just the post title.
+4. **Numbered photos** (01/16 …) for a curated, sequential feel.
+5. **"More from the dark" related-galleries cross-linking** at the bottom — ties to VW's connected-content / archive roadmap.
+
+**Caveat:** they're a dedicated concert-photography site; VW is a broader arts publication, so adopt the gallery treatment **without making the whole site photo-only**. The current VW gallery (grid-hide + native lightbox + per-image credit) is functionally solid; this is the **design-phase aspiration**, not a v1 blocker.
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
