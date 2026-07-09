@@ -1475,3 +1475,29 @@ same principle: **display ≠ sell.**) Cannot launch until the contributor-right
 
 **Other requirements.** Real per-product curation + design (a keepsake, not an image dump); a
 print/fulfillment POD partner; site live + archive browsable + an audience first. → **v2+ product.**
+
+### Portfolio case study — VW rebuild (for Ricardo's Product Design UX/UI/Service portfolio)
+
+This rebuild is strong case-study material. **What it demonstrates that typical portfolio pieces don't:**
+- **Judgment under real-world messiness** — inherited a failed agency rebuild + 20 years of degraded
+  content; recovered and rebuilt rather than starting from a clean brief.
+- **Systems thinking** — a consistent brand system carried across section fronts (tokens, section
+  templates, image-quality tiers).
+- **Design + technical fluency** — a designer who directed a real WordPress/Newspack rebuild. "Designer
+  who ships."
+- **Ethics / service design** — the attribution-accuracy pass: correct photographer credits across
+  thousands of images; caught the Getty rights issue, wrong-person credits, and band-lineup miscredits.
+  Doing right by the **makers**.
+- **Identity / product strategy** — "earned past + intended future," differentiation, the modernized-stamp
+  visual direction.
+- **AI-assisted workflow with human review gates** — a current, differentiating skill.
+
+**Framing discipline.** Don't data-dump — pick **one or two threads**. Strongest single story = the
+**attribution-integrity thread** (human-centered: doing right by photographers through careful system
+design; clean arc: **found the problem → investigated → fixed it correctly → held the ethical line on
+Getty**). Alternatives: the **recovery/rebuild** story (resilience / systems), or the
+**identity/positioning** story (strategy). Lead with one; don't tell all three at once.
+
+**Source material.** `PROJECT-LOG.md` itself is the case-study raw material (decisions, tradeoffs, the
+careful review discipline). Strong visuals: before/after gallery screenshots, and the two-Claude review
+workflow (adversarial verification / review gates).
