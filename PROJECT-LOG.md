@@ -1454,3 +1454,24 @@ a `\d{10,}_o` FB-filename run, (b) a trailing "All photos by … All rights rese
 (c) a paragraph-leading "By."/"By:" byline — while leaving real prose, performer lineups, and figcaptions
 untouched. Do NOT strip on a raw global regex; verify prose survives per draft. Affected-ID list captured
 this session. Not a launch gate, but should run before publish so the body credit is clean.
+
+### Revenue product idea — print-on-demand archive collections (v2+, NOT launch)
+
+**Idea.** Curated printed collections (photo books / print sets) drawn from the 20-year archive, designed
+in a chosen house style and sold **print-on-demand** (ship-as-bought, no inventory risk). Slots into the
+existing "revenue surfaces designed into structure" note.
+
+**Why it's strong.**
+- Monetizes the archive **itself** — VW's unique asset; turns depth-of-time into a product.
+- On-identity: custodial / cultural-memory / "kept the receipts" made tangible.
+- Serves the **makers**: contributors get beautiful printed collections of their own work from a period,
+  for themselves + friends/family — emotional value to the exact community that is VW's moat.
+- Proven appetite: Scene in the Dark runs a Print Shop in this same market.
+
+**HARD PREREQUISITE — RIGHTS.** Selling printed products = **commercial reuse**, NOT covered by VW's
+implied editorial **display** license. Requires explicit **per-photographer commercial/resale agreements
++ profit-sharing** before any print product launches. (Today's Getty / 85536 case is a preview of the
+same principle: **display ≠ sell.**) Cannot launch until the contributor-rights side is sorted.
+
+**Other requirements.** Real per-product curation + design (a keepsake, not an image dump); a
+print/fulfillment POD partner; site live + archive browsable + an audience first. → **v2+ product.**
