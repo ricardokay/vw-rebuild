@@ -1383,3 +1383,51 @@ The old live site is pharma-spam compromised. Approach:
 
 - **User personalization:** saved items, follow topics/photographers, dark mode, personalized feed. Adds accounts, privacy obligations, and moderation maintenance. Do not build until there is evidence of demand.
 - **AI navigation assistant:** technically feasible via Anthropic API. Build only AFTER good conventional search and IA are in place and real user behavior shows the need. **Must** be grounded strictly in published content with source citations — never free-form answers about Vancouver music/events (credibility and liability risk). Squarely a step-4 item, not launch-related.
+
+---
+
+## 2026-07-08
+
+### Credit-accuracy pass — COMPLETE (pre-publish)
+
+Read-only investigation found the import drafts' photographer credits were mostly correct but had a
+small, specific set of errors. Scope was **SMALL and verified — ~324 drafts already fine, ~5 fixed —
+NOT a mass re-credit.** All work done on reversible **drafts**; live posts untouched; published count
+stayed **3580**. Frozen-date rule re-verified: draft `post_date` matches each live parent exactly
+(10/10 sample MATCH; the "2026" seen in a draft preview is preview chrome, not stored data).
+
+**Per-image credit enhancement (import tool v4 → v5).** The tool now reads each Facebook photo's OWN
+per-photo description (FB user-tag `@[id:id:Name]`, `© YEAR Studio`, `[Band -] Photo by X`), using the
+album-level description only as a fallback. Credits canonicalize to a WP author account (correct
+spelling) or a studio→person alias. This fixes co-shot albums that were previously stamped with one
+name — or both names — on every image.
+
+**Fixes applied (reverse + recreate with v5):**
+- **83303 → 85675** (live 67890, Trampled by Turtles): was "Ryan Johnson" on all 20 — a genuine
+  author-box wrong-person override. Now **Kristina Kimlickova ×20** (the album's real photographer).
+- **83692 → 85697** (live 68811, VFMF Day 3): was the band lineup ("Leo Moran and Anthony
+  Thistlethwaite" ×104) pulled from an album desc with no photographer. Now **Jennifer McInnis /
+  Creative Copper Images ×104** (from per-photo `© 2014 Creative Copper Images`).
+- **85438 → 85803** (live 67901, VFMF 2017): was "Ryan Johnson and Mary Matheson" on all 96. Now
+  per-image **Ryan Johnson ×72 / Mary Matheson ×24**.
+- **85086 → 85901** (live 67903, VFMF Day 2): was "Mariko Margetson" on all 35. Now per-image
+  **Mariko Margetson ×22 / Ryan Johnson ×13**.
+
+**Timothy Nguyên spelling fix (16 drafts, in place — no recreation).** WP user 175 held a misspelled
+display name ("Timothy Nyguyen"); corrected to **Timothy Nguyên** (matching account 372). Key finding:
+gallery credits are **literal stored text** (in each draft's `post_content` figcaptions and each
+attachment's `post_excerpt`), **not** rendered from the account — so the account fix alone changes
+nothing readers see. Did an in-place string replacement across **16 import drafts: 16 content updates +
+545 attachment excerpts**, 0 residual misspellings. Live attachments (spelled "Timothy Nguyen", no
+extra "y") were not matched and stayed untouched.
+
+**Getty / rights hold.** Draft **85536** (live 67584, "Netflix Golden Globe Awards After Party") is
+**licensed agency press**, not VW original: 53 of 100 per-photo descriptions read "Photo by Kevin
+Mazur/Getty Images for Netflix" with Getty markers, press-wire filenames, and celebrity-subject
+captions. Editorial decision: **exclude from the live archive unless a license is confirmed.** Kept as a
+draft (not deleted); flagged durably with post_meta `_vw_publish_exclude='getty-rights-hold'` and
+recorded in `db-backups/publish-exclusions.json`. The publish/replace step must skip it on either signal.
+
+**Reversibility.** Before/after manifests in `db-backups/reversal-manifests/`
+(`vw_timothy_before_2026-07-08.json`, `vw_reverse4_credit_2026-07-08.json`,
+`vw_credit4_created_2026-07-08.json`).
