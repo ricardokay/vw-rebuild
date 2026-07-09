@@ -1301,6 +1301,17 @@ Research into Vancouver newspaper history: the **"Vancouver Weekly Herald" (Jan 
 - **Trademark note:** the VW name is now **trademarked (Ricardo)** — protects the mark going forward; this is separate from (and does **not** create) historical lineage.
 - **Ties to:** the cultural-memory identity direction; the CIPO / trademark work; the copycat-site situation.
 
+### Differentiation beyond "real" — accuracy-critical refinement
+
+**"Real / local / authentic" is now TABLE STAKES** — every scene publication, indie brand, and Substack reaches for it. It differentiates VW from Instagram, but **NOT from peers.** Real differentiation = **function / role / depth**, not feeling:
+
+1. **DEPTH OF TIME (structurally uncopyable).** Anyone can be authentic *today*; nobody else is authentic across **20 continuous years**. Peers can't show 2007, or a venue that closed in 2013. **Time is the moat — it can't be adopted, only had.**
+2. **CUSTODIAL, not nostalgic.** Not "remember the good old days" content (crowded) but **BEING the archive of record** — the institution that *holds* the scene's memory, not an account that *evokes* it. **A role, not a vibe.**
+3. **DIFFERENTIATION AS FUNCTION, not feeling:** the definitive Vancouver culture **archive of record**; browse-by-venue / browse-by-time as real **tools** (own the use case *"reconstruct every show at [closed venue]"*); **photographer preservation + credit as a real service to the makers** (exactly the dead-FB-page problem VW just solved) — differentiating **to the community that creates the content**.
+4. **ENDURANCE.** Much of the moat is what VW consistently **does** that peers won't — keep publishing so the archive grows, maintain the custodial role. **"Still here in 5 years when peers burned out / pivoted" is itself a widening moat.**
+
+- **CAUTION (logged):** the deepest differentiation reveals itself in **USE, not theory.** Two weeks live will teach more about VW's real edge than more armchair strategy. **Vision work has diminishing returns now; shipping is the highest-value next act.**
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
