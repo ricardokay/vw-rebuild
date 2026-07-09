@@ -1291,6 +1291,16 @@ Bulk import of all clean REPAIR albums, done as **reversible DRAFTS** via the v3
 - **To-do:** stand up a proper **off-machine uploads archive** on cheap bulk object storage — **Backblaze B2 or Wasabi** (a few dollars/month for ~17 GB). An external drive is a stopgap; B2/Wasabi is the durable answer and ties into the eventual production media strategy.
 - **Not blocking the publish step:** publish/replace modifies the DB (post_content), not the image files, and the DB is fully backed up (pre- and post-bulk `.sql`, two locations, MD5-verified). The imported images are also re-derivable from the FB zip (now off-machine on iCloud). The 17 GB archive is a durability upgrade, not a launch gate.
 
+### Heritage identity thread — accuracy-critical
+
+Research into Vancouver newspaper history: the **"Vancouver Weekly Herald" (Jan 15, 1886)** was among the **first papers in Vancouver — predating the city's official founding**. This is a **NAME RESEMBLANCE and thematic kinship, NOT documented lineage** to the current Vancouver Weekly.
+
+- **DO NOT CLAIM DIRECT DESCENT.** Never say "Vancouver Weekly since 1886" or imply the current publication *is* / descends from the 1886 Weekly Herald — unsubstantiated, easily debunked, and a **credibility risk for a publication whose entire value is trust**.
+- **What IS defensible/usable — an honest thematic framing:** *"Vancouver has had weekly papers since before it was a city; we carry that tradition forward."* This invokes the heritage of Vancouver weekly journalism (the **form and civic role**) **without** falsely claiming to be a specific historical title — reframing the VW name as rooted in the city's oldest press tradition.
+- **Real, provable heritage** = VW's own ~20-year run + the recovered archive. The 1886 connection is **thematic color, not a lineage claim.**
+- **Trademark note:** the VW name is now **trademarked (Ricardo)** — protects the mark going forward; this is separate from (and does **not** create) historical lineage.
+- **Ties to:** the cultural-memory identity direction; the CIPO / trademark work; the copycat-site situation.
+
 ---
 
 ## FUTURE IDEAS / SOMEDAY-MAYBE (not scheduled, parked for after launch)
