@@ -1501,3 +1501,16 @@ Getty**). Alternatives: the **recovery/rebuild** story (resilience / systems), o
 **Source material.** `PROJECT-LOG.md` itself is the case-study raw material (decisions, tradeoffs, the
 careful review discipline). Strong visuals: before/after gallery screenshots, and the two-Claude review
 workflow (adversarial verification / review gates).
+
+### Body cleanup pass — COMPLETE (byline + Wayback scrape chrome)
+
+All 61 affected drafts cleaned of body-text artifacts (separate from the correct figcaptions/credits).
+**Removed:** jig image-grids (mangled caption+filename runs), rights-lines (plain + span-wrapped "All
+photos by … All rights reserved"), 34 static relatedpost blocks (dead Wayback `web.archive.org`
+snapshots — confirmed 0 dynamic markers), 34 disqus divs (empty + `dsq-content` scaffold), 2 article-tags
+footers, 1 "By." line, now-empty wrapper divs. **Integrity:** per-draft gallery / wp:image / figcaption
+counts IDENTICAL to original on all 61 (halt-safe gate, 0 mismatches). **Prose preserved** (festival
+intros, band lineups — e.g. Marilyn Manson / Pemberton); 18 drafts had chrome-only bodies → now
+gallery-only (correct). **Reversible:** `db-backups/reversal-manifests/vw_byline_before_2026-07-08.json`
+(all 61 originals + sha1). Ran as one-off scripts, **NOT** folded into the import tool (decide later).
+Live untouched, no publish.
