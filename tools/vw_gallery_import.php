@@ -1,6 +1,6 @@
 <?php
 /**
- * VW Facebook-album gallery import tool (v3 — CSV/zip driven, batch-gated).
+ * VW Facebook-album gallery import tool (v5 — CSV/zip driven, batch-gated, multi-album + PER-IMAGE credit).
  * ---------------------------------------------------------------------------
  * WHAT IT DOES
  *   Rebuilds dead Facebook galleries on Wayback-recovered posts. Targets are read
@@ -55,14 +55,15 @@ $targets = json_decode(file_get_contents($BATCH_FILE), true);
 if ( ! is_array($targets) || ! $targets ) { fwrite(STDERR, "[vw] empty/invalid batch — nothing to do.\n"); exit(1); }
 $want = array_flip( array_map('strval', $targets) );
 
-/* ---- REPAIR rows from CSV (only those in the batch): matched_post_id -> album ---- */
-$album_of = [];
+/* ---- REPAIR rows from CSV (batch only): matched_post_id -> [ [album, photo_count], ... ]
+ *      A post can match SEVERAL sub-albums (co-bill night / festival day) -> gather them all. ---- */
+$albums_of = [];
 $fh = fopen($CSV, 'r'); if ( ! $fh ) { fwrite(STDERR, "[vw] cannot open CSV\n"); exit(1); }
 $H = array_flip( fgetcsv($fh) );
 while ( ($row = fgetcsv($fh)) !== false ) {
   if ( ($row[$H['bucket']] ?? '') !== 'REPAIR' ) continue;
   $pid = (string) $row[$H['matched_post_id']];
-  if ( isset($want[$pid]) ) $album_of[$pid] = $row[$H['album']];
+  if ( isset($want[$pid]) ) $albums_of[$pid][] = [ $row[$H['album']], (int) $row[$H['photo_count']] ];
 }
 fclose($fh);
 
@@ -82,19 +83,33 @@ for ( $i = 0; $i < $za->numFiles; $i++ ) {
   $e = $za->getNameIndex($i);
   if ( strpos($e, '/posts/album/') === false || substr($e, -5) !== '.json' ) continue;
   $d = json_decode($za->getFromIndex($i), true); if ( ! $d ) continue;
-  $ph = $d['photos'] ?? []; $fld = '';
-  if ( $ph ) { $u = $ph[0]['uri'] ?? ''; if ( strpos($u, '/media/') !== false ) $fld = explode('/', explode('/media/', $u)[1])[0]; }
-  $meta[ trim($d['name'] ?? '') ] = ['folder' => $fld, 'desc' => trim($d['description'] ?? '')];
+  $ph = $d['photos'] ?? []; $fld = ''; $descByBase = [];
+  if ( $ph ) {
+    $u = $ph[0]['uri'] ?? ''; if ( strpos($u, '/media/') !== false ) $fld = explode('/', explode('/media/', $u)[1])[0];
+    // v5: keep each photo's OWN FB description, keyed by image basename, for per-image credit.
+    foreach ( $ph as $p ) { $pu = $p['uri'] ?? ''; if ( $pu === '' ) continue; $descByBase[ basename($pu) ] = trim($p['description'] ?? ''); }
+  }
+  // same-name albums (e.g. two "VFMF - Day 2") -> keep ALL candidate folders, disambiguate later by count
+  $meta[ trim($d['name'] ?? '') ][] = ['folder' => $fld, 'desc' => trim($d['description'] ?? ''), 'descByBase' => $descByBase];
 }
 
-/* ---- assemble the batch: [live_id, folder, fb_desc, image entries[]] ---- */
-$ALBUMS = [];
+/* ---- assemble per post: pid -> [ {folder, desc, entries}, ... ] (one OR MORE source albums) ---- */
+$POSTS = [];
 foreach ( array_keys($want) as $pid ) {
-  if ( ! isset($album_of[$pid]) ) { echo "[vw] skip $pid: not a REPAIR row.\n"; continue; }
-  $m = $meta[ $album_of[$pid] ] ?? null;
-  if ( ! $m || ! $m['folder'] ) { echo "[vw] skip $pid: no zip folder for \"{$album_of[$pid]}\".\n"; continue; }
-  $entries = $folder_entries[ $m['folder'] ] ?? []; sort($entries, SORT_STRING);
-  $ALBUMS[] = [ (int) $pid, $m['folder'], $m['desc'], $entries ];
+  if ( empty($albums_of[$pid]) ) { echo "[vw] skip $pid: not a REPAIR row.\n"; continue; }
+  $sources = [];
+  foreach ( $albums_of[$pid] as [$album_name, $pc] ) {
+    $cands = $meta[$album_name] ?? [];
+    if ( ! $cands ) { echo "[vw] skip $pid: no zip folder for \"$album_name\".\n"; $sources = []; break; }
+    // same-name disambiguation: prefer the folder whose on-disk image count == the CSV photo_count
+    $pick = null;
+    foreach ( $cands as $c ) { if ( count($folder_entries[$c['folder']] ?? []) === $pc ) { $pick = $c; break; } }
+    if ( ! $pick ) $pick = $cands[0];
+    $entries = $folder_entries[ $pick['folder'] ] ?? []; sort($entries, SORT_STRING);
+    if ( ! $entries ) { echo "[vw] skip $pid: no images for folder {$pick['folder']}.\n"; $sources = []; break; }
+    $sources[] = ['folder' => $pick['folder'], 'desc' => $pick['desc'], 'entries' => $entries, 'descByBase' => $pick['descByBase'] ?? []];
+  }
+  if ( $sources ) $POSTS[$pid] = $sources;
 }
 
 /* ---- Fix C: mojibake normalization ---- */
@@ -138,26 +153,104 @@ function vw_clean_body($c, &$removed) {
   return trim($c);
 }
 
-/* ---- Fix B: credit resolution ---- */
-function vw_credit($live_content, $fb_desc, &$source) {
-  if (preg_match('/author\/([a-z0-9\-]+)/i', $live_content, $m)) {
-    $u = get_user_by('slug', $m[1]);
-    if ($u && trim($u->display_name)!=='') { $source = "WP author account ({$m[1]})"; return $u->display_name; }
-  }
+/* ---- Fix B: PER-ALBUM photographer credit ----
+ *   Resolves one photographer per SOURCE ALBUM from that album's own FB description,
+ *   canonicalized to a WP author account when one exists (fixes source typos), else the
+ *   cleaned FB name (for photographers with NO WP account, e.g. "Tanis Lischewski").
+ *   Single-photographer posts are unchanged: every source album resolves to the same credit. */
+function vw_clean_fb_name($fb_desc) {
+  // SAFETY: never invent attribution from an event title — require an explicit credit marker.
+  if ( ! preg_match('/\b(by|credit)\b/i', $fb_desc) ) return '';
+  $fb_desc = preg_replace('/\s+/', ' ', $fb_desc); // collapse newlines/tabs so separators match reliably
   $d = preg_replace('/^\s*(all\s+)?(photos?|pics?|photography)\s+by\s+/i', '', $fb_desc);
+  $d = preg_split('/\s+-\s+/', $d)[0]; // drop trailing " - venue/promoter boilerplate" (whitespace-dash-whitespace, incl newline; keeps "Hartley-Marjoram")
   $d = preg_split('/\s*[\(\/]|\.\s|,|\s+@|\s+www|\s+VANCOUVER|\s+On\s+|\s+\d/i', $d)[0];
+  // strip trailing dates in two safe forms:
+  //   (a) Month + day-number ("Sept.16", "Jul 4", "August 12") — the day digit gates it, so surnames
+  //       starting with a month (Margetson / Marc / Augustus) are NOT clipped;
+  //   (b) a bare, word-bounded trailing month token ("Sept", "September").
+  $d = preg_replace('/\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s*\d{1,2}\b.*$/i', '', $d);
+  $d = preg_replace('/\s+(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept|sep|oct|nov|dec)\b\.?\s*$/i', '', $d);
   $d = preg_replace('/@\S+/', '', $d);
-  $source = "FB album description (cleaned)";
+  return trim($d, " .-");
+}
+function vw_surname($name) { $p = preg_split('/\s+/', trim($name)); return strtolower(end($p) ?: ''); }
+
+function vw_album_credit($live_content, $album_desc, &$source) {
+  $name = vw_clean_fb_name($album_desc);
+  if ($name === '') { $source = '(no credit in FB desc)'; return ''; }
+  // 1) WP account by slug derived from the cleaned FB name (canonical spelling)
+  $u = get_user_by('slug', sanitize_title($name));
+  if ($u && trim($u->display_name) !== '') { $source = "WP account ({$u->user_nicename})"; return $u->display_name; }
+  // 2) typo-correction via the POST's author-box account (e.g. FB "Jashua" but author-box "joshua-...-grafstein")
+  if (preg_match('/author\/([a-z0-9\-]+)/i', $live_content, $m)) {
+    $au = get_user_by('slug', $m[1]);
+    if ($au && vw_surname($au->display_name) !== '' && vw_surname($au->display_name) === vw_surname($name)) {
+      $source = "WP author-box (typo-corrected: {$m[1]})"; return $au->display_name;
+    }
+  }
+  // 3) no WP account -> the cleaned FB name as-is
+  $source = "FB desc (no WP account)"; return $name;
+}
+
+/* ---- v5: PER-PHOTO credit. Each FB photo carries its OWN description (the true per-image
+ *   credit). Album-level credit is used ONLY as a fallback when a photo has no own credit.
+ *   Fixes co-shot albums that were being stamped with one name (or both names) on every image. */
+
+/* extract the raw photographer/studio string from a single photo's FB description.
+ *   Handles: FB user tag "@[id:id:Name]", "© YEAR Studio", "[Band -] Photo(s) by X", "credit: X".
+ *   Returns '' when the description carries no attribution. */
+function vw_extract_photo_credit($desc) {
+  $desc = trim( preg_replace('/\s+/u', ' ', (string) $desc) );
+  if ($desc === '') return '';
+  if ( preg_match('/@\[\d+:\d+:([^\]]+)\]/', $desc, $m) ) return trim($m[1]);              // FB user tag
+  if ( preg_match('/(?:©|\(c\))\s*\d{4}\s+(.+)$/iu', $desc, $m) ) return trim($m[1], " .-"); // © YEAR Studio (mojibake "Â©" ok: matches the © byte)
+  if ( preg_match('/\b(?:photos?|pics?|photography)\s+by\s+(.+)$/i', $desc, $m) ) return trim($m[1]); // "[Band -] Photo by X"
+  if ( preg_match('/\bcredit:?\s+(.+)$/i', $desc, $m) ) return trim($m[1]);
+  return '';
+}
+
+/* trailing-junk cleanup shared by the per-photo path (dates / venue-promoter / @handles),
+ *   WITHOUT the leading "by" strip (vw_extract_photo_credit already dropped the marker). */
+function vw_tidy_name($d) {
+  $d = preg_replace('/\s+/', ' ', trim($d));
+  $d = preg_split('/\s+-\s+/', $d)[0];
+  $d = preg_split('/\s*[\(\/]|\.\s|,|\s+@|\s+www|\s+VANCOUVER|\s+On\s+|\s+\d/i', $d)[0];
+  $d = preg_replace('/\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s*\d{1,2}\b.*$/i', '', $d);
+  $d = preg_replace('/\s+(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept|sep|oct|nov|dec)\b\.?\s*$/i', '', $d);
+  $d = preg_replace('/@\S+/', '', $d);
   return trim($d, " .-");
 }
 
-function vw_gallery_block($items, $caption) {
+/* canonicalize a raw per-photo credit -> final caption name.
+ *   studio/handle alias (no slug relation to an account) -> WP account by slug (canonical spelling)
+ *   -> author-box typo-correction (surname match only) -> cleaned name as-is. */
+function vw_canonical_credit($raw, $live_content, &$source) {
+  $raw = trim($raw, " .-");
+  if ($raw === '') { $source = '(none)'; return ''; }
+  static $ALIAS = [ 'creative copper images' => 'Jennifer McInnis / Creative Copper Images' ];
+  $key = strtolower( trim($raw) );
+  if ( isset($ALIAS[$key]) ) { $source = 'studio alias'; return $ALIAS[$key]; }
+  $name = vw_tidy_name($raw);
+  if ($name === '') { $source = '(none)'; return ''; }
+  $u = get_user_by('slug', sanitize_title($name));
+  if ($u && trim($u->display_name) !== '') { $source = "WP account ({$u->user_nicename})"; return $u->display_name; }
+  if ( preg_match('/author\/([a-z0-9\-]+)/i', $live_content, $m) ) {
+    $au = get_user_by('slug', $m[1]);
+    if ($au && vw_surname($au->display_name) !== '' && vw_surname($au->display_name) === vw_surname($name)) {
+      $source = "WP author-box (typo-corrected: {$m[1]})"; return $au->display_name;
+    }
+  }
+  $source = "cleaned name (no WP account)"; return $name;
+}
+
+function vw_gallery_block($items) {   // each item carries its OWN caption (per-album credit)
   $inner='';
   foreach ($items as $it) {
-    $id=(int)$it['id']; $url=esc_url($it['url']); $cap=esc_html($caption);
+    $id=(int)$it['id']; $url=esc_url($it['url']); $cap=esc_html($it['caption']);
+    $fig = $cap !== '' ? "<figcaption class=\"wp-element-caption\">$cap</figcaption>" : ''; // omit when credit is blank
     $inner .= "\n<!-- wp:image {\"id\":$id,\"sizeSlug\":\"large\",\"linkDestination\":\"none\",\"lightbox\":{\"enabled\":true}} -->\n"
-      ."<figure class=\"wp-block-image size-large\"><img src=\"$url\" alt=\"\" class=\"wp-image-$id\"/>"
-      ."<figcaption class=\"wp-element-caption\">$cap</figcaption></figure>\n<!-- /wp:image -->\n";
+      ."<figure class=\"wp-block-image size-large\"><img src=\"$url\" alt=\"\" class=\"wp-image-$id\"/>$fig</figure>\n<!-- /wp:image -->\n";
   }
   return "<!-- wp:gallery {\"columns\":3,\"linkTo\":\"none\",\"className\":\"vw-fb-gallery\"} -->\n"
     ."<figure class=\"wp-block-gallery has-nested-images columns-3 is-cropped vw-fb-gallery\">$inner</figure>\n"
@@ -165,53 +258,65 @@ function vw_gallery_block($items, $caption) {
 }
 
 $created=[];
-foreach ($ALBUMS as [$live_id,$folder,$fb_desc,$entries]) {
-  $live = get_post($live_id);
+foreach ($POSTS as $live_id => $sources) {
+  $live = get_post((int)$live_id);
   if ( ! $live ) { echo "[vw] skip $live_id: post not found\n"; continue; }
   $path = preg_match('/id=["\']jig2["\']|\[jig|fbcdn|scontent|akamaihd/i',$live->post_content) ? 'A'
         : (stripos($live->post_content,'OAuthException')!==false ? 'B' : 'A');
 
   $title = vw_normalize($live->post_title, $title_changed);
-  $name = vw_credit($live->post_content, $fb_desc, $src);
-  $name = vw_normalize($name, $cap_changed);
-  $caption = "Photo by $name";
 
   $draft_id = wp_insert_post(['post_type'=>'post','post_status'=>'draft','post_title'=>$title,
     'post_author'=>$live->post_author,'post_date'=>$live->post_date,'post_date_gmt'=>$live->post_date_gmt,
     'edit_date'=>true,'post_content'=>'','meta_input'=>['_vw_import_draft_of'=>$live_id,'_vw_import_path'=>$path]], true);
 
-  // attachments — image bytes read straight from the zip (no disk staging)
-  $items=[]; $atts=[];
-  foreach ($entries as $e) {
-    $bytes = $za->getFromName($e);
-    if ($bytes === false) continue;
-    $bits = wp_upload_bits(basename($e), null, $bytes);
-    if (!empty($bits['error'])) continue;
-    $ft = wp_check_filetype($bits['file']);
-    $aid = wp_insert_attachment(['guid'=>$bits['url'],'post_mime_type'=>$ft['type'],
-      'post_title'=>preg_replace('/\.[^.]+$/','',basename($e)),'post_excerpt'=>$caption,'post_status'=>'inherit'],
-      $bits['file'], $draft_id);
-    wp_update_attachment_metadata($aid, wp_generate_attachment_metadata($aid,$bits['file']));
-    update_post_meta($aid,'_wp_attachment_image_alt','');
-    update_post_meta($aid,'_needs_alt_review',1);
-    $atts[]=$aid; $items[]=['id'=>$aid,'url'=>$bits['url']];
+  // import each SOURCE ALBUM; credit is resolved PER PHOTO (album credit is fallback only),
+  // then all images combine into one gallery. Image bytes read straight from the zip.
+  $items=[]; $atts=[]; $credit_dist=[];
+  foreach ($sources as $srcAlbum) {
+    // album-level fallback credit (used only when a photo carries no own attribution)
+    $album_name = vw_normalize( vw_album_credit($live->post_content, $srcAlbum['desc'], $album_src), $cc );
+    $album_caption = $album_name !== '' ? "Photo by $album_name" : '';
+    $descByBase = $srcAlbum['descByBase'] ?? [];
+    foreach ($srcAlbum['entries'] as $e) {
+      $bytes = $za->getFromName($e);
+      if ($bytes === false) continue;
+      // per-photo credit from THIS image's FB description; album credit as fallback.
+      $praw    = vw_extract_photo_credit( $descByBase[ basename($e) ] ?? '' );
+      $pname   = $praw !== '' ? vw_normalize( vw_canonical_credit($praw, $live->post_content, $psrc), $cc ) : '';
+      $caption = $pname !== '' ? "Photo by $pname" : $album_caption;
+      $bits = wp_upload_bits(basename($e), null, $bytes);
+      if (!empty($bits['error'])) continue;
+      $ft = wp_check_filetype($bits['file']);
+      $aid = wp_insert_attachment(['guid'=>$bits['url'],'post_mime_type'=>$ft['type'],
+        'post_title'=>preg_replace('/\.[^.]+$/','',basename($e)),'post_excerpt'=>$caption,'post_status'=>'inherit'],
+        $bits['file'], $draft_id);
+      wp_update_attachment_metadata($aid, wp_generate_attachment_metadata($aid,$bits['file']));
+      update_post_meta($aid,'_wp_attachment_image_alt','');
+      update_post_meta($aid,'_needs_alt_review',1);
+      $atts[]=$aid; $items[]=['id'=>$aid,'url'=>$bits['url'],'caption'=>$caption]; // per-image caption
+      $k = $caption !== '' ? $caption : '(no credit)';
+      $credit_dist[$k] = ($credit_dist[$k] ?? 0) + 1;
+    }
   }
+  $credits = []; arsort($credit_dist);
+  foreach ($credit_dist as $cap=>$n) $credits[] = "$cap x$n";
 
   $body = vw_clean_body($live->post_content, $removed);
   $body = vw_normalize($body, $body_changed);
-  $gallery = vw_gallery_block($items,$caption);
+  $gallery = vw_gallery_block($items);
   $content = trim($body)==='' ? $gallery : "$body\n\n$gallery";
   wp_update_post(['ID'=>$draft_id,'post_content'=>$content]);
   if ($atts) set_post_thumbnail($draft_id,$atts[0]);
 
   $edit = admin_url("post.php?post=$draft_id&action=edit");
-  $created[] = ['live'=>$live_id,'draft'=>$draft_id,'path'=>$path,'imgs'=>count($atts),'atts'=>$atts,
-    'credit'=>$caption,'source'=>$src,'removed'=>$removed,
+  $created[] = ['live'=>$live_id,'draft'=>$draft_id,'path'=>$path,'albums'=>count($sources),
+    'imgs'=>count($atts),'atts'=>$atts,'credits'=>$credits,'removed'=>$removed,
     'title_before'=>$live->post_title,'title_after'=>$title,'title_changed'=>(bool)$title_changed,
     'edit'=>$edit,'preview'=>home_url("/?p=$draft_id&preview=true")];
 
-  echo "=== live $live_id -> DRAFT $draft_id | path $path | ".count($atts)." images ===\n";
-  echo "  credit: '$caption'  <- $src\n";
+  echo "=== live $live_id -> DRAFT $draft_id | path $path | ".count($sources)." album(s) | ".count($atts)." images ===\n";
+  foreach ($credits as $c) echo "  credit: $c\n";
   echo "  title: ".($title_changed?"NORMALIZED '{$live->post_title}' -> '$title'":"unchanged")."\n";
   echo "  cleaner removed: ".count($removed)."\n  edit: $edit\n";
 }
