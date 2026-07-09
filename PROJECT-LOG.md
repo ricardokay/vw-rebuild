@@ -1431,3 +1431,26 @@ recorded in `db-backups/publish-exclusions.json`. The publish/replace step must 
 **Reversibility.** Before/after manifests in `db-backups/reversal-manifests/`
 (`vw_timothy_before_2026-07-08.json`, `vw_reverse4_credit_2026-07-08.json`,
 `vw_credit4_created_2026-07-08.json`).
+
+**Verified:** the per-image split renders correctly (e.g. 85803 shows "Photo by Ryan Johnson" on
+Ryan's 72 photos and "Photo by Mary Matheson" on Mary's 24, per-photo, not both names on every image).
+
+**Date check (read-only):** frozen-date rule intact. 10/10 varied drafts have `post_date` (and
+`post_date_gmt`) identical to their live parent's original — the tool preserves the archive date. The
+"2026" seen on a draft preview is WordPress draft-preview display chrome, NOT the stored `post_date`.
+
+**OPEN before publish — body-byline artifact (scoped this session, fix PENDING, nothing applied):**
+Read-only scan of all 364 import drafts found **61 with a leftover byline line in the BODY prose**
+(separate from the intended gallery figcaptions), inherited from the Wayback-recovered source body and
+not caught by the current `vw_clean_body`. Three shapes:
+- **21 mangled** — old inline photo captions fused with FB filename digit-strings, e.g.
+  "Angus and Julia Stone - photo by Jennifer McInnis10547921_616233141819302…_oAngus and Julia Stone -
+  photo by…". Clearly corrupt; safe to strip (signature: a `\d{10,}_o` filename run glued into prose).
+- **39 rights-lines** — "All photos by <Name> (<url>). All rights reserved." Legible but now duplicates
+  the per-image figcaption credit.
+- **1 "By." line** — draft 85803: "By. Ryan Johnson and Mary Matheson".
+Proposed fix (future session, reversible): extend the body cleaner to strip (a) any text node containing
+a `\d{10,}_o` FB-filename run, (b) a trailing "All photos by … All rights reserved." credit line, and
+(c) a paragraph-leading "By."/"By:" byline — while leaving real prose, performer lineups, and figcaptions
+untouched. Do NOT strip on a raw global regex; verify prose survives per draft. Affected-ID list captured
+this session. Not a launch gate, but should run before publish so the body credit is clean.
