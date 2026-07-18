@@ -12,16 +12,18 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - Phase 3: child theme + all 4 section fronts live (A La Music, Photography, Food & Drink, Out N About) — chrome (vw-nav header + Newspack) confirmed native on all templates via live HTTP check
 - Spam cleanup: 297 posts trashed; vw-security plugin active; XML-RPC disabled
 - Photographer account cleanup: duplicate accounts consolidated, display names corrected (2026-06-18)
-- Elliott Brood gallery repair (post 67693): COMPLETE (2026-06-19)
-- Session 2026-07-06: pushed all commits to GitHub; env verified as real Mac; `skipDangerousModePermissionPrompt` removed from global settings; FB resolution survey (`fb-resolution-survey.md`, images NOT 800px-capped, long-edge 800–2048, common 1200)
-- Album classification COMPLETE (`fb-album-inventory.csv`, 563 albums): **REPAIR 374 / ADD 15 / NEEDS_REVIEW 174**. Token-set title match + date disambiguation; marker set expanded with `fbcdn` (3 loose markers tested + rejected); hand-review caught headliner-dilution false-buckets (7 ADD + 48 partial-match → REPAIR).
-- Broken-gallery universe: **~687 published posts carry a dead-gallery marker (19% of 3,580)**. Analysis: only **~190 are design-fixable** (171 usable featured image on disk + 19 real articles once orphaned captions are stripped); **~497 are caption-only/thin** and need the Facebook album import, NOT a display fallback. **Caption-stripping is required** in any fallback rendering (165k caption words were inflating "text-forward" counts). Fallback design preview: `fallback-preview.html`.
+- Album classification COMPLETE (`fb-album-inventory.csv`, 563 albums): REPAIR 374 / ADD 15 / NEEDS_REVIEW 174
+- **ARCHIVE PUBLISHED (2026-07-18): 358 repaired galleries live (~10,857 images)** — copy-in-place onto the real published posts (frozen slugs/dates/authors verified per post), attachments reparented, drafts retired at status draft + `_vw_retired_after_publish=1` (never trash). Per-post verify gate: HTTP 200, gallery block present, gallery-scoped figcaption match, no dead-JIG markers, featured file on disk. Published count 3,580 unchanged throughout. Runner: `publish_batch.php`. Halt-safe verify caught 1 dirty draft mid-run (75518→65856) — fully reversed from manifest (sha256-verified).
+- **6 drafts held from publish:** 5 dirty-body-jig (75518, 80010, 83913, 84851, 84917 — leftover JIG wrapper precedes gallery; 2026-07-08 body-cleanup was byline/chrome-scope only and missed these) + 1 getty-rights-hold (85536, never publish without license). Flags: `_vw_publish_exclude` meta + `db-backups/publish-exclusions.json`.
+- **Rollback assets valid:** pre-publish full dump (`db-backups/vancouverweekly_local_2026-07-18_pre-publish.sql`, MD5-verified) + reversal manifest (`vw_publish_reversal_2026-07-18.json`, per-post old content/thumbnail/attachment-parents) + progress file — all in `db-backups/` AND iCloud `vw-rebuild-backups/`.
+- Broken-gallery universe (pre-publish analysis): ~687 posts carried dead-gallery markers; ~497 caption-only/thin still need FB album import, not a display fallback. Fallback design preview: `fallback-preview.html`.
 
-**In progress:** ~547 remaining Facebook album gallery imports/repairs (quality backlog — see inventory CSV)
+**In progress:** gallery quality backlog — remaining NEEDS_REVIEW albums + caption-only/thin posts (see inventory CSV)
 
 **Next:**
-1. Rebuild homepage (page 9) Newspack-native via Claude Design → port to child theme
-2. Build local→production deploy tooling (greenfield)
+1. JIG-strip pass on the 5 dirty-body-jig drafts → re-verify → mini-batch publish
+2. Rebuild homepage (page 9) Newspack-native via Claude Design → port to child theme
+3. Build local→production deploy tooling (greenfield)
 
 **LAUNCH BLOCKERS (real):**
 1. **Homepage** — page 9 is still the old Elementor build (the failed agency restoration this project replaces). Rebuild Newspack-native, switch its page template off `elementor_header_footer`, handle 2 Elementor articles (65340, 65350), then deactivate Elementor Pro / ElementsKit / Essential Addons. **Extraction is homepage-only** — live-render check proved chrome is already native (vw-nav + Newspack); Elementor theme-builder header/footer + ElementsKit mega-menu are DORMANT (do not render). Launching on Elementor is rejected.
@@ -29,7 +31,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 
 Gallery repair/import = quality backlog, NOT a launch gate.
 
-**Blocked:** Nothing hard-blocking dev work. Local MySQL socket this session: run-ID `HKOO9D7DI` (`.../Local/run/HKOO9D7DI/mysql/mysqld.sock`) — the run-ID can change when Local restarts; re-detect the live socket each session before DB work. Working tree clean, local == origin/main.
+**Blocked:** Nothing hard-blocking dev work. Local MySQL socket this session: run-ID `HKOO9D7DI` (`.../Local/run/HKOO9D7DI/mysql/mysqld.sock`) — the run-ID can change when Local restarts; re-detect the live socket each session before DB work. WP-CLI phar/ini in `/tmp` may be wiped between sessions (rebuild via curl, or use the Local `mysql` client directly against the socket — proven simpler for DB work). Working tree clean, local == origin/main.
 
 ---
 
