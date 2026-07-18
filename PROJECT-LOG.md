@@ -1514,3 +1514,35 @@ intros, band lineups — e.g. Marilyn Manson / Pemberton); 18 drafts had chrome-
 gallery-only (correct). **Reversible:** `db-backups/reversal-manifests/vw_byline_before_2026-07-08.json`
 (all 61 originals + sha1). Ran as one-off scripts, **NOT** folded into the import tool (decide later).
 Live untouched, no publish.
+
+## 2026-07-18 — PUBLISH/REPLACE: first live-content operation (357 galleries live)
+
+**Batch publish complete.** 358 repaired drafts published onto their live posts (1 single-post test
+81982→67740 + 357 batch-phase), copy-in-place mechanics: draft `post_content` → live post, live keeps
+ID/slug/date/author/comments untouched (frozen-field before/after asserted per post); featured image set
+from draft; attachments reparented to live (0 left on retired drafts); live marked `_vw_repaired_from`;
+drafts retired at status **draft** + `_vw_retired_after_publish=1` (NOT trash — trash auto-purges in 30
+days). Per-post verify gate: HTTP 200 on real permalink, `wp-block-gallery` present, gallery-scoped
+figcaption count == draft, both dead-JIG markers absent, frozen fields unchanged, featured file on disk.
+Published count 3,580 throughout (content replaced, no posts added). ~10,857 gallery images now live.
+Backups: full pre-publish dump local + iCloud (MD5-verified); reversal manifest
+(`vw_publish_reversal_2026-07-18.json`, old content + thumbnail + attachment parents per post) and
+progress file copied to iCloud. Runner: `publish_batch.php` (halt-on-failure, idempotent resume,
+DB-derived set assertions).
+
+**Halt-safe verify caught a real defect at post 63.** Pair 75518→65856 (Catfish and the Bottlemen)
+failed verify: rendered page still showed `justified-image-grid`. Root cause: the DRAFT's own body
+carried a leftover JIG wrapper ahead of its clean gallery — copy mechanics were correct, source was
+dirty. 65856 was **fully reversed** from manifest entry #63 (restored content sha256-verified, attachments
+re-parented, draft un-retired).
+
+**LOG CORRECTION (scope of 2026-07-08 "Body cleanup pass — COMPLETE"):** that pass was scope-limited to
+byline/chrome shapes (rights-lines, relatedpost blocks, disqus divs, caption+filename jig runs) and did
+**NOT** cover leftover JIG *wrappers preceding gallery blocks*. Full-scan during publish found **5 dirty
+drafts** of 364: 75518→65856, 80010→67445, 83913→68802, 84851→67730, 84917→67756 (last two were on the
+old multi-album backlog). All 5 quarantined `_vw_publish_exclude='dirty-body-jig'` (+
+`publish-exclusions.json`). They get their own JIG-strip pass, then publish as a dedicated mini-batch.
+
+**Held from publish (6 drafts):** 85536 getty-rights-hold (asserted held on every batch invocation,
+never written) + 5 dirty-body-jig. Import-draft universe fully accounted: 364 mapped drafts = 358
+retired/published (357 batch + 1 test) + 6 held.
