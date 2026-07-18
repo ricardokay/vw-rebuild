@@ -116,10 +116,16 @@ foreach ($todo as $p) {
     while ($a = mysqli_fetch_assoc($ar)) $atts[(int)$a['ID']] = (int)$a['post_parent'];
 
     $manifest = json_decode(file_get_contents($opts['manifest']), true);
+    $have_entry = false;
     foreach ($manifest as $m) {
-        if ((int)$m['live_id'] === $live_id) { fwrite(STDERR, "HALT at $draft_id->$live_id: already in reversal manifest but not retired\n"); exit(1); }
+        if ((int)$m['live_id'] === $live_id) {
+            // A prior entry is legitimate ONLY if the post was reversed back to exactly
+            // that recorded state — then it remains the valid rollback record.
+            if ($m['old_post_content'] === $live['post_content']) { $have_entry = true; break; }
+            fwrite(STDERR, "HALT at $draft_id->$live_id: already in reversal manifest and content diverged\n"); exit(1);
+        }
     }
-    $manifest[] = [
+    if (!$have_entry) $manifest[] = [
         'live_id'                => $live_id,
         'draft_id'               => $draft_id,
         'old_post_content'       => $live['post_content'],
