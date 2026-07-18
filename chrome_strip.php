@@ -59,6 +59,9 @@ function content_stats($c) {
 function is_title_dup($para_norm, $title_norm) {
     if ($para_norm === '') return false;
     if ($para_norm === $title_norm) return true;
+    // "Photos of <title>" / "Photos: <title>" — exact after prefix strip; catches
+    // short titles that dilute the similarity ratio below 88%
+    if (preg_replace('/^photos(?: of|:)?\s*/u', '', $para_norm) === $title_norm) return true;
     similar_text($para_norm, $title_norm, $pct);
     return $pct >= 88 && abs(mb_strlen($para_norm) - mb_strlen($title_norm)) <= 12;
 }
