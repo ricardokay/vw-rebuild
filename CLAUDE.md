@@ -13,17 +13,18 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - Spam cleanup: 297 posts trashed; vw-security plugin active; XML-RPC disabled
 - Photographer account cleanup: duplicate accounts consolidated, display names corrected (2026-06-18)
 - Album classification COMPLETE (`fb-album-inventory.csv`, 563 albums): REPAIR 374 / ADD 15 / NEEDS_REVIEW 174
-- **ARCHIVE PUBLISHED (2026-07-18): 358 repaired galleries live (~10,857 images)** — copy-in-place onto the real published posts (frozen slugs/dates/authors verified per post), attachments reparented, drafts retired at status draft + `_vw_retired_after_publish=1` (never trash). Per-post verify gate: HTTP 200, gallery block present, gallery-scoped figcaption match, no dead-JIG markers, featured file on disk. Published count 3,580 unchanged throughout. Runner: `publish_batch.php`. Halt-safe verify caught 1 dirty draft mid-run (75518→65856) — fully reversed from manifest (sha256-verified).
-- **6 drafts held from publish:** 5 dirty-body-jig (75518, 80010, 83913, 84851, 84917 — leftover JIG wrapper precedes gallery; 2026-07-08 body-cleanup was byline/chrome-scope only and missed these) + 1 getty-rights-hold (85536, never publish without license). Flags: `_vw_publish_exclude` meta + `db-backups/publish-exclusions.json`.
-- **Rollback assets valid:** pre-publish full dump (`db-backups/vancouverweekly_local_2026-07-18_pre-publish.sql`, MD5-verified) + reversal manifest (`vw_publish_reversal_2026-07-18.json`, per-post old content/thumbnail/attachment-parents) + progress file — all in `db-backups/` AND iCloud `vw-rebuild-backups/`.
-- Broken-gallery universe (pre-publish analysis): ~687 posts carried dead-gallery markers; ~497 caption-only/thin still need FB album import, not a display fallback. Fallback design preview: `fallback-preview.html`.
+- **ARCHIVE PUBLISH COMPLETE (2026-07-18): all 362/362 repaired galleries live (~11k images)** — copy-in-place onto the real published posts (frozen slugs/dates/authors verified per post), attachments reparented, drafts retired at status draft + `_vw_retired_after_publish=1` (never trash). Published count 3,580 unchanged throughout (replacements, never additions). Runners: `publish_batch.php`, `chrome_strip.php`.
+- **Body-chrome cleanup on lives COMPLETE (2026-07-18): 84 posts stripped** (title-dup paragraphs + inline Tags footers; 76 auto + 8 short-title catches + 2 hand-fixes 67540/67541 keeping lineup/venue lines). Dirty-5 JIG-strip done and published. **Residual chrome scan across all 363 repaired lives: 0.** Real prose verified preserved (67477 UBCP/ACTRA, 83913 Folk Fest essay).
+- **1 draft held:** 85536 getty-rights-hold — never publish without license confirmation. Flags: `_vw_publish_exclude` meta + `db-backups/publish-exclusions.json` (released dirty-body-jig entries kept there as history).
+- **Wrapper-div shells PARKED (known-cosmetic):** empty `post-content entry-content cf` / `<article>` wrappers remain on many lives — invisible in render; needs balanced parser; deliberate non-goal for now.
+- **Rollback assets valid:** `pre-publish` + `pre-chrome-cleanup` full dumps (MD5-verified) + three reversal manifests (`vw_publish_reversal`, `vw_chrome_reversal`, `vw_dirty5_jigstrip_reversal`, all 2026-07-18) + progress files — all in `db-backups/` AND iCloud `vw-rebuild-backups/`.
+- Broken-gallery universe (pre-publish analysis): ~497 caption-only/thin posts still need FB album import, not a display fallback. Fallback design preview: `fallback-preview.html`.
 
 **In progress:** gallery quality backlog — remaining NEEDS_REVIEW albums + caption-only/thin posts (see inventory CSV)
 
 **Next:**
-1. JIG-strip pass on the 5 dirty-body-jig drafts → re-verify → mini-batch publish
-2. Rebuild homepage (page 9) Newspack-native via Claude Design → port to child theme
-3. Build local→production deploy tooling (greenfield)
+1. Rebuild homepage (page 9) Newspack-native via Claude Design → port to child theme
+2. Build local→production deploy tooling (greenfield)
 
 **LAUNCH BLOCKERS (real):**
 1. **Homepage** — page 9 is still the old Elementor build (the failed agency restoration this project replaces). Rebuild Newspack-native, switch its page template off `elementor_header_footer`, handle 2 Elementor articles (65340, 65350), then deactivate Elementor Pro / ElementsKit / Essential Addons. **Extraction is homepage-only** — live-render check proved chrome is already native (vw-nav + Newspack); Elementor theme-builder header/footer + ElementsKit mega-menu are DORMANT (do not render). Launching on Elementor is rejected.
