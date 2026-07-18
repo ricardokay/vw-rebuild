@@ -23,7 +23,6 @@
 
 const BASE_URL   = 'http://vancouverweekly-local.local';
 const UPLOADS    = '/Users/ricardokhayatte/Local Sites/vancouverweekly-local/app/public/wp-content/uploads';
-const TARGET_SET = 362; // 364 drafts - 85536 (excluded) - 81982 (test, already published)
 const GETTY_HOLD = 85536;
 
 $opts = getopt('', ['socket:', 'manifest:', 'progress:', 'batch:', 'limit:', 'dry-run']);
@@ -76,13 +75,18 @@ foreach ($pairs as $p) {
     if ($p['draft'] === GETTY_HOLD) { fwrite(STDERR, "ABORT: 85536 leaked into publish set\n"); exit(1); }
 }
 
-$retired = (int)row($db, "SELECT COUNT(*) c FROM wptg_postmeta WHERE meta_key='_vw_retired_after_publish'")['c'];
-$done_so_far = $retired - 1; // minus the pre-batch test post 81982
-if (count($pairs) + $done_so_far !== TARGET_SET) {
-    fwrite(STDERR, "ABORT: set assertion FAILED — remaining " . count($pairs) . " + done $done_so_far != " . TARGET_SET . "\n");
+// Set arithmetic derived from DB (exclusions can grow, e.g. dirty-body-jig quarantine):
+// remaining must equal total mapped drafts - excluded - retired, exactly.
+$total_drafts = (int)row($db, "SELECT COUNT(*) c FROM wptg_postmeta WHERE meta_key='_vw_import_draft_of'")['c'];
+$excluded     = (int)row($db, "SELECT COUNT(*) c FROM wptg_postmeta WHERE meta_key='_vw_publish_exclude'")['c'];
+$retired      = (int)row($db, "SELECT COUNT(*) c FROM wptg_postmeta WHERE meta_key='_vw_retired_after_publish'")['c'];
+$done_so_far  = $retired - 1; // minus the pre-batch test post 81982
+$phase_target = $done_so_far + count($pairs); // batch-phase posts once this run completes
+if (count($pairs) !== $total_drafts - $excluded - $retired) {
+    fwrite(STDERR, "ABORT: set assertion FAILED — remaining " . count($pairs) . " != $total_drafts total - $excluded excluded - $retired retired\n");
     exit(1);
 }
-echo "ASSERT OK: 85536 held (flag=getty-rights-hold, status=draft, not in set); remaining " . count($pairs) . " + done $done_so_far == " . TARGET_SET . "\n";
+echo "ASSERT OK: 85536 held (flag=getty-rights-hold, status=draft, not in set); remaining " . count($pairs) . " == $total_drafts total - $excluded excluded - $retired retired; done $done_so_far, phase target $phase_target\n";
 
 $todo = array_slice($pairs, 0, $limit);
 if ($dry) {
@@ -198,5 +202,5 @@ foreach ($todo as $p) {
 
 $pubcount = (int)row($db, "SELECT COUNT(*) c FROM wptg_posts WHERE post_type='post' AND post_status='publish'")['c'];
 $total_done = (int)row($db, "SELECT COUNT(*) c FROM wptg_postmeta WHERE meta_key='_vw_retired_after_publish'")['c'] - 1;
-echo "Batch $batch: $verified/" . count($todo) . " verified, running total $total_done/" . TARGET_SET . ", published count $pubcount\n";
+echo "Batch $batch: $verified/" . count($todo) . " verified, running total $total_done/$phase_target, published count $pubcount\n";
 exit(0);
