@@ -1546,3 +1546,35 @@ old multi-album backlog). All 5 quarantined `_vw_publish_exclude='dirty-body-jig
 **Held from publish (6 drafts):** 85536 getty-rights-hold (asserted held on every batch invocation,
 never written) + 5 dirty-body-jig. Import-draft universe fully accounted: 364 mapped drafts = 358
 retired/published (357 batch + 1 test) + 6 held.
+
+## 2026-07-18 (later) — BODY-CHROME CLEANUP ON LIVES + DIRTY-5 PUBLISHED (archive publish COMPLETE: 362/362)
+
+**Chrome pass on the published lives (84 posts total).** Scrape chrome stripped from post_content only:
+title-duplicate paragraphs + inline `article-tags` Tags footers. Runner `chrome_strip.php` (committed
+before execution): reversal-first (old content + sha256 → `vw_chrome_reversal_2026-07-18.json`),
+per-post integrity gate (gallery/wp:image/figcaption counts + image-ID set unchanged, non-chrome prose
+word-count preserved, frozen fields untouched, HTTP 200, chrome absent in DB + rendered), halt-on-fail.
+Dry-run reviewed (5 sample diffs) → single-post test 67740 with visual sign-off → 3 batches of 25 →
+**76 auto-stripped, 0 failures**. Real prose verified preserved (e.g. 67477 UBCP/ACTRA 75-word passage).
+**2 hand-fixes** (fused title+info paragraphs): 67540 kept "With guests Sevendust, Tyler Bryant & The
+Shakedown", 67541 kept venue line "@ The Commodore"; title portions + tags footers dropped.
+**Detector improvement mid-session:** "Photos of/Photos: + exact-title" prefix rule added — the 88%
+similarity ratio misses short titles (found via 80010 in the dirty-5 work). Residual scan with the
+improved rule caught **8 more lives** (65497, 65519, 65620, 66814, 67094, 67226, 67929, 69207) →
+stripped as a final batch, 8/8 verified. **Final residual chrome scan across all 363 repaired lives: 0.**
+**Wrapper-div pass PARKED (known-cosmetic):** empty `post-content entry-content cf` / `<article>` shells
+remain on many lives — invisible in render; needs a balanced parser, not regex; deliberately out of scope.
+
+**Dirty-5 JIG-strip + published (Stage 3).** Drafts 75518, 80010, 83913, 84851, 84917 stripped of
+leftover JIG divs, relatedpost blocks, disqus divs, clear-both divs, dead page-links, title-dup paras
+(balanced-div parser; reversal → `vw_dirty5_jigstrip_reversal_2026-07-18.json`). Prose preserved:
+83913's 6-paragraph Folk Fest essay intact; band headers kept (84851 "Black Wizard", 84917 "Photos of
+The Melvins"). `dirty-body-jig` flags released (exclusions JSON entries marked released, history kept),
+published as mini-batch 15 via `publish_batch.php`: **5/5 verified**. Runner learned one case: a
+reversed pair may re-publish when its manifest entry matches current content (still-valid rollback).
+
+**ARCHIVE PUBLISH NOW COMPLETE: 362/362 pairs live.** 363 drafts retired (362 + test), published count
+**3,580 throughout** (replacements, never additions — asserted every batch). **85536 getty-rights-hold:
+still draft, still flagged, asserted held on every invocation — the only remaining held draft.**
+Backups: `pre-chrome-cleanup` dump local + iCloud (MD5 d2e88640…); all three reversal manifests + both
+progress files mirrored to iCloud, MD5-verified.
