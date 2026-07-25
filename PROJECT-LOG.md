@@ -1585,3 +1585,13 @@ IDENTITY CLARIFICATION (Ricardo, direct): VW is NOT a photography-first site. Ph
 section among peers (A La Music, Food & Drink, Out 'n About, etc). The gallery-repair phase was heavy
 because that's what was broken - do not let it skew homepage or identity decisions. Homepage =
 alternative-newsweekly model: content-agnostic lead + section zones.
+
+IMAGE RE-SOURCING POLICY (Ricardo, 2026-07-25): Most non-photography article images were PROMOTIONAL
+material (label press shots, publisher covers, film stills, venue/restaurant press kits) distributed
+for republication. These may be re-sourced from their original promotional channels (label press
+rooms, distributors, publishers) with courtesy credits - this converts a large share of the 2,504
+image-affected posts from recovery cases to re-sourcing errands. HARD LINE: other outlets' editorial
+work (Georgia Straight, 604now, etc.) is NEVER harvested to fill gaps - credit is not license, and the
+Getty/85536 precedent governs. Third bucket unchanged: VW-original work goes through the recovery
+chain (live-site probe / Gmail / photographer asks). Posts with no legitimately re-sourceable image
+stay as clean text posts after the stub-clean pass.
