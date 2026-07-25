@@ -1578,3 +1578,10 @@ reversed pair may re-publish when its manifest entry matches current content (st
 still draft, still flagged, asserted held on every invocation — the only remaining held draft.**
 Backups: `pre-chrome-cleanup` dump local + iCloud (MD5 d2e88640…); all three reversal manifests + both
 progress files mirrored to iCloud, MD5-verified.
+
+## 2026-07-25 — Housekeeping: Elementor spot-checks, doc corrections, homepage planning
+
+IDENTITY CLARIFICATION (Ricardo, direct): VW is NOT a photography-first site. Photography is one
+section among peers (A La Music, Food & Drink, Out 'n About, etc). The gallery-repair phase was heavy
+because that's what was broken - do not let it skew homepage or identity decisions. Homepage =
+alternative-newsweekly model: content-agnostic lead + section zones.
