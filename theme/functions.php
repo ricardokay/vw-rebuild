@@ -47,6 +47,25 @@ function vw_enqueue_styles() {
 		filemtime( $dir . '/assets/js/vw-lightbox-caption.js' ),
 		true
 	);
+
+	if ( is_front_page() || is_page_template( 'page-templates/vw-homepage-preview.php' ) ) {
+		wp_enqueue_style(
+			'vw-homepage',
+			$uri . '/assets/css/homepage.css',
+			[ 'vw-styles' ],
+			filemtime( $dir . '/assets/css/homepage.css' )
+		);
+	}
+}
+
+/**
+ * Excerpt outside the loop: manual excerpt if set, else trimmed content.
+ */
+function vw_get_excerpt( WP_Post $post, int $words = 25 ): string {
+	$manual = trim( wp_strip_all_tags( $post->post_excerpt ) );
+	if ( $manual ) return $manual;
+	$content = strip_shortcodes( wp_strip_all_tags( $post->post_content ) );
+	return wp_trim_words( $content, $words, '…' );
 }
 
 /**
