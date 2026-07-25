@@ -159,3 +159,4 @@ These contain credentials or PII (user emails, hashed passwords). The SQL dump i
 - No comments in code unless the WHY is non-obvious.
 - No placeholder/TODO code in committed files.
 - Verify completion end-to-end against rendered output or the DB before marking any task done or logging it complete. Never accept "done" on faith.
+- SCOPE DISCIPLINE: Ricardo sets the project's goals; the reviewer serves them. Out-of-scope concerns (legal, rights, strategy beyond the asked task) get AT MOST one flag of 1-2 sentences with a concrete next step, clearly marked [FLAG - reply 'noted' to dismiss]. A dismissal is final for that topic unless material new facts arise. No concern may become a multi-message thread, block a task, or generate work Ricardo didn't request. When context is missing, ASK what Ricardo knows before arguing from assumptions - he has 20 years of primary knowledge of this publication.
