@@ -1,5 +1,5 @@
 # Vancouver Weekly: Master Project Plan
-Last updated: June 17, 2026
+Last updated: July 25, 2026
 
 ---
 
@@ -545,15 +545,23 @@ Completed:
 - Bylines: `By <strong>Name</strong>` pattern, grouped under headline on text cards
 - Three design directions prototyped in `text-modules-preview.html` before Direction A was chosen
 
+Completed since June 17 (summary level — PROJECT-LOG.md is the detailed record):
+- All four section fronts live: A La Music, Photography, Food & Drink, Out N About (`section-parts/{slug}.php`); chrome confirmed native on all templates via live HTTP check
+- Spam cleanup: 297 posts trashed; `vw-security` plugin active; XML-RPC disabled
+- Photographer account cleanup: duplicate accounts consolidated, display names corrected (June 18)
+- Facebook album classification complete (`fb-album-inventory.csv`, 563 albums): REPAIR 374 / ADD 15 / NEEDS_REVIEW 174
+- Gallery import + credit pass: repaired galleries rebuilt as drafts with native Gutenberg galleries and per-image photographer credits
+- Archive publish/replace complete (July 18): all 362/362 repaired galleries live (~10,900 images), copy-in-place onto the real published posts — frozen slugs/dates/authors verified per post; published count 3,580 unchanged throughout; retired drafts kept at status draft, never trashed; full rollback assets (MD5-verified dumps + reversal manifests) local + iCloud
+- Body-chrome cleanup on lives (July 18): 84 posts stripped of scrape chrome, dirty-5 rebuilt and published; residual chrome across all 363 repaired lives: 0
+- One held draft: 85536 (Getty rights hold) — never publish without license confirmation
+
 Remaining:
-- Eyebrow tab (solid black label overlapping image cards in Zone D)
-- out-n-about, must-see-films section fronts (same pattern as a-la-music)
-- Single article template (`single.php`)
-- Homepage
-- Mobile-first responsive design
-- Facebook dead-image cleanup
-- Yoast SEO configuration
-- Structured data and sitemap
+- Homepage (current phase — replace Elementor page 9 with a Newspack-native front page, then retire Elementor content and deactivate the Elementor plugin stack)
+- Local→production deploy tooling (greenfield; second launch blocker)
+- Gallery quality backlog (not launch-gating): ~497 caption-only/thin posts needing FB album import + 174 NEEDS_REVIEW albums
+- Single article template (`single.php`) refinements
+- Mobile-first responsive pass
+- Yoast SEO configuration, structured data, sitemap
 
 **Phase 3: Editorial workflow**
 - PublishPress roles and statuses
@@ -645,3 +653,11 @@ Remaining:
 - Decision: Full security audit of all social accounts required before connecting anything to Buffer — change passwords, revoke unknown connected apps, check for unauthorized posts, enable 2FA on every account
 - Decision: LinkedIn posted manually, not via Buffer — tone differs from other platforms
 - Decision: Reddit is never automated; genuine participation only
+
+**July 25, 2026** (catch-up entry covering June 18 – July 25; PROJECT-LOG.md holds the detail)
+- Album classification, gallery import + credit pass, and the full archive publish/replace (362/362 galleries, ~10,900 images) completed; body-chrome cleanup left 0 residual chrome across all repaired lives
+- Decision: publish is copy-in-place replacement onto the existing published posts — slugs, dates, authors frozen; published count (3,580) must not change
+- Decision: retired drafts are kept at status draft with a retirement flag — never trashed
+- Decision: 85536 held on Getty rights — excluded from publish until license confirmed
+- Identity clarification (Ricardo, direct): VW is not a photography-first site — Photography is one section among peers; the gallery-repair phase was heavy because that's what was broken. Homepage follows the alternative-newsweekly model: content-agnostic lead + section zones
+- Current phase: homepage rebuild (Newspack-native front page replacing Elementor page 9), then local→production deploy tooling
