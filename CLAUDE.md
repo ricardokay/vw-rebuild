@@ -152,6 +152,8 @@ These contain credentials or PII (user emails, hashed passwords). The SQL dump i
 ## WORKING STYLE
 
 - DRY RUN FIRST for any bulk database operation. Report. Stop for approval. Then write.
+- Consolidate work into the fewest approval-gated invocations per stage: one read-only investigation script per question set, one committed runner invocation per batch. Never split what can be one script into many ad-hoc commands.
+- Every approval prompt's description line states READ-ONLY or WRITES + what it writes to (e.g. "WRITES: 25 live post_content").
 - Stop for user approval at every phase gate. Never chain phases without a stop.
 - Keep responses concise. No trailing summaries ("Here's what I did...") — the diff speaks.
 - No comments in code unless the WHY is non-obvious.
