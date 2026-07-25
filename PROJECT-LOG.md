@@ -1595,3 +1595,12 @@ work (Georgia Straight, 604now, etc.) is NEVER harvested to fill gaps - credit i
 Getty/85536 precedent governs. Third bucket unchanged: VW-original work goes through the recovery
 chain (live-site probe / Gmail / photographer asks). Posts with no legitimately re-sourceable image
 stay as clean text posts after the stub-clean pass.
+
+85536/67584 NETFLIX GOLDEN GLOBES — DECISION: NOT PUBLISHING (Ricardo, 2026-07-25). Rationale:
+wire/publicity content, not VW's own work or Vancouver coverage — editorially off-catalogue regardless
+of rights. A valid grant email WAS located (Netflix PR distribution list, credit-Netflix condition) —
+recorded here for the record even though it goes unused. This decision supersedes both the prior
+"getty-rights-hold" framing and the "unhold pending grant" path — the grant existing doesn't change
+the editorial call. Draft 85536 stays draft forever (provenance, never trash). Live 67584 is untouched
+this turn; it folds into the ordinary dedup/backlog pass as a normal thin legacy post, no special case.
+Published count unaffected: 3,580.
