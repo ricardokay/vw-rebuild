@@ -65,10 +65,10 @@ $vw_read_time = static function ( WP_Post $post ): int {
 		</div>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vw-masthead__logo-link">
 			<img
-				src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW.png' ); ?>"
+				src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.png' ); ?>"
 				alt="Vancouver Weekly"
 				class="vw-masthead__logo"
-				width="481" height="112"
+				width="481" height="90"
 			>
 		</a>
 		<p class="vw-masthead__motto">The Record of the City's Culture — Twenty Years and Counting</p>
