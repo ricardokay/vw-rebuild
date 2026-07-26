@@ -1604,3 +1604,27 @@ recorded here for the record even though it goes unused. This decision supersede
 the editorial call. Draft 85536 stays draft forever (provenance, never trash). Live 67584 is untouched
 this turn; it folds into the ordinary dedup/backlog pass as a normal thin legacy post, no special case.
 Published count unaffected: 3,580.
+
+EVENTS-LISTING RETIREMENT (2026-07-25): 207 syndicated event-listing posts retired uniformly, expired
+listings off-catalogue regardless of city — 195 single-event stubs + 3 full calendar-page dumps
+(fingerprinted by the All-in-One Event Calendar plugin marker `type-ai1ec_event` / `post-9806 page
+type-page`, 2013-2015) + 9 posts in a separate, earlier "Upcoming Events" category (2012, zero overlap
+with the ai1ec set). One false positive excluded: post 12101, a genuine contest article whose only
+"ai1ec" match was inside an external roundhouse.ca href, not the post's own structure.
+
+Backup: full pre-change snapshot (status, content sha256, categories) for all 207, reversal manifest
+`db-backups/reversal-manifests/vw_events_retire_2026-07-25.json`, MD5-verified identical to its iCloud
+copy. Retired in 5 batches of 50/50/50/50/7 via direct status update -> draft + `_vw_retired_listing=1`
++ `_vw_retired_reason='expired-event-listing'` meta, halt-on-anomaly gate on every batch (none
+triggered). Never trashed.
+
+Verified end-to-end: published count 3,580 -> **3,373** (delta exactly 207); 0 of the 207 still
+`publish`; all 207 confirmed `draft` with both retirement meta keys correct; published-posts-NOT-in-
+the-207-set = 3,373 = total published now, proving no post outside the set was touched. 85536/67584
+reconfirmed unaffected by this operation.
+
+Downstream effects (not yet acted on): image-affected pool (2,504) shrinks by ~187 (94% of the retired
+set carried dead inline images); Uncategorized shrinks by 198 (nearly all the ai1ec set sat there); 4
+of the known 104 duplicate-title groups self-resolve (2nd Annual Event Help The Less Fortunate, the
+Events Calendar triple itself, Legally Blonde The Musical, Vancouver Halloween Parade Expo) since one
+or both sides of each pair are now draft.
