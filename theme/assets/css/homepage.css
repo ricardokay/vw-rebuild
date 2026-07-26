@@ -27,7 +27,7 @@
 
 .vw-masthead {
   padding-top: 14px;
-  padding-bottom: 0;
+  padding-bottom: 32px;
   text-align: center;
 }
 
@@ -47,15 +47,16 @@
 }
 
 .vw-masthead__logo-link {
-  display: inline-block;
+  display: block;
+  width: min(620px, 42%);
+  min-width: 300px;
+  margin: 4px auto 0;
 }
 
 .vw-masthead__logo {
-  width: min(620px, 42%);
-  min-width: 300px;
+  width: 100%;
   height: auto;
   display: block;
-  margin: 4px auto 0;
 }
 
 .vw-masthead__motto {
