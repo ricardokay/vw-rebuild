@@ -72,3 +72,22 @@ Sample paths (10, spread across the failure set): `2012/02/Top_Secret_America-1.
 2. **The zero gaps.txt overlap is worth a sanity gut-check** before treating 165 as a stable number — not because the math is wrong (verified), but because it reframes the ask: this yield doesn't validate gaps.txt at all, it's a separate, smaller, previously-unknown-to-us pocket of recoverable files.
 
 Once Content-Type is confirmed clean, a **partial harvest of the deduped ~150 files** is low-risk and clearly worth doing (114 exact + 36 base-fallback originals) — small enough to review by hand before it touches any post content. A full harvest isn't on the table regardless, since 98.4% of the list is confirmed dead on this channel; the real remaining backlog (10,052 files) needs a different recovery avenue entirely (photographer asks, or accepting permanent loss for the pre-2019 tail).
+
+## 7. Header verification (2026-07-25, follow-up)
+
+HEAD-requested all 150 distinct hit URLs (114 exact + 36 deduped base files), captured Content-Type and Content-Length. No image bodies downloaded.
+
+**Verdict: 150/150 are genuine images. Zero suspicious results.**
+
+| | Count |
+|---|---:|
+| HTTP 200 | 150 / 150 |
+| `image/jpeg` | 145 |
+| `image/png` | 5 |
+| Non-image Content-Type (text/html, etc.) | 0 |
+| Missing headers | 0 |
+| Size ≤5KB (likely error page) | 0 |
+
+Size distribution: min 23.6KB, median 115KB, max 1.26MB — entirely consistent with real photographs, no suspiciously tiny responses anywhere in the set.
+
+**This channel is clean, not junk.** The earlier caution (possible fake-200s from a misconfigured server) did not materialize. Recommendation from §6 is now unblocked: the ~150-file partial harvest is clear to proceed whenever wanted — nothing further to investigate on the verification side. No harvest has been run; this is a header check only.

@@ -1628,3 +1628,36 @@ set carried dead inline images); Uncategorized shrinks by 198 (nearly all the ai
 of the known 104 duplicate-title groups self-resolve (2nd Annual Event Help The Less Fortunate, the
 Events Calendar triple itself, Legally Blonde The Musical, Vancouver Halloween Parade Expo) since one
 or both sides of each pair are now draft.
+
+2026-07-25 - Homepage clone round 2 (commit 75ae4e9): fixed the canvas-centering bug Ricardo flagged
+against the reference mockup. Root cause: every row was independently self-centering via its own
+`.vw-module__inner`/max-width math instead of sharing one container, so accumulated rounding drift put
+Lead and Photography's content at different left edges than Masthead/This Week/zones. Unified all
+contained rows under one shared 1440px container; Photography's dark band stays full-bleed but its
+inner content now aligns to the same container as everything else; Lead no longer bleeds to the
+viewport edge. Fixed the archive closer's column sizing (was reading as two islands with dead space
+between). Suppressed Newspack's injected `#content` margin-top and its default `#colophon` footer on
+this template only (scoped CSS, parent theme files untouched). Desktop only, no breakpoints changed.
+
+2026-07-25 - Homepage clone round 3 (commit 4255431): divider stubs replaced with full-width rules
+(heavy above This Week and archive closer, hairlines elsewhere), specificity conflict with Newspack hr
+default resolved via documented !important. Vertical rhythm compressed (module paddings reduced,
+values in handoff). A La Music image swapped from Unsplash hotlink to local asset, 1:1 constrained.
+Desktop only; @media blocks still stale, mobile round pending.
+
+2026-07-25 - Live-site HEAD probe analysis (commit bd68b36): 165/10217 hits (1.6%), ~150 distinct
+files, ZERO overlap with image-recovery-gaps.txt. Channel is additive-only, does not address known
+gaps. No harvest run. Pending: header verification on the ~150 before final close/keep decision.
+Primary gap recovery remains the archive.today second pass.
+
+2026-07-25 - Header verification on the ~150 probe-recoverable files (read-only, no commit — appended
+to `image-recovery-probe-analysis_2026-07-25.md`): 150/150 confirmed genuine images (145 jpeg / 5 png,
+all HTTP 200, size range 23.6KB-1.26MB, zero suspicious). Channel verified clean, not junk. Partial
+harvest of the ~150 is clear to proceed whenever wanted; none run yet.
+
+2026-07-25 SESSION CLOSE - Homepage clone at round 3, desktop container + rules + rhythm fixed, awaiting
+Ricardo's side-by-side verdict vs mockup. Mobile round pending (nav pattern decision needed, @media
+blocks stale). Live-site probe channel: 1.6% yield, zero gap overlap, header-verified clean (150/150
+real images) — ready for a partial harvest decision whenever wanted. Primary image recovery route:
+archive.today second pass, inventory report pending (not started this session). Next session picks:
+side-by-side verdict, then either archive.today probe slice or mobile round.
