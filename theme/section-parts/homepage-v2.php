@@ -30,22 +30,19 @@
 	</div>
 	<hr class="vwh2-rule vwh2-rule--heavy">
 
-</div>
-
-<!-- Lead -->
-<section class="vwh2-lead">
-	<div class="vwh2-lead__text">
-		<span class="vwh2-kicker"><span class="vwh2-mark vwh2-mark--outabout"></span>Out N About</span>
-		<h1 class="vwh2-lead__hed"><a href="#">Who Gets to Save the Rio This Time?</a></h1>
-		<p class="vwh2-lead__dek">East Van's stubborn single-screen has outlived two chains, three condo proposals, and a pandemic. Now its future hangs on a lease clause nobody read until March — and on who shows up next Thursday.</p>
-		<span class="vwh2-byline">By <strong>Naomi Cheung</strong> · Photography by Tomás Rivera · 18 min read</span>
-	</div>
-	<div class="vwh2-lead__img-col">
-		<img src="<?php echo esc_url( content_url( '/uploads/2026/07/646612242114725.jpg' ) ); ?>" alt="" class="vwh2-lead__img">
-		<span class="vwh2-lead__img-credit">Photo by Gael D on Unsplash</span>
-	</div>
-</section>
-<div class="vwh2-container">
+	<!-- Lead -->
+	<section class="vwh2-lead">
+		<div class="vwh2-lead__text">
+			<span class="vwh2-kicker"><span class="vwh2-mark vwh2-mark--outabout"></span>Out N About</span>
+			<h1 class="vwh2-lead__hed"><a href="#">Who Gets to Save the Rio This Time?</a></h1>
+			<p class="vwh2-lead__dek">East Van's stubborn single-screen has outlived two chains, three condo proposals, and a pandemic. Now its future hangs on a lease clause nobody read until March — and on who shows up next Thursday.</p>
+			<span class="vwh2-byline">By <strong>Naomi Cheung</strong> · Photography by Tomás Rivera · 18 min read</span>
+		</div>
+		<div class="vwh2-lead__img-col">
+			<img src="<?php echo esc_url( content_url( '/uploads/2026/07/646612242114725.jpg' ) ); ?>" alt="" class="vwh2-lead__img">
+			<span class="vwh2-lead__img-credit">Photo by Gael D on Unsplash</span>
+		</div>
+	</section>
 	<p class="vwh2-lead__caption">The Rio's marquee, July 2026. Its lease expires in November. TOMÁS RIVERA</p>
 	<hr class="vwh2-rule">
 
@@ -87,30 +84,32 @@
 
 </div>
 
-<!-- Photography (bleed) -->
+<!-- Photography — full-bleed background only; content aligns to the shared container -->
 <section class="vwh2-photo">
-	<div class="vwh2-photo__inner">
+	<div class="vwh2-container">
 		<div class="vwh2-photo__head">
 			<span class="vwh2-mark vwh2-mark--photo"></span>Photography
 			<a href="#" class="vwh2-more">All Photo Essays →</a>
 		</div>
-		<img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&q=80" alt="" class="vwh2-photo__img">
-		<div class="vwh2-photo__text">
-			<span class="vwh2-photo__eyebrow">Photo Essay</span>
-			<h2 class="vwh2-photo__hed"><a href="#">Pit Notes: 36 Frames From Levitation Vancouver</a></h2>
-			<p class="vwh2-photo__dek">No flash, no pass restrictions, no retouching. Three nights in the photo pit, printed as shot.</p>
-			<span class="vwh2-photo__byline">Photographs by <strong>Tomás Rivera</strong></span>
-			<div class="vwh2-photo__sub">
-				<a class="vwh2-photo__sub-hed" href="#">Craft: Shooting the Commodore's Terrible, Beautiful Red Light</a>
-				<span class="vwh2-photo__byline">By <strong>Hana Yoshida</strong></span>
+		<div class="vwh2-photo__inner">
+			<img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&q=80" alt="" class="vwh2-photo__img">
+			<div class="vwh2-photo__text">
+				<span class="vwh2-photo__eyebrow">Photo Essay</span>
+				<h2 class="vwh2-photo__hed"><a href="#">Pit Notes: 36 Frames From Levitation Vancouver</a></h2>
+				<p class="vwh2-photo__dek">No flash, no pass restrictions, no retouching. Three nights in the photo pit, printed as shot.</p>
+				<span class="vwh2-photo__byline">Photographs by <strong>Tomás Rivera</strong></span>
+				<div class="vwh2-photo__sub">
+					<a class="vwh2-photo__sub-hed" href="#">Craft: Shooting the Commodore's Terrible, Beautiful Red Light</a>
+					<span class="vwh2-photo__byline">By <strong>Hana Yoshida</strong></span>
+				</div>
 			</div>
 		</div>
-	</div>
-	<div class="vwh2-photo__strip">
-		<a href="#" class="vwh2-photo__thumb"><img src="https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=500&q=80" alt=""></a>
-		<a href="#" class="vwh2-photo__thumb"><img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80" alt=""></a>
-		<a href="#" class="vwh2-photo__thumb"><img src="https://images.unsplash.com/photo-1499364615650-ec38552f4f34?w=500&q=80" alt=""></a>
-		<a href="#" class="vwh2-photo__thumb"><img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80" alt=""></a>
+		<div class="vwh2-photo__strip">
+			<a href="#" class="vwh2-photo__thumb"><img src="https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=500&q=80" alt=""></a>
+			<a href="#" class="vwh2-photo__thumb"><img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80" alt=""></a>
+			<a href="#" class="vwh2-photo__thumb"><img src="https://images.unsplash.com/photo-1499364615650-ec38552f4f34?w=500&q=80" alt=""></a>
+			<a href="#" class="vwh2-photo__thumb"><img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80" alt=""></a>
+		</div>
 	</div>
 </section>
 
