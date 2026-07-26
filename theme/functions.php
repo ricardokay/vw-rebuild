@@ -48,12 +48,21 @@ function vw_enqueue_styles() {
 		true
 	);
 
-	if ( is_front_page() || is_page_template( 'page-templates/vw-homepage-preview.php' ) ) {
+	if ( is_front_page() ) {
 		wp_enqueue_style(
 			'vw-homepage',
 			$uri . '/assets/css/homepage.css',
 			[ 'vw-styles' ],
 			filemtime( $dir . '/assets/css/homepage.css' )
+		);
+	}
+
+	if ( is_page_template( 'page-templates/vw-homepage-preview.php' ) ) {
+		wp_enqueue_style(
+			'vw-homepage-v2',
+			$uri . '/assets/css/homepage-v2.css',
+			[ 'vw-palette', 'vw-fonts' ],
+			filemtime( $dir . '/assets/css/homepage-v2.css' )
 		);
 	}
 }

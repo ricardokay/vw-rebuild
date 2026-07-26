@@ -9,10 +9,8 @@
 
 get_header();
 ?>
-<div class="vw-section-landing vw-homepage">
-	<div class="vw-section-blocks">
-		<?php include get_stylesheet_directory() . '/section-parts/homepage.php'; ?>
-	</div>
+<div class="vwh2-page">
+	<?php include get_stylesheet_directory() . '/section-parts/homepage-v2.php'; ?>
 </div>
 <?php
 get_footer();
