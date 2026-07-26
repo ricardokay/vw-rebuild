@@ -10,6 +10,12 @@
   overflow-x: hidden; /* safety net: 100vw includes scrollbar width on some desktop browsers */
 }
 
+/* The masthead below replaces the site-wide utility nav's job (logo + section
+   links) with a richer treatment — showing both reads as a duplicate header. */
+.page-template-page-templatesvw-homepage-preview-php .vw-nav {
+  display: none;
+}
+
 .vw-bleed {
   width: 100vw;
   margin-left: calc(50% - 50vw);
