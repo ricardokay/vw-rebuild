@@ -1,9 +1,255 @@
 /* ================================================================
-   Vancouver Weekly — Homepage zones
-   Zone headers for the alternative-newsweekly front.
-   Module internals (lead block, feat-list, hl-list, cards) come
-   from section-landing.css; this file adds only what is new.
+   Vancouver Weekly — Homepage v2
+   Contained (1440px, matches .vw-module__inner) alternates with
+   three full-viewport-bleed moments: Lead, Photography, Archive
+   closer. The alternation is the design — everything else reuses
+   section-landing.css component classes as-is.
    ================================================================ */
+
+.vw-homepage {
+  overflow-x: hidden; /* safety net: 100vw includes scrollbar width on some desktop browsers */
+}
+
+.vw-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+
+/* ── Masthead (contained) ─────────────────────────────────────── */
+
+.vw-masthead {
+  padding-top: 28px;
+  padding-bottom: 32px;
+  text-align: center;
+}
+
+.vw-masthead__dateline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--vw-border);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vw-ink-muted);
+}
+
+.vw-masthead__logo-link {
+  display: inline-block;
+}
+
+.vw-masthead__logo {
+  width: 340px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.vw-masthead__motto {
+  margin: 18px 0 26px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--vw-ink-muted);
+}
+
+.vw-masthead__nav {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 44px;
+  padding-top: 24px;
+  border-top: 1px solid var(--vw-border);
+}
+
+.vw-masthead__nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vw-ink);
+}
+
+.vw-masthead__nav-item:hover { color: var(--vw-red); }
+.vw-masthead__nav-item .vw-section-mark { margin-bottom: 10px; }
+
+@media (max-width: 900px) {
+  .vw-masthead__dateline { flex-direction: column; gap: 6px; text-align: center; }
+  .vw-masthead__logo { width: 240px; }
+  .vw-masthead__nav { flex-wrap: wrap; gap: 24px 28px; }
+}
+
+
+/* ── Lead v2 (bleed 1): text in reading column, image to viewport edge ── */
+
+.vw-lead2 {
+  display: grid;
+  grid-template-columns: max(40px, calc((100% - 1440px) / 2 + 40px)) minmax(280px, 620px) 56px minmax(300px, 1fr);
+  padding: 8px 0 40px;
+}
+
+.vw-lead2__text {
+  grid-column: 2;
+  align-self: center;
+  padding: 40px 0;
+}
+
+.vw-lead2__hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(40px, 5.4vw, 76px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--vw-ink);
+  margin: 0 0 22px;
+}
+
+.vw-lead2__hed a { color: inherit; text-decoration: none; }
+.vw-lead2__hed a:hover { color: var(--vw-red); }
+
+.vw-lead2__dek {
+  font-family: 'Inter', sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--vw-ink-muted);
+  margin: 0 0 18px;
+}
+
+.vw-lead2__img-col {
+  grid-column: 4;
+}
+
+.vw-lead2__img {
+  width: 100%;
+  height: auto;
+  max-height: 640px;
+  object-fit: cover;
+  display: block;
+}
+
+.vw-lead2__caption {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: var(--vw-ink-muted);
+  padding: 10px 24px 0 0;
+  text-align: right;
+}
+
+@media (max-width: 1023px) {
+  .vw-lead2 {
+    display: block;
+    padding: 0;
+  }
+  .vw-lead2__text { padding: 32px 24px 24px; }
+  .vw-lead2__hed { font-size: clamp(32px, 8vw, 48px); }
+  .vw-lead2__img-col { padding: 0; }
+  .vw-lead2__caption { padding: 10px 24px 0; text-align: left; }
+}
+
+.vw-lead2-sec {
+  padding-top: 0;
+  padding-bottom: 8px;
+}
+
+.vw-lead2-sec__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 2px solid var(--vw-ink);
+}
+
+.vw-lead2-sec__item {
+  padding: 20px 32px 20px 0;
+}
+
+.vw-lead2-sec__item:last-child { padding-left: 32px; padding-right: 0; }
+.vw-lead2-sec__item:first-child { border-right: 1px solid var(--vw-border); }
+
+.vw-lead2-sec__hed {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 1.25;
+  color: var(--vw-ink);
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.vw-lead2-sec__hed:hover { color: var(--vw-red); }
+
+@media (max-width: 600px) {
+  .vw-lead2-sec__grid { grid-template-columns: 1fr; }
+  .vw-lead2-sec__item:first-child { border-right: none; border-bottom: 1px solid var(--vw-border); padding: 20px 0; }
+  .vw-lead2-sec__item:last-child { padding: 20px 0; }
+}
+
+
+/* ── This Week (contained) ────────────────────────────────────── */
+
+.vw-thisweek {
+  padding-top: 0;
+}
+
+.vw-thisweek__label {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  margin-bottom: 16px;
+}
+
+.vw-thisweek__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 2px solid var(--vw-ink);
+  border-bottom: 1px solid var(--vw-border);
+}
+
+.vw-thisweek__item {
+  padding: 22px 28px;
+}
+
+.vw-thisweek__item:not(:last-child) {
+  border-right: 1px solid var(--vw-border);
+}
+
+.vw-thisweek__hed {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--vw-ink);
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.vw-thisweek__hed:hover { color: var(--vw-red); }
+
+@media (max-width: 900px) {
+  .vw-thisweek__grid { grid-template-columns: 1fr; }
+  .vw-thisweek__item:not(:last-child) { border-right: none; border-bottom: 1px solid var(--vw-border); }
+}
+
+
+/* ── Section zone header (shared by v1 and v2) ────────────────── */
 
 .vw-home-zone__header {
   display: flex;
@@ -52,4 +298,249 @@
   .vw-home-zone__more {
     display: none;
   }
+}
+
+
+/* ── New mark: Books & Political — two crossed bars (mixed content) ── */
+
+.vw-section-mark--books-political {
+  width: 24px;
+  height: 24px;
+}
+.vw-section-mark--books-political::before,
+.vw-section-mark--books-political::after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 24px;
+  height: 6px;
+  background: #5B3E7A;
+}
+.vw-section-mark--books-political::before {
+  top: 3px;
+  transform: rotate(-14deg);
+}
+.vw-section-mark--books-political::after {
+  bottom: 3px;
+  transform: rotate(14deg);
+}
+
+
+/* ── Photography (bleed 2): near-black spine ──────────────────── */
+
+.vw-photo-band {
+  background: #121113;
+  color: #EDEBE7;
+  padding: 64px 0 0;
+}
+
+.vw-photo-band__essay {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(280px, 620px) max(40px, calc((100% - 1440px) / 2 + 40px));
+  align-items: center;
+}
+
+.vw-photo-band__img-col {
+  grid-column: 1;
+}
+
+.vw-photo-band__img {
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  object-fit: cover;
+  display: block;
+}
+
+.vw-photo-band__text {
+  grid-column: 2;
+  padding: 40px 40px 40px 56px;
+}
+
+.vw-photo-band__kicker {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  margin-bottom: 16px;
+}
+
+.vw-photo-band__hed {
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(28px, 3.2vw, 44px);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  margin: 0 0 16px;
+}
+
+.vw-photo-band__hed a { color: #EDEBE7; text-decoration: none; }
+.vw-photo-band__hed a:hover { color: var(--vw-red); }
+
+.vw-photo-band__byline {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #A8A5A0;
+  margin-bottom: 24px;
+}
+
+.vw-photo-band__byline strong { color: #EDEBE7; font-weight: 600; }
+
+.vw-photo-band__more {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  text-decoration: none;
+}
+
+.vw-photo-band__more:hover { text-decoration: underline; }
+
+.vw-photo-band__strip {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.vw-photo-band__thumb {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+
+.vw-photo-band__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(15%);
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.vw-photo-band__thumb:hover img {
+  transform: scale(1.04);
+  filter: grayscale(0%);
+}
+
+@media (max-width: 1023px) {
+  .vw-photo-band { padding-top: 40px; }
+  .vw-photo-band__essay { grid-template-columns: 1fr; }
+  .vw-photo-band__img-col { grid-column: 1; }
+  .vw-photo-band__text { grid-column: 1; padding: 28px 24px; }
+  .vw-photo-band__strip { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .vw-photo-band__strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+
+/* ── Archive closer (bleed 3): live numeral + bordered issue object ── */
+
+.vw-archive-closer {
+  background: var(--vw-bg);
+  border-top: 1px solid var(--vw-border);
+  border-bottom: 1px solid var(--vw-border);
+  padding: 72px 0 88px;
+}
+
+.vw-archive-closer__inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.vw-archive-closer__numeral-col {
+  overflow: hidden;
+}
+
+.vw-archive-closer__numeral {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(120px, 15vw, 220px);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: var(--vw-ink);
+  margin-left: -6px;
+}
+
+.vw-archive-closer__line {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--vw-ink-muted);
+  max-width: 480px;
+  margin: 8px 0 22px;
+}
+
+.vw-archive-closer__cta {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vw-red);
+  text-decoration: none;
+}
+
+.vw-archive-closer__cta:hover { text-decoration: underline; }
+
+.vw-archive-closer__issue {
+  display: block;
+  border: 1px solid var(--vw-ink);
+  padding: 28px;
+  text-decoration: none;
+  position: relative;
+}
+
+.vw-archive-closer__issue-date {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vw-ink-muted);
+  margin-bottom: 14px;
+}
+
+.vw-archive-closer__issue-hed {
+  display: block;
+  font-family: 'PT Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--vw-ink);
+  margin: 8px 0 18px;
+}
+
+.vw-archive-closer__issue:hover .vw-archive-closer__issue-hed { color: var(--vw-red); }
+
+.vw-archive-closer__issue-tag {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: var(--vw-ink);
+  padding: 4px 9px 3px;
+}
+
+@media (max-width: 1023px) {
+  .vw-archive-closer__inner { grid-template-columns: 1fr; gap: 32px; }
+  .vw-archive-closer__numeral { font-size: clamp(90px, 26vw, 140px); }
 }
