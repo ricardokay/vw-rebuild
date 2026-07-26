@@ -3,19 +3,24 @@
  * Homepage v2 — contained/full-bleed alternation.
  * Included by the VW Homepage Preview template now, front-page.php after cutover.
  *
- * Structure: masthead (contained) → LEAD (bleed 1) → This Week (contained) →
- * section zones: music/food/out-n-about/books+political (contained) →
- * Photography (bleed 2, near-black spine) → Archive closer (bleed 3).
+ * Contained sections (masthead, lead secondaries, This Week, zones) share ONE
+ * .vw-home2__container (margin-inline:auto) — not one .vw-module__inner per
+ * section — so there is a single source of truth for horizontal centering.
+ * Bleed sections (Lead, Photography, Archive closer) are plain width:100%
+ * blocks on the already-full-width parent; their internal text columns align
+ * to the same 1440/gutter math via CSS, not a vw-unit breakout hack (100vw
+ * over-counts by the scrollbar width and was the source of the drift).
+ *
  * $used_ids threaded start to finish: no story repeats.
  */
 
 $eyebrow_cats = [ 7, 17, 13, 6, 15, 30, 18, 9, 8, 11, 20, 10 ];
 
 $zones = [
-	[ 'slug' => 'a-la-music',      'title' => 'A La Music',      'cats' => [ 7, 9, 8, 11, 20, 10 ], 'link_cat' => 7 ],
-	[ 'slug' => 'food-drink',      'title' => 'Food & Drink',    'cats' => [ 13 ],                  'link_cat' => 13 ],
-	[ 'slug' => 'out-n-about',     'title' => 'Out N About',     'cats' => [ 17 ],                  'link_cat' => 17 ],
-	[ 'slug' => 'books-political', 'title' => 'Books & Political','cats' => [ 30, 18 ],             'link_cat' => 30 ],
+	[ 'slug' => 'a-la-music',      'title' => 'A La Music',       'cats' => [ 7, 9, 8, 11, 20, 10 ], 'link_cat' => 7,  'side' => 'left' ],
+	[ 'slug' => 'food-drink',      'title' => 'Food & Drink',     'cats' => [ 13 ],                  'link_cat' => 13, 'side' => 'right' ],
+	[ 'slug' => 'out-n-about',     'title' => 'Out N About',      'cats' => [ 17 ],                  'link_cat' => 17, 'side' => 'left' ],
+	[ 'slug' => 'books-political', 'title' => 'Books & Political','cats' => [ 30, 18 ],              'link_cat' => 30, 'side' => 'none' ],
 ];
 
 $nav_marks = [
@@ -50,9 +55,10 @@ $vw_read_time = static function ( WP_Post $post ): int {
 
 ?>
 
-<!-- ═══ Masthead (contained) ═══ -->
-<div class="vw-module vw-masthead">
-	<div class="vw-module__inner">
+<div class="vw-home2__container">
+
+	<!-- ═══ Masthead ═══ -->
+	<div class="vw-module vw-masthead">
 		<div class="vw-masthead__dateline">
 			<span><?php echo esc_html( date_i18n( 'l, F j, Y' ) ); ?> · Vancouver, BC</span>
 			<span>No Ads · No Clickbait · Independent Since 2006</span>
@@ -75,10 +81,11 @@ $vw_read_time = static function ( WP_Post $post ): int {
 			<?php endforeach; ?>
 		</nav>
 	</div>
+
 </div>
 
 <?php
-/* ── LEAD (bleed 1): one story, image flush to the right viewport edge ── */
+/* ── LEAD (bleed): one story, image flush to the right viewport edge ── */
 
 $anchor     = null;
 $sticky_ids = get_option( 'sticky_posts' );
@@ -105,7 +112,7 @@ if ( $anchor ) :
 	$lead_thumb = get_post_thumbnail_id( $anchor->ID );
 	$lead_caption = wp_get_attachment_caption( $lead_thumb );
 	?>
-	<section class="vw-lead2 vw-bleed">
+	<section class="vw-lead2">
 		<div class="vw-lead2__text">
 			<?php if ( $lead_cat ) : ?>
 				<span class="vw-kicker"><?php echo esc_html( $lead_cat ); ?></span>
@@ -134,37 +141,38 @@ if ( $anchor ) :
 			<?php endif; ?>
 		</div>
 	</section>
+	<?php
+endif;
+?>
 
-	<?php if ( $lead_secondaries ) : ?>
+<div class="vw-home2__container">
+
+	<?php if ( $anchor && $lead_secondaries ) : ?>
 	<div class="vw-module vw-lead2-sec">
-		<div class="vw-module__inner">
-			<div class="vw-lead2-sec__grid">
-				<?php foreach ( $lead_secondaries as $p ) :
-					$sec_cat = vw_primary_cat_name( $p->ID, $eyebrow_cats );
-				?>
-					<div class="vw-lead2-sec__item">
-						<?php if ( $sec_cat ) : ?>
-							<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $sec_cat ); ?></span>
-						<?php endif; ?>
-						<a class="vw-lead2-sec__hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
-						<span class="vw-byline vw-byline--sm">By <strong><?php echo esc_html( get_the_author_meta( 'display_name', $p->post_author ) ); ?></strong></span>
-					</div>
-				<?php endforeach; ?>
-			</div>
+		<div class="vw-lead2-sec__grid">
+			<?php foreach ( $lead_secondaries as $p ) :
+				$sec_cat = vw_primary_cat_name( $p->ID, $eyebrow_cats );
+			?>
+				<div class="vw-lead2-sec__item">
+					<?php if ( $sec_cat ) : ?>
+						<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $sec_cat ); ?></span>
+					<?php endif; ?>
+					<a class="vw-lead2-sec__hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
+					<span class="vw-byline vw-byline--sm">By <strong><?php echo esc_html( get_the_author_meta( 'display_name', $p->post_author ) ); ?></strong></span>
+				</div>
+			<?php endforeach; ?>
 		</div>
 	</div>
 	<?php endif;
-endif;
 
 
-/* ── This Week (contained): 3 items, rules above/below ── */
+	/* ── This Week: 3 items, rules above/below ── */
 
-$week_posts = $vw_fetch( [ 'posts_per_page' => 3 ], $used_ids );
-foreach ( $week_posts as $p ) $used_ids[] = $p->ID;
+	$week_posts = $vw_fetch( [ 'posts_per_page' => 3 ], $used_ids );
+	foreach ( $week_posts as $p ) $used_ids[] = $p->ID;
 
-if ( $week_posts ) : ?>
-	<div class="vw-module vw-thisweek">
-		<div class="vw-module__inner">
+	if ( $week_posts ) : ?>
+		<div class="vw-module vw-thisweek">
 			<span class="vw-thisweek__label">This Week</span>
 			<div class="vw-thisweek__grid">
 				<?php foreach ( $week_posts as $p ) :
@@ -180,84 +188,121 @@ if ( $week_posts ) : ?>
 				<?php endforeach; ?>
 			</div>
 		</div>
-	</div>
-<?php endif;
+	<?php endif;
 
 
-/* ── Section zones (contained): featured + 2 compact + All {section} → ── */
+	/* ── Section zones: featured + 2 compact + All {section} →, alternating anatomy ── */
 
-foreach ( $zones as $zone ) :
-	$zone_posts = $vw_fetch( [ 'category__in' => $zone['cats'], 'posts_per_page' => 6 ], $used_ids );
-	if ( ! $zone_posts ) continue;
+	foreach ( $zones as $zone ) :
+		$zone_posts = $vw_fetch( [ 'category__in' => $zone['cats'], 'posts_per_page' => 6 ], $used_ids );
+		if ( ! $zone_posts ) continue;
 
-	$lead_key = 0;
-	foreach ( $zone_posts as $k => $p ) {
-		if ( vw_image_tier( $p->ID ) >= 1 ) { $lead_key = $k; break; }
-	}
-	$lead = $zone_posts[ $lead_key ];
-	unset( $zone_posts[ $lead_key ] );
-	$items = array_slice( array_values( $zone_posts ), 0, 2 );
+		$lead_key = 0;
+		foreach ( $zone_posts as $k => $p ) {
+			if ( vw_image_tier( $p->ID ) >= 1 ) { $lead_key = $k; break; }
+		}
+		$lead = $zone_posts[ $lead_key ];
+		unset( $zone_posts[ $lead_key ] );
+		$items = array_slice( array_values( $zone_posts ), 0, 2 );
 
-	$used_ids[] = $lead->ID;
-	foreach ( $items as $p ) $used_ids[] = $p->ID;
+		$used_ids[] = $lead->ID;
+		foreach ( $items as $p ) $used_ids[] = $p->ID;
 
-	$zone_url  = get_category_link( $zone['link_cat'] );
-	$lead_tier = vw_image_tier( $lead->ID );
-	$lead_cat  = vw_primary_cat_name( $lead->ID, $zone['cats'] );
-	?>
-	<section class="vw-module vw-home-zone vw-home-zone--<?php echo esc_attr( $zone['slug'] ); ?>">
-		<div class="vw-module__inner">
+		$zone_url  = get_category_link( $zone['link_cat'] );
+		$lead_tier = vw_image_tier( $lead->ID );
+		$lead_cat  = vw_primary_cat_name( $lead->ID, $zone['cats'] );
+		$lead_dek  = vw_get_excerpt( $lead, 26 );
+		?>
+		<section class="vw-module vw-home-zone vw-home-zone--<?php echo esc_attr( $zone['slug'] ); ?>">
 			<header class="vw-home-zone__header">
 				<span class="vw-section-mark vw-section-mark--<?php echo esc_attr( $zone['slug'] ); ?>"></span>
 				<h2 class="vw-home-zone__title"><a href="<?php echo esc_url( $zone_url ); ?>"><?php echo esc_html( $zone['title'] ); ?></a></h2>
 				<a class="vw-home-zone__more" href="<?php echo esc_url( $zone_url ); ?>">All <?php echo esc_html( $zone['title'] ); ?> →</a>
 			</header>
-			<div class="vw-feat-list">
-				<div class="vw-feat-list__lead">
-					<?php if ( $lead_tier >= 1 ) :
-						$lead_img = wp_get_attachment_image_src( get_post_thumbnail_id( $lead->ID ), 'large' );
-						if ( $lead_img ) :
-					?>
-						<a href="<?php echo esc_url( get_permalink( $lead ) ); ?>" class="vw-feat-list__lead-img-wrap">
-							<img src="<?php echo esc_url( $lead_img[0] ); ?>" alt="<?php echo esc_attr( get_the_title( $lead ) ); ?>" class="vw-feat-list__lead-img" loading="lazy">
-						</a>
-					<?php endif; endif; ?>
+
+			<?php if ( 'none' === $zone['side'] ) : ?>
+				<div class="vw-zone-textled">
+					<blockquote class="vw-zone-textled__quote">"<?php echo esc_html( $lead_dek ); ?>"</blockquote>
 					<?php if ( $lead_cat ) : ?>
 						<span class="vw-kicker"><?php echo esc_html( $lead_cat ); ?></span>
 					<?php endif; ?>
-					<h3 class="vw-feat-list__hed">
+					<h3 class="vw-zone-textled__hed">
 						<a href="<?php echo esc_url( get_permalink( $lead ) ); ?>"><?php echo esc_html( get_the_title( $lead ) ); ?></a>
 					</h3>
 					<span class="vw-byline">By <strong><?php echo esc_html( get_the_author_meta( 'display_name', $lead->post_author ) ); ?></strong></span>
+					<ul class="vw-zone-textled__items">
+						<?php foreach ( $items as $p ) :
+							$item_cat = vw_primary_cat_name( $p->ID, $zone['cats'] );
+						?>
+							<li>
+								<?php if ( $item_cat ) : ?>
+									<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $item_cat ); ?></span>
+								<?php endif; ?>
+								<a class="vw-feat-list__item-hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
+								<span class="vw-byline vw-byline--sm">By <strong><?php echo esc_html( get_the_author_meta( 'display_name', $p->post_author ) ); ?></strong></span>
+							</li>
+						<?php endforeach; ?>
+					</ul>
 				</div>
-				<ul class="vw-feat-list__items">
-					<?php foreach ( $items as $p ) :
-						$item_cat = vw_primary_cat_name( $p->ID, $zone['cats'] );
-					?>
-						<li class="vw-feat-list__item">
-							<?php if ( $item_cat ) : ?>
-								<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $item_cat ); ?></span>
-							<?php endif; ?>
-							<a class="vw-feat-list__item-hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
-							<span class="vw-byline vw-byline--sm">By <strong><?php echo esc_html( get_the_author_meta( 'display_name', $p->post_author ) ); ?></strong></span>
-						</li>
-					<?php endforeach; ?>
-				</ul>
-			</div>
-		</div>
-	</section>
-	<?php
-endforeach;
+			<?php else : ?>
+				<div class="vw-feat-list vw-feat-list--<?php echo esc_attr( $zone['side'] ); ?>">
+					<div class="vw-feat-list__lead">
+						<?php if ( $lead_tier >= 1 ) :
+							$lead_img = wp_get_attachment_image_src( get_post_thumbnail_id( $lead->ID ), 'large' );
+							if ( $lead_img ) :
+						?>
+							<a href="<?php echo esc_url( get_permalink( $lead ) ); ?>" class="vw-feat-list__lead-img-wrap">
+								<img src="<?php echo esc_url( $lead_img[0] ); ?>" alt="<?php echo esc_attr( get_the_title( $lead ) ); ?>" class="vw-feat-list__lead-img" loading="lazy">
+							</a>
+						<?php endif; endif; ?>
+						<?php if ( $lead_cat ) : ?>
+							<span class="vw-kicker"><?php echo esc_html( $lead_cat ); ?></span>
+						<?php endif; ?>
+						<h3 class="vw-feat-list__hed">
+							<a href="<?php echo esc_url( get_permalink( $lead ) ); ?>"><?php echo esc_html( get_the_title( $lead ) ); ?></a>
+						</h3>
+						<span class="vw-byline">By <strong><?php echo esc_html( get_the_author_meta( 'display_name', $lead->post_author ) ); ?></strong></span>
+					</div>
+					<ul class="vw-feat-list__items">
+						<?php foreach ( $items as $p ) :
+							$item_cat = vw_primary_cat_name( $p->ID, $zone['cats'] );
+						?>
+							<li class="vw-feat-list__item">
+								<?php if ( $item_cat ) : ?>
+									<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $item_cat ); ?></span>
+								<?php endif; ?>
+								<a class="vw-feat-list__item-hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
+								<span class="vw-byline vw-byline--sm">By <strong><?php echo esc_html( get_the_author_meta( 'display_name', $p->post_author ) ); ?></strong></span>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			<?php endif; ?>
+		</section>
+		<?php
+	endforeach;
+	?>
 
+</div>
 
-/* ── Photography (bleed 2): near-black spine, essay + thumb strip ── */
+<?php
+/* ── Photography (bleed): near-black spine — verified images only ── */
 
-$photo_posts = $vw_fetch( [ 'category__in' => [ 6 ], 'posts_per_page' => 8 ], $used_ids );
+$photo_posts = $vw_fetch( [
+	'category__in' => [ 6 ],
+	'posts_per_page' => 8,
+	'meta_query'    => [ [ 'key' => '_vw_repaired_from', 'compare' => 'EXISTS' ] ],
+], $used_ids );
+
 $photo_essay = null;
 foreach ( $photo_posts as $k => $p ) {
 	if ( vw_image_tier( $p->ID ) >= 1 ) { $photo_essay = $p; unset( $photo_posts[ $k ] ); break; }
 }
-$photo_thumbs = array_slice( array_values( $photo_posts ), 0, 5 );
+$photo_thumbs = [];
+foreach ( array_values( $photo_posts ) as $p ) {
+	if ( count( $photo_thumbs ) >= 5 ) break;
+	if ( vw_image_tier( $p->ID ) >= 1 ) $photo_thumbs[] = $p;
+}
 
 if ( $photo_essay ) :
 	$used_ids[] = $photo_essay->ID;
@@ -265,7 +310,7 @@ if ( $photo_essay ) :
 
 	$essay_img = wp_get_attachment_image_src( get_post_thumbnail_id( $photo_essay->ID ), 'full' );
 	?>
-	<section class="vw-photo-band vw-bleed">
+	<section class="vw-photo-band">
 		<div class="vw-photo-band__essay">
 			<div class="vw-photo-band__img-col">
 				<?php if ( $essay_img ) : ?>
@@ -287,7 +332,6 @@ if ( $photo_essay ) :
 		<div class="vw-photo-band__strip">
 			<?php foreach ( $photo_thumbs as $p ) :
 				$thumb_img = wp_get_attachment_image_src( get_post_thumbnail_id( $p->ID ), 'medium_large' );
-				if ( ! $thumb_img ) continue;
 			?>
 				<a href="<?php echo esc_url( get_permalink( $p ) ); ?>" class="vw-photo-band__thumb">
 					<img src="<?php echo esc_url( $thumb_img[0] ); ?>" alt="<?php echo esc_attr( get_the_title( $p ) ); ?>" loading="lazy">
@@ -299,14 +343,14 @@ if ( $photo_essay ) :
 <?php endif;
 
 
-/* ── Archive closer (bleed 3): live numeral + one real archive piece ── */
+/* ── Archive closer (bleed): live numeral + one real archive piece ── */
 
 $archive_count = (int) wp_count_posts( 'post' )->publish;
 $oldest = $vw_fetch( [ 'posts_per_page' => 1, 'orderby' => 'date', 'order' => 'ASC' ], $used_ids );
 $oldest = $oldest ? $oldest[0] : null;
 if ( $oldest ) $used_ids[] = $oldest->ID;
 ?>
-<section class="vw-archive-closer vw-bleed">
+<section class="vw-archive-closer">
 	<div class="vw-archive-closer__inner">
 		<div class="vw-archive-closer__numeral-col">
 			<span class="vw-archive-closer__numeral"><?php echo esc_html( number_format_i18n( $archive_count ) ); ?></span>
