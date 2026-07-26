@@ -62,7 +62,7 @@
 		<a href="#" class="vwh2-more">All Music →</a>
 	</div>
 	<div class="vwh2-music">
-		<img src="https://images.unsplash.com/photo-1493676304819-0d7a8d026dcf?w=800&q=80" alt="" class="vwh2-music__img">
+		<img src="<?php echo esc_url( content_url( '/uploads/2026/07/548451648597452.jpg' ) ); ?>" alt="" class="vwh2-music__img">
 		<div>
 			<h3 class="vwh2-music__hed"><a href="#">Dan Bejar Never Left the Neighbourhood</a></h3>
 			<p class="vwh2-music__dek">Destroyer plays two nights at the Hollywood, ten blocks from where half of these songs were written. We walked the ten blocks with him.</p>

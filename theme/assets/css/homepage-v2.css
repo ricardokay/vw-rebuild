@@ -37,13 +37,22 @@
   padding-inline: 40px;
 }
 
+/* !important justified: Newspack's parent-theme hr default is scoped via an
+   ID selector (e.g. #content hr), which outranks any plain class regardless
+   of source order — confirmed by measurement, not assumed. */
 .vwh2-rule {
-  border: none;
-  border-top: 1px solid var(--vw-border);
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-top: 1px solid var(--vw-border) !important;
 }
 
 .vwh2-rule--heavy {
-  border-top: 2px solid var(--vw-ink);
+  border-top-width: 3px !important;
+  border-top-color: var(--vw-ink) !important;
 }
 
 .vwh2-kicker {
@@ -247,7 +256,7 @@
 /* ── This Week ─────────────────────────────────────────────────── */
 
 .vwh2-thisweek {
-  padding: 20px 0;
+  padding: 14px 0;
   display: grid;
   grid-template-columns: 130px 1fr 1fr 1fr;
   align-items: baseline;
@@ -292,7 +301,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 18px 0 14px;
+  padding: 12px 0 10px;
 }
 .vwh2-zonehead__title {
   font-family: 'Inter', sans-serif;
@@ -315,7 +324,7 @@
   align-items: start;
 }
 
-.vwh2-music__img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
+.vwh2-music__img { width: 100%; aspect-ratio: 1/1; max-height: 340px; object-fit: cover; display: block; }
 
 .vwh2-music__hed {
   font-family: 'PT Serif', Georgia, serif;
@@ -363,7 +372,7 @@
   display: grid;
   grid-template-columns: 1fr 1px 1fr 1px 1fr;
   gap: 28px;
-  padding: 22px 0 8px;
+  padding: 14px 0 8px;
 }
 
 .vwh2-tri__rule { background: var(--vw-border); }
@@ -543,7 +552,7 @@
 /* ── Archive closer ────────────────────────────────────────────── */
 
 .vwh2-archive {
-  padding: 44px 0 56px;
+  padding: 28px 0 36px;
 }
 
 .vwh2-archive__inner {
