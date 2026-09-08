@@ -1661,3 +1661,44 @@ blocks stale). Live-site probe channel: 1.6% yield, zero gap overlap, header-ver
 real images) — ready for a partial harvest decision whenever wanted. Primary image recovery route:
 archive.today second pass, inventory report pending (not started this session). Next session picks:
 side-by-side verdict, then either archive.today probe slice or mobile round.
+
+## 2026-09-08 — Homepage-v2 round 4: nav marks, zone dead space, lead credit
+
+2026-09-08 Ricardo verdict on homepage-v2 preview: PASS WITH FIXES against the approved v2 spec
+(the written spec from the 2026-07-25 session is the reference of record; no separate mockup file
+exists). Fixes: nav marks removed, zone dead space, lead credit. THIS WEEK data source and mobile
+nav pattern decisions pending. Smart-hero context line planned as editor-written kicker slot,
+automation post-launch.
+
+Measured on the rendered preview (live DOM, viewport 1440 and 1600), not read from source:
+
+1. NAV MARKS. Six `vwh2-mark` spans removed from `.vwh2-masthead__nav-item` only; the unused
+`gap: 7px` dropped with them. Nav marks 6 -> 0; zone marks unchanged at 6 (lead kicker, A La Music
+zonehead, Photography head, 3 tri col-heads).
+
+2. ZONE DEAD SPACE. Audited every zone by measuring each column's content-end against its box —
+which found a second, larger defect Ricardo had not named. A La Music: image was `1/1` capped
+340px beside a 163px text column at `align-items: start`, so text ran 177px and the compact stack
+180px short of the image bottom, one-sided. Fixed with `align-items: center` + image `4/3` capped
+260px -> 48/48 and 50/50, symmetric. Political Megaphone (tri col 2, the only column with no
+image) sat 314px short of its two image-led neighbours -> new `.vwh2-tri__col--quote` hook
+(one markup class, approved), flex-centred with the pull quote at 30px -> 92/92 at 1440, 94/94 at
+1600. Photography (88/88) and Lead (101/101) were already symmetric centring and were deliberately
+left alone; Food 0px, Books 11px unchanged. Zone structure untouched — featured + 2 compact + All
+link intact everywhere; sizing/alignment/rhythm only. The ~92/94 Political residual is the
+accepted floor: driving it lower needs either smaller neighbouring images (measured — it pushed
+the Books column's gap 11 -> 114) or added content, which would change the approved structure.
+
+3. LEAD DOUBLE CREDIT. Determined to be (b) TEMPLATE-RENDERED, not baked into the asset: the
+overlay came from a `vwh2-lead__img-credit` span plus an absolutely-positioned CSS pill, and the
+image file itself was opened and inspected — a B&W concert photograph with no text in it. Span and
+CSS block both removed, leaving the caption (TOMÁS RIVERA) as the single credit path. The overlay
+was also factually wrong: the file is a Facebook-album archive import, not the Unsplash photo it
+credited — placeholder text carried over from the clone.
+
+Verified on a fresh render with no injected CSS: credit span 0, credit string absent from page
+text, nav marks 0, zone marks 6, all 12 images loading. Desktop only; `@media` blocks untouched
+and still stale.
+
+NOT DONE this round, by instruction: 6 remaining `images.unsplash.com` hotlinks (Photography band
++ 4-thumb strip, Food, Books) — round 5 / phase 2 scope. Round 3 fixed only the A La Music one.

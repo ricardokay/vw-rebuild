@@ -170,7 +170,6 @@
 .vwh2-masthead__nav-item {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
   text-decoration: none;
   font-family: 'Inter', sans-serif;
   font-size: 10.5px;
@@ -227,16 +226,9 @@
   display: block;
 }
 
-.vwh2-lead__img-credit {
-  position: absolute;
-  left: 0; bottom: 12px;
-  background: rgba(0,0,0,.45);
-  color: #fff;
-  font-family: 'Inter', sans-serif;
-  font-size: 10px;
-  padding: 3px 9px;
-}
-
+/* Lead credit lives in .vwh2-lead__caption only — a single credit path. The
+   former overlay pill duplicated it (and misattributed an archive photo to
+   Unsplash); removed round 4. */
 .vwh2-lead__caption {
   font-family: 'Inter', sans-serif;
   font-style: italic;
@@ -316,15 +308,17 @@
 
 /* ── Music zone: featured (image+dek) + ruled-stack ───────────── */
 
+/* Text columns centre against the image rather than pinning to the top: at
+   start-alignment the 1/1 image ran 177px past the end of the text beside it. */
 .vwh2-music {
   padding-bottom: 8px;
   display: grid;
   grid-template-columns: 28% 1fr 1px 30%;
   gap: 32px;
-  align-items: start;
+  align-items: center;
 }
 
-.vwh2-music__img { width: 100%; aspect-ratio: 1/1; max-height: 340px; object-fit: cover; display: block; }
+.vwh2-music__img { width: 100%; aspect-ratio: 4/3; max-height: 260px; object-fit: cover; display: block; }
 
 .vwh2-music__hed {
   font-family: 'PT Serif', Georgia, serif;
@@ -431,6 +425,22 @@
 }
 
 .vwh2-tri__hed--sub { font-size: 15px; }
+
+/* The quote column carries no image, so its content ran 314px short of the two
+   image-led columns beside it. Centre it and let the pull quote carry more of
+   the column. */
+.vwh2-tri__col--quote {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.vwh2-tri__col--quote .vwh2-tri__quote {
+  font-size: 30px;
+  line-height: 1.32;
+  margin-bottom: 26px;
+}
+.vwh2-tri__col--quote .vwh2-tri__hed { font-size: 21px; }
+.vwh2-tri__col--quote .vwh2-tri__dek { font-size: 14px; line-height: 1.6; }
 
 .vwh2-tri__sub-eyebrow {
   display: block;

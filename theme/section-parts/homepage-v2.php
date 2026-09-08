@@ -20,12 +20,12 @@
 		</a>
 		<p class="vwh2-masthead__motto">The Record of the City's Culture — Twenty Years and Counting</p>
 		<nav class="vwh2-masthead__nav">
-			<a href="#" class="vwh2-masthead__nav-item"><span class="vwh2-mark vwh2-mark--music"></span>A La Music</a>
-			<a href="#" class="vwh2-masthead__nav-item"><span class="vwh2-mark vwh2-mark--photo"></span>Photography</a>
-			<a href="#" class="vwh2-masthead__nav-item"><span class="vwh2-mark vwh2-mark--food"></span>Food &amp; Drink</a>
-			<a href="#" class="vwh2-masthead__nav-item"><span class="vwh2-mark vwh2-mark--outabout"></span>Out N About</a>
-			<a href="#" class="vwh2-masthead__nav-item"><span class="vwh2-mark vwh2-mark--political"></span>Political Megaphone</a>
-			<a href="#" class="vwh2-masthead__nav-item"><span class="vwh2-mark vwh2-mark--books"></span>Book Reviews</a>
+			<a href="#" class="vwh2-masthead__nav-item">A La Music</a>
+			<a href="#" class="vwh2-masthead__nav-item">Photography</a>
+			<a href="#" class="vwh2-masthead__nav-item">Food &amp; Drink</a>
+			<a href="#" class="vwh2-masthead__nav-item">Out N About</a>
+			<a href="#" class="vwh2-masthead__nav-item">Political Megaphone</a>
+			<a href="#" class="vwh2-masthead__nav-item">Book Reviews</a>
 		</nav>
 	</div>
 	<hr class="vwh2-rule vwh2-rule--heavy">
@@ -40,7 +40,6 @@
 		</div>
 		<div class="vwh2-lead__img-col">
 			<img src="<?php echo esc_url( content_url( '/uploads/2026/07/646612242114725.jpg' ) ); ?>" alt="" class="vwh2-lead__img">
-			<span class="vwh2-lead__img-credit">Photo by Gael D on Unsplash</span>
 		</div>
 	</section>
 	<p class="vwh2-lead__caption">The Rio's marquee, July 2026. Its lease expires in November. TOMÁS RIVERA</p>
@@ -130,7 +129,7 @@
 			</div>
 		</div>
 		<div class="vwh2-tri__rule"></div>
-		<div>
+		<div class="vwh2-tri__col--quote">
 			<div class="vwh2-tri__col-hed"><span class="vwh2-mark vwh2-mark--political"></span>Political Megaphone<a href="#" class="vwh2-more">All Political →</a></div>
 			<p class="vwh2-tri__quote">"Every city council since 2008 has promised to fix the empty-storefront problem. Here is the tax none of them will say out loud."</p>
 			<a class="vwh2-tri__hed" href="#">The Vacancy Tax Vancouver Keeps Refusing to Try</a>
