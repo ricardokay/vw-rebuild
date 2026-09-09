@@ -1,0 +1,163 @@
+/* ================================================================
+   Article header — story-rail treatment. PREVIEW ONLY (?vw_header=1).
+   Loaded only when the flag is set, so live singles are unaffected.
+   ================================================================ */
+
+/* The parent theme's own header and featured image are suppressed here; this
+   block replaces them. Scoped to the preview body class only. */
+.vw-ah-preview .entry-header,
+.vw-ah-preview .featured-image,
+.vw-ah-preview .featured-image-above,
+.vw-ah-preview .featured-image-behind,
+.vw-ah-preview .featured-image-beside,
+.vw-ah-preview .post-thumbnail {
+	display: none;
+}
+
+.vw-ah {
+	margin: 0 0 36px;
+}
+
+.vw-ah__kicker {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-family: 'Inter', sans-serif;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--vw-ink);
+	margin-bottom: 10px;
+}
+
+.vw-ah__hed {
+	font-family: 'PT Serif', Georgia, serif;
+	font-weight: 700;
+	font-size: clamp(34px, 4.2vw, 52px);
+	line-height: 1.06;
+	letter-spacing: -0.015em;
+	color: var(--vw-ink);
+	margin: 0 0 24px;
+}
+
+/* Featured image ~62%, rail centred beside it, hairline between. */
+.vw-ah__row {
+	display: grid;
+	grid-template-columns: 62% 1fr;
+	column-gap: 32px;
+	align-items: center;
+}
+
+.vw-ah--no-media .vw-ah__row {
+	grid-template-columns: 1fr;
+}
+
+.vw-ah__media { grid-column: 1; }
+
+/* width:auto, not 100% — a small featured image sits at its natural size
+   rather than being upscaled to fill the column. */
+.vw-ah__img {
+	display: block;
+	max-width: 100%;
+	width: auto;
+	height: auto;
+}
+
+.vw-ah__rail {
+	border-left: 1px solid var(--vw-border);
+	padding-left: 32px;
+	align-self: center;
+}
+
+.vw-ah--no-media .vw-ah__rail {
+	border-left: none;
+	padding-left: 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 6px 24px;
+}
+
+.vw-ah__dek {
+	font-family: 'Inter', sans-serif;
+	font-size: 16px;
+	line-height: 1.55;
+	color: var(--vw-ink-muted);
+	margin: 0 0 20px;
+}
+
+.vw-ah__credits { margin: 0 0 14px; }
+
+.vw-ah--no-media .vw-ah__credits { margin: 0; }
+
+.vw-ah__credit {
+	font-family: 'Inter', sans-serif;
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--vw-ink);
+	margin: 0 0 4px;
+}
+
+.vw-ah__label {
+	display: inline-block;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--vw-ink-muted);
+	margin-right: 8px;
+}
+
+.vw-ah__meta {
+	font-family: 'Inter', sans-serif;
+	font-size: 12px;
+	letter-spacing: 0.02em;
+	color: var(--vw-byline-ink);
+	margin: 0;
+}
+
+.vw-ah__caption {
+	font-family: 'Inter', sans-serif;
+	font-style: italic;
+	font-size: 11px;
+	line-height: 1.5;
+	color: var(--vw-ink-muted);
+	margin: 10px 0 0;
+}
+
+/* Section marks — same geometry as the homepage/section fronts. */
+.vw-ah__mark { display: inline-block; position: relative; flex-shrink: 0; }
+
+.vw-ah__mark--music { width: 12px; height: 12px; }
+.vw-ah__mark--music::before,
+.vw-ah__mark--music::after {
+	content: ''; position: absolute; top: 0; width: 4px; height: 12px; background: #C41230;
+}
+.vw-ah__mark--music::before { left: 0; }
+.vw-ah__mark--music::after { left: 7px; }
+
+.vw-ah__mark--photo { width: 11px; height: 11px; border: 1.5px solid var(--vw-ink); box-sizing: border-box; }
+
+.vw-ah__mark--food { width: 10px; height: 10px; border-radius: 50%; background: #C97B2E; }
+
+.vw-ah__mark--outabout {
+	width: 0; height: 0;
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-bottom: 10px solid #2E6B4A;
+}
+
+.vw-ah__mark--political {
+	width: 0; height: 0;
+	border-top: 6px solid transparent;
+	border-bottom: 6px solid transparent;
+	border-left: 10px solid #2A4A6B;
+}
+
+.vw-ah__mark--books { width: 14px; height: 3px; background: #5B3E7A; margin-top: 5px; }
+
+@media (max-width: 782px) {
+	.vw-ah__row { grid-template-columns: 1fr; row-gap: 20px; }
+	.vw-ah__rail { border-left: none; padding-left: 0; }
+}

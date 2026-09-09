@@ -2049,3 +2049,58 @@ footer is otherwise intact — `#colophon` present, copyright line present. Over
 in the child theme was rejected: it would fork a 70-line parent file that drifts on every Newspack
 update. The `.site-info .imprint` rule lives in `gallery.css` only because that is the child
 theme's single general stylesheet; worth moving if a footer stylesheet is ever added.
+
+## 2026-09-08 (later) — Article header: story-rail treatment, PREVIEW built (awaiting verdict)
+
+**PREVIEW ONLY — not enabled on live singles.** Reachable at `?vw_header=1` on any single post;
+without the flag nothing changes (verified: 0 occurrences of the markup on unflagged posts, 13 with
+the flag). New files `inc/article-header.php` and `assets/css/article-header.css`; the CSS is
+enqueued only when the flag is active. No DB writes.
+
+**RAIL SPEC AS BUILT.** Above the row: kicker with the section mark (same geometry as the homepage
+and section fronts), then the full-width serif headline at the current scale. The row is a grid of
+**62% featured image / rail**, the rail vertically centred and separated by a 1px hairline, holding
+in order: dek (when available), credit lines with small-caps labels **BY {author}** and
+**PHOTOS {photographer}**, then the meta line. Caption sits below the row. Body text below is
+untouched full-width single-wide.
+
+**Conventions.** Read time = wordcount ÷ 230, rounded, minimum 1. Photo-led = 5 or more rendered
+images **and** fewer than 50 words per image, so pictures must dominate prose rather than merely
+appear; photo-led posts show "DATE · N photos", prose posts "DATE · X min read". Image count is
+taken **after** dead-media suppression, so suppressed images are never counted.
+
+**PHOTOS derivation, never guessed.** Photographer is parsed from existing caption credits
+(`Photo(s) by …` / `Photo by: …`) across figcaptions, falling back to the post excerpt. One distinct
+name renders as-is, two join with "and", **three or more omit the line entirely** — as does zero.
+BY uses the stored author display name, so "Vancouver Weekly" stays when that is the author.
+
+**DEGRADATION — all four states rendered and measured at 1440px:**
+
+| case | post | geometry | result |
+|---|---|---|---|
+| with-dek prose | 267 | grid 744px / 424px, rail h175 | dek + BY + PHOTOS + meta, hairline present |
+| no-dek prose | 258 | grid 744px / 424px, rail h**80** | rail compresses; PHOTOS omitted (no derivable credit) |
+| photo-led | 65419 | grid 744px / 424px, rail h79 | meta reads "March 3, 2017 · **36 photos**"; PHOTOS Ryan Johnson |
+| no featured image | 129 | grid **1200px single column**, no media box, border removed | headline full width, credits+meta inline — no empty 62% box |
+
+No horizontal overflow in any state. **No upscaling confirmed:** posts 267 and 258 carry a 370px
+featured image, and it renders at exactly 370px inside the 744px column (`width:auto`, not 100%).
+65419's 1000px image renders at 744px — downscaled, never up.
+
+**DEK IS EFFECTIVELY UNAVAILABLE IN THIS ARCHIVE.** Exactly **1 of 3,373** published posts has a
+manual excerpt, and its content is "Photos by Ryan Johnson" — a credit, not a dek. **Zero** posts
+have an excerpt longer than 60 characters. The no-dek state is therefore the normal case for the
+entire archive and the with-dek state is a future-content state. To review it at all, the preview
+accepts `?vw_dek=…` to inject a sample string; that is preview-only and writes nothing.
+
+**Two things for Ricardo's eye, not fixed this round.** (1) On 65419 the kicker reads
+"UNCATEGORIZED", because that is the post's only category — a direct consequence of the 1,637-post
+Uncategorized backlog; a kicker fallback may be wanted. (2) A small featured image sits
+left-aligned in the 744px media column, leaving visible space to its right; that is the honest
+no-upscale behaviour, but centring or shrinking the column is a design choice worth making.
+
+**STOPPED for the visual verdict — not enabled on live singles.** Review URLs:
+`/wrestling-battleworld-88-at-the-rickshaw-theatre/?vw_header=1&vw_dek=…` (with dek),
+`/unikkaaqtuat-transports-its-audience-into-inuit-stories/?vw_header=1` (no dek),
+`/36-stunning-photos-of-vince-staples-with-kilo-kish-at-the-vogue-theatre-57288-2/?vw_header=1`
+(photo-led), `/harper-fights-dirty-on-the-northern-gateway-pipeline/?vw_header=1` (no featured).
