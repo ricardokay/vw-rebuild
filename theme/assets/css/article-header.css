@@ -40,11 +40,26 @@
 	font-family: 'PT Serif', Georgia, serif;
 	font-weight: 700;
 	font-size: clamp(34px, 4.2vw, 52px);
-	line-height: 1.06;
-	letter-spacing: -0.015em;
+	line-height: 1.07;
+	letter-spacing: -0.018em;
 	color: var(--vw-ink);
-	margin: 0 0 20px;
+	margin: 0 0 16px;
 }
+
+/* The header's single accent-colour moment. Centred in case A, left in B and C.
+   !important is needed only to beat Newspack's ID-scoped hr default (#content hr),
+   the same conflict documented on the homepage rules. */
+.vw-ah__rule {
+	display: block !important;
+	width: 88px !important;
+	max-width: 88px !important;
+	height: 0 !important;
+	margin: 0 0 18px !important;
+	border: none !important;
+	border-top: 3px solid var(--vw-red) !important;
+}
+
+.vw-ah--a .vw-ah__rule { margin-left: auto !important; margin-right: auto !important; }
 
 /* Images never upscale: width:auto, capped at the container. */
 .vw-ah__img {
@@ -69,7 +84,13 @@
 .vw-ah--a .vw-ah__media { margin: 0; }
 .vw-ah--a .vw-ah__img { width: 100%; }
 
-/* One line, one family, two colours: labels muted, values ink. */
+/* Case A is centred above the image: kicker, headline, rule. */
+.vw-ah--a { text-align: center; }
+.vw-ah--a .vw-ah__media,
+.vw-ah--a .vw-ah__caption,
+.vw-ah--a .vw-ah__strip { text-align: left; }
+
+/* One line, one family. Hierarchy by weight and colour only. */
 .vw-ah__strip {
 	font-family: 'Inter', sans-serif;
 	font-size: 13px;
@@ -81,16 +102,23 @@
 	border-bottom: 1px solid var(--vw-border);
 }
 
+/* Sentence case, no caps, no letter-spacing: the word quiet, the name solid.
+   #767676 is the frozen --vw-ink-muted token, the nearest in-palette value to
+   the requested light grey — no new hex introduced. */
 .vw-ah__label {
-	font-size: 10px;
-	font-weight: 700;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
+	font-weight: 400;
 	color: var(--vw-ink-muted);
-	margin-right: 7px;
+}
+
+.vw-ah__name {
+	font-weight: 600;
+	color: var(--vw-ink);
 }
 
 .vw-ah__dot { color: var(--vw-ink-muted); }
+
+/* One step lighter than the byline it follows. */
+.vw-ah__meta-inline { color: var(--vw-ink-muted); }
 
 /* Case C reuses the strip, with no image above it. */
 .vw-ah--c .vw-ah__strip { margin-top: 4px; }
@@ -117,16 +145,23 @@
 /* The image sets its own column width and is never stretched. */
 .vw-ah__split-media .vw-ah__img { width: auto; max-width: 100%; }
 
-.vw-ah--b .vw-ah__hed { margin-bottom: 22px; }
+.vw-ah__credits { margin: 0; }
 
-.vw-ah__credits--stacked { margin: 0; }
-
+/* Two-line quiet stack: byline(s), then the meta line one step lighter. */
 .vw-ah__credit {
 	font-family: 'Inter', sans-serif;
 	font-size: 13px;
 	line-height: 1.6;
 	color: var(--vw-ink);
 	margin: 0 0 2px;
+}
+
+.vw-ah__meta {
+	font-family: 'Inter', sans-serif;
+	font-size: 12.5px;
+	line-height: 1.6;
+	color: var(--vw-ink-muted);
+	margin: 6px 0 0;
 }
 
 

@@ -2164,3 +2164,51 @@ Note: case B and C screenshots captured cleanly. **Case A's screenshot never cap
 paint** across three attempts even though the file decoded (naturalWidth 1440, source 1924×1200
 rendering 1200×748) — the layout is measured and correct, but the full-width look is unconfirmed
 visually and needs Ricardo's eyes on the two case-A URLs specifically.
+
+## 2026-09-08 (later) — Article header iteration 5: finishing round (typographic punch list)
+
+**Finishing round: accent rule, sentence-case bylines, centered case A, tightened headline — per
+the Pitchfork-reference punch list.** Structure unchanged from iteration 4; this is typography and
+one new rule element. Preview flag unchanged, live singles verified untouched (0 markup occurrences
+unflagged). No DB writes.
+
+1. **ACCENT RULE.** New `<hr class="vw-ah__rule">` under the headline in all three cases: 88px ×
+3px in `--vw-red` #C41230, the header's single accent-colour moment. Centred in case A, left-aligned
+in B and C. `!important` is required only to beat Newspack's ID-scoped `hr` default — the same
+conflict already documented on the homepage rules.
+2. **BYLINE.** Small-caps `BY`/`PHOTOS` labels replaced with sentence-case "By {name}" /
+"Photos {name}": the word at weight 400 in `--vw-ink-muted`, the name at weight 600 in `--vw-ink`,
+both 13px, no caps and no letter-spacing. **Note on colour:** the brief asked for an #8A8880-range
+grey; I used the frozen `--vw-ink-muted` **#767676** instead, as the nearest in-palette token —
+design tokens are frozen, so no new hex was introduced. Flagging in case the exact value matters.
+3. **META STACK.** `vw_ah_credits()` now returns two groups — byline lines, then a single meta line
+combining date · read-time (or photo count) — so case B reads as a quiet two-line stack, one sans
+family throughout, hierarchy by weight and colour only (meta at 12.5px in #767676).
+4. **CASE A CENTRED.** Kicker, headline and rule centre; the image, caption and credit strip stay
+left-aligned. The strip keeps its hairlines and now uses the same sentence-case treatment.
+5. **HEADLINE SETTING.** Letter-spacing −0.018em, line-height 1.07 (from 1.06/−0.015em).
+
+**All six posts re-rendered at 1440px — no overflow, no upscaling regressions:**
+
+| post | case | rule | byline / strip | image |
+|---|---|---|---|---|
+| 299 | A | 88px **centred** | "By Vancouver Weekly · November 19, 2019 · 1 min read" | 1200 from 1440 |
+| 918 | A | 88px **centred** | "By Gen Handley · August 3, 2020 · 1 min read" | 1200 from 1440 |
+| 267 | B | 88px **left** | "By Vancouver Weekly" / "Photos Bob Hanham" / meta line | 370 = natural |
+| 65390 | B | 88px **left** | "By Vancouver Weekly" / meta line | 540 from 800 |
+| 65419 | B | 88px **left** | "By Vancouver Weekly" / "Photos Ryan Johnson" / "· 36 photos" | 540 from 1000 |
+| 129 | C | 88px **left** | "By Vancouver Weekly · January 12, 2012 · 2 min read" | none |
+
+Computed values confirmed on case A: rule `rgb(196,18,48)` at 88×3 and centred; headline
+`text-align:center`, letter-spacing −0.936px at 52px (= −0.018em), line-height 55.64px (= 1.07);
+label `text-transform:none`, weight 400, `rgb(118,118,118)`; name weight 600. Size hierarchy holds
+at both widths — 52px headline over a 790px column (case B, 267) and over the full 1200px (case A).
+
+**CASE A IS NOW VISUALLY CONFIRMED — the three earlier blank captures were a false alarm.** Drawing
+the featured image to a canvas and sampling it returned luma min 3 / max 250 / avg 125, i.e. real
+photographic content, with the image decoded at 1440×898 and rendered at 1200×748. The cause was
+mundane: the image begins **418px** down a 505px-tall capture frame, so it sat below the fold in
+every prior screenshot. Scrolling first captured it correctly. Nothing was ever wrong with case A.
+
+**STOPPED for Ricardo's verdict — nothing enabled on live singles.** Same six review URLs as
+iteration 4.

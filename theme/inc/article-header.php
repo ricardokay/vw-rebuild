@@ -113,29 +113,32 @@ function vw_ah_section( int $post_id ): array {
 	return [ '', '' ];
 }
 
-/** The credit atoms, in reading order, shared by all three cases. */
+/**
+ * Credits in two groups: the byline lines, then a single quieter meta line.
+ * Hierarchy comes from weight and colour, not from a second font.
+ */
 function vw_ah_credits( WP_Post $post ): array {
-	$out       = [];
+	$bylines   = [];
 	$author    = get_the_author_meta( 'display_name', (int) $post->post_author );
 	$shooter   = vw_ah_photographer( $post );
 	$photo_led = vw_ah_is_photo_led( $post );
 
-	if ( $author )  $out[] = [ 'By', $author ];
-	if ( $shooter ) $out[] = [ 'Photos', $shooter ];
-	$out[] = [ '', get_the_date( 'F j, Y', $post ) ];
-	$out[] = [ '', $photo_led
-		? sprintf( '%d photos', vw_ah_photo_count( $post ) )
-		: sprintf( '%d min read', vw_ah_read_time( $post ) ) ];
+	if ( $author )  $bylines[] = [ 'By', $author ];
+	if ( $shooter ) $bylines[] = [ 'Photos', $shooter ];
 
-	return $out;
+	$meta = get_the_date( 'F j, Y', $post ) . ' · ' . ( $photo_led
+		? sprintf( '%d photos', vw_ah_photo_count( $post ) )
+		: sprintf( '%d min read', vw_ah_read_time( $post ) ) );
+
+	return [ 'bylines' => $bylines, 'meta' => $meta ];
 }
 
-function vw_ah_credit_html( array $credits, string $sep ): string {
+function vw_ah_byline_html( array $bylines, string $sep ): string {
 	$parts = [];
-	foreach ( $credits as $c ) {
-		list( $label, $value ) = $c;
-		$parts[] = ( $label ? '<span class="vw-ah__label">' . esc_html( $label ) . '</span>' : '' )
-			. esc_html( $value );
+	foreach ( $bylines as $b ) {
+		list( $label, $value ) = $b;
+		$parts[] = '<span class="vw-ah__label">' . esc_html( $label ) . '</span> '
+			. '<span class="vw-ah__name">' . esc_html( $value ) . '</span>';
 	}
 	return implode( $sep, $parts );
 }
@@ -170,10 +173,12 @@ function vw_ah_render( WP_Post $post ): string {
 			<div class="vw-ah__split">
 				<div class="vw-ah__split-text">
 					<h1 class="vw-ah__hed"><?php echo esc_html( get_the_title( $post ) ); ?></h1>
-					<div class="vw-ah__credits vw-ah__credits--stacked">
-						<?php foreach ( $credits as $i => $c ) : ?>
-							<p class="vw-ah__credit"><?php echo vw_ah_credit_html( [ $c ], '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+					<hr class="vw-ah__rule">
+					<div class="vw-ah__credits">
+						<?php foreach ( $credits['bylines'] as $b ) : ?>
+							<p class="vw-ah__credit"><?php echo vw_ah_byline_html( [ $b ], '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 						<?php endforeach; ?>
+						<p class="vw-ah__meta"><?php echo esc_html( $credits['meta'] ); ?></p>
 					</div>
 				</div>
 				<div class="vw-ah__split-media">
@@ -187,6 +192,7 @@ function vw_ah_render( WP_Post $post ): string {
 		<?php else : ?>
 
 			<h1 class="vw-ah__hed"><?php echo esc_html( get_the_title( $post ) ); ?></h1>
+			<hr class="vw-ah__rule">
 
 			<?php if ( 'a' === $case ) : ?>
 				<div class="vw-ah__media">
@@ -197,7 +203,11 @@ function vw_ah_render( WP_Post $post ): string {
 				<?php endif; ?>
 			<?php endif; ?>
 
-			<p class="vw-ah__strip"><?php echo vw_ah_credit_html( $credits, '<span class="vw-ah__dot"> · </span>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+			<p class="vw-ah__strip">
+				<?php echo vw_ah_byline_html( $credits['bylines'], '<span class="vw-ah__dot"> · </span>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php if ( $credits['bylines'] ) : ?><span class="vw-ah__dot"> · </span><?php endif; ?>
+				<span class="vw-ah__meta-inline"><?php echo esc_html( $credits['meta'] ); ?></span>
+			</p>
 
 		<?php endif; ?>
 	</div>
