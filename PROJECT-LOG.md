@@ -2000,3 +2000,52 @@ Note: the Browser pane was hidden again, so screenshots came back blank while DO
 worked normally. All geometry above is measured; the visual check is outstanding at
 `/dan-mangan-blacksmith-hayden-astral-swans-at-the-vogue-theatre/` and
 `/36-stunning-photos-of-vince-staples-with-kilo-kish-at-the-vogue-theatre-57288-2/`.
+
+## 2026-09-08 (later) — FB galleries to masonry + "Powered by Newspack" removed
+
+**2-COLUMN VERDICT: "strange" (Ricardo).** The flex row from commit 45956e8 built equal-height
+rows, so a portrait beside a landscape got cropped, and an odd image count left a lone tile
+stretched to the full 1200px by core's `flex-grow`. **Replaced with CSS-columns masonry**, which
+dissolves both problems at once: every tile keeps its own aspect ratio, and the last image is
+simply the end of a column rather than a stretched orphan.
+
+**Change (`assets/css/gallery.css`).** At `min-width:600px`, `.vw-fb-gallery` switches from core's
+flex layout to `display:block` + `column-count:3` + `column-gap`, with figures at `width:100%` and
+`break-inside:avoid`, plus a scoped rule defeating `is-cropped`'s `object-fit:cover` and stretched
+height inside these galleries only. Editorial galleries and every width below 600px are untouched.
+**`column-count: 3` is the single number to change for 4 columns** — marked with a comment in the
+CSS.
+
+**Measured at 1440px, both states, both posts (restore verified identical each time):**
+
+| | 3-col (default) | 4-col (switch) |
+|---|---|---|
+| 66024 (19 imgs) | tiles 393px, gallery 2,896px tall | tiles 293px, gallery 1,794px |
+| 65419 (36 imgs) | tiles 393px, gallery 4,206px tall | tiles 293px, gallery 2,509px |
+
+No horizontal overflow in any state. `object-fit` computes to `fill` (crop defeated) and tile
+heights vary naturally — 66024 reads 492, 266, 492, 699, 699, 262, 315, 262. **Orphan tile is
+moot:** the complete set of figure widths is now exactly `[393]`, where the old flex row measured
+the last tile at 1200px.
+
+**Lazy-loading verified safe under the new paint order.** Every image carries `width`/`height`
+attributes and a computed `aspect-ratio` (19/19 and 36/36), and forcing all images to decode
+shifted **0** slot heights — column balance is fully determined before any image paints, so lazy
+loading cannot leave a permanently blank slot or reflow the columns as images arrive. (In-viewport
+lazy triggering itself could not be exercised because the Browser pane was hidden and a hidden pane
+never intersects; forced decode gave 19/19 loaded, 0 blank.)
+
+**Ricardo to eyeball both states** at
+`/dan-mangan-blacksmith-hayden-astral-swans-at-the-vogue-theatre/` (mixed portrait/landscape, best
+crop test) and
+`/36-stunning-photos-of-vince-staples-with-kilo-kish-at-the-vogue-theatre-57288-2/` (36 images).
+
+**"POWERED BY NEWSPACK" REMOVED (combo method).** No admin toggle exists — it is hard-coded at
+`newspack-theme/footer.php:53-55` with no conditional and no filter of its own. A
+`gettext_newspack-theme` filter in the child theme empties the string, and `.site-info .imprint` is
+hidden in CSS so no empty link occupies the layout. Verified on a rendered page: "Powered by
+Newspack" occurrences **0**, the anchor remains in markup but computes `display:none`, and the
+footer is otherwise intact — `#colophon` present, copyright line present. Overriding `footer.php`
+in the child theme was rejected: it would fork a 70-line parent file that drifts on every Newspack
+update. The `.site-info .imprint` rule lives in `gallery.css` only because that is the child
+theme's single general stylesheet; worth moving if a footer stylesheet is ever added.

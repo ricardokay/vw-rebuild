@@ -53,16 +53,48 @@
 	display: none !important;
 }
 
-/* Repaired Facebook galleries: 2 columns, not core's 3.
-   The constraint on image size was never CSS on the img (max-width:100%) nor a
-   too-small size being served (the original file is served) — it was core's
-   gallery block rule, which at columns-3 gives each figure a third of the
-   container. Scoped to .vw-fb-gallery so editorial galleries keep core's
-   behaviour. Specificity beats core's
-   `.wp-block-gallery.has-nested-images.columns-3 figure.wp-block-image:not(#individual-image)`
-   without depending on stylesheet order; gap math mirrors core's own 2-column rule. */
+/* Repaired Facebook galleries: masonry, natural ratios.
+   Replaces the 2-column flex row (commit 45956e8), which read as strange —
+   equal-height rows crop portraits against landscapes, and an odd image count
+   left a lone tile stretched to full width by core's flex-grow. CSS columns
+   dissolve both: tiles keep their own aspect ratio and the last one is just the
+   end of a column.
+
+   Scoped to .vw-fb-gallery and to min-width:600px, so editorial galleries and
+   every width below 600px keep core's behaviour untouched. Specificity beats
+   core's own gallery rules without depending on stylesheet order. */
 @media (min-width: 600px) {
-	.entry-content .wp-block-gallery.vw-fb-gallery.has-nested-images figure.wp-block-image:not(#individual-image) {
-		width: calc(50% - var(--wp--style--unstable-gallery-gap, 16px) / 2);
+	.entry-content .wp-block-gallery.vw-fb-gallery.has-nested-images {
+		display: block;
+		column-count: 3; /* ← the one number to change; 4 for four columns */
+		column-gap: var(--wp--style--unstable-gallery-gap, 16px);
 	}
+
+	.entry-content .wp-block-gallery.vw-fb-gallery.has-nested-images figure.wp-block-image:not(#individual-image) {
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		margin: 0 0 var(--wp--style--unstable-gallery-gap, 16px);
+		break-inside: avoid;
+		-webkit-column-break-inside: avoid;
+	}
+
+	/* Natural ratios inside these galleries only: core's is-cropped forces
+	   object-fit:cover and a stretched height to build equal rows, which a
+	   column layout neither needs nor wants. */
+	.entry-content .wp-block-gallery.vw-fb-gallery.has-nested-images.is-cropped figure.wp-block-image:not(#individual-image) img {
+		width: 100%;
+		height: auto;
+		object-fit: initial;
+		flex: initial;
+	}
+}
+
+/* Footer: the parent theme hard-codes a "Powered by Newspack" link with no
+   conditional (newspack-theme/footer.php:53-55). A gettext filter in
+   functions.php empties the string; this hides the anchor so no empty link is
+   left in the layout. Lives here because gallery.css is the child theme's only
+   general stylesheet — worth moving if a footer stylesheet is ever added. */
+.site-info .imprint {
+	display: none;
 }

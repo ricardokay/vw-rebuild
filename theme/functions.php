@@ -28,6 +28,20 @@ function vw_force_single_column_template( $value, $object_id, $meta_key, $single
 	return $single ? 'single-wide.php' : array( 'single-wide.php' );
 }
 
+/**
+ * Drop the parent theme's "Powered by Newspack" footer credit.
+ *
+ * It is hard-coded at newspack-theme/footer.php:53-55 with no conditional and
+ * no filter of its own, so the translation call is the only seam. Emptying the
+ * string leaves an empty <a class="imprint">, which gallery.css hides. Editing
+ * footer.php in the child theme would fork a 70-line parent file that drifts on
+ * every Newspack update.
+ */
+add_filter( 'gettext_newspack-theme', 'vw_drop_newspack_credit', 10, 2 );
+function vw_drop_newspack_credit( $translated, $text ) {
+	return 'Powered by Newspack' === $text ? '' : $translated;
+}
+
 add_action( 'wp_enqueue_scripts', 'vw_enqueue_styles' );
 function vw_enqueue_styles() {
 	$dir = get_stylesheet_directory();
