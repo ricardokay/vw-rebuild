@@ -1841,3 +1841,68 @@ the gallery-import backlog.
 Still open, unchanged by this session: the 230 empty JIG posts (retirement to draft pending), the
 Wayback-URL reversal as a possible recovery channel, and the early-era census gap (1 published post
 pre-2011).
+
+## 2026-09-08 — Single posts forced to one-column (theme-layer, zero DB writes) + category census
+
+**PREMISE CORRECTION: there was never a sidebar.** Single posts were reported as rendering with an
+empty right sidebar. There is none. `sidebars_widgets['sidebar-1']` is `[]`, `is_active_sidebar()`
+is false for both `sidebar-1` and `article-1`, no `#secondary` or `<aside>` element appears in the
+markup, and the body class was already `no-sidebar`. What readers saw was the **default post
+template reserving the column**: at 1440px `#primary` measured 1200px while `.entry-content` was
+780px pinned left (113→893), leaving **420px of dead gutter**.
+
+**FIXED IN THE CHILD THEME. ZERO DB WRITES.** Rejected path: Customizer "Default Post Template" +
+Bulk Edit. The Customizer setting is applied by `newspack_maybe_set_default_post_template()` under
+`if ( ! $update )` — **new posts only** — so it would not have touched the archive at all, and Bulk
+Edit would have written `_wp_page_template` meta to 3,373 posts.
+
+Instead, one filter in the child theme's `functions.php`: `get_post_metadata` on
+`_wp_page_template` returns `single-feature.php` for the queried post on front-end single-post
+views. **Why the meta read and not `template_include`:** measured — Newspack derives its body class
+(`post-template-*`) and `newspack_is_default_template()` from this meta, and the column width comes
+from that body class. Swapping the template file alone loads the right PHP and leaves the wrong
+class, fixing nothing. Filtering the meta makes file, body class, and helper agree at once. It
+short-circuits **before the meta table is read**, so it beats both archive states (2,215 posts with
+no value, 1,158 set to `"default"`) without consulting either.
+
+Gated to admin/REST/AJAX **off** — without that, the block editor would display the forced template
+and persist it to the database on the next save, which is exactly the DB write this approach exists
+to avoid. Also scoped to the queried post only, so loops and related-post widgets are untouched.
+Revert = delete the filter and its function; nothing is persisted.
+
+**"One column" (`single-feature.php`), not "One column wide" (Ricardo's call).** 1200px is a poor
+reading measure at roughly 150 characters a line. The post-suppression archive is text-forward, and
+`alignwide`/`alignfull` still let media exceed the text column when wanted. Measured geometry of
+the three options at 1440px: default 780px pinned left with 420px dead right; one-column-wide
+1200px full-bleed; **one-column 780px centred, 210px gutters each side** — chosen.
+
+**Verified** at 1440px across both meta states and a heavy-image post: 129 (`meta=none`), 274
+(`meta="default"`), 65491 (heavy) all render `post-template-single-feature`, `.entry-content` 780px
+at 323→1103, gutters **210/210**, `no-sidebar`, no sidebar element. Post 542 (YouTube embed):
+iframe 560×315 sits inside the 780px column, no overflow, no horizontal page scroll. Render timing
+against the session-2 baseline on the same 196 posts: median 0.065s vs 0.063s (**+1.9 ms**), p95
+0.120s vs 0.113s (+6.7 ms), all HTTP 200 — negligible, despite `get_post_metadata` being a hot hook.
+
+**Two known side effects, accepted.**
+1. **The sidebar-widget option is now foreclosed on single posts.** `newspack_is_default_template()`
+returns false there, and the `has-sidebar` body class is gated on it — so adding widgets to
+`sidebar-1` later will have **no effect on posts**. A no-op today (the sidebar is empty), but it
+must be remembered rather than rediscovered.
+2. **`jetpack_content_width` becomes 2000** on single posts (newspack-theme/inc/jetpack.php:119 keys
+off `is_page_template('single-feature.php')`). Checked on a real video embed: no inflation, no
+overflow. Worth re-checking if oversized embeds ever appear.
+
+Featured-image treatment is **unchanged** — `newspack_featured_image_position()` never consults the
+template, and `featured_image_default` is unset so it resolves to `large` either way.
+
+**CATEGORY CENSUS (read-only, reported for the nav-overflow and editorial backlog).** **414
+category terms**, of which **391 have zero published posts** — almost entirely ivermectin/pharma
+spam terms left behind when the spam posts were trashed but the terms were not. Safe deletion
+candidates, untouched. Only 23 categories hold any published post; 13 hold more than 50.
+**`uncategorized` holds 1,637 published posts — roughly half the archive — and is flagged as
+editorial backlog**, the real categorisation debt underneath any nav design. The six homepage-v2
+nav categories cover 1,017 posts between them: a-la-music 490, out-n-about 211, photography 144,
+book-reviews 90, political-megaphone 55, food-drink 27. Note the nav's smallest member is outranked
+by nine non-nav categories; `live-music-reviews` alone (626) is larger than five of the six.
+**Merge pairs:** `contests` (63) / `contest` (7); `fiction-and-essays` (22) / `fiction-essays` (1);
+`netflix-films` (37) / `netflix-reviews` (1).

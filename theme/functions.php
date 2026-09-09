@@ -3,6 +3,31 @@
 require_once get_stylesheet_directory() . '/inc/dead-media.php';
 add_filter( 'the_content', 'vw_dead_media_filter', 20 );
 
+/**
+ * Force every single post to the theme's "One column" layout.
+ *
+ * Filters the meta READ rather than swapping the template file: Newspack keys
+ * both its body class (post-template-*) and newspack_is_default_template() off
+ * this meta value, and the content column's width comes from that body class —
+ * measured, a template_include swap loads the right file and still leaves the
+ * wrong class, fixing nothing. Short-circuiting here happens before the meta
+ * table is read, so it beats both states in the archive (2,215 posts with no
+ * value, 1,158 set to "default"). Nothing is written; the database is
+ * untouched. Revert by deleting this filter and its function.
+ */
+add_filter( 'get_post_metadata', 'vw_force_single_column_template', 10, 4 );
+function vw_force_single_column_template( $value, $object_id, $meta_key, $single ) {
+	if ( '_wp_page_template' !== $meta_key ) return $value;
+
+	// Never in admin/REST/AJAX: the editor would display the forced value and
+	// persist it to the database on the next save.
+	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) return $value;
+
+	if ( ! is_singular( 'post' ) || (int) $object_id !== get_queried_object_id() ) return $value;
+
+	return $single ? 'single-feature.php' : array( 'single-feature.php' );
+}
+
 add_action( 'wp_enqueue_scripts', 'vw_enqueue_styles' );
 function vw_enqueue_styles() {
 	$dir = get_stylesheet_directory();
