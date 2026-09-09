@@ -1906,3 +1906,35 @@ book-reviews 90, political-megaphone 55, food-drink 27. Note the nav's smallest 
 by nine non-nav categories; `live-music-reviews` alone (626) is larger than five of the six.
 **Merge pairs:** `contests` (63) / `contest` (7); `fiction-and-essays` (22) / `fiction-essays` (1);
 `netflix-films` (37) / `netflix-reviews` (1).
+
+## 2026-09-08 (later) — Single-post template switched to "One column wide" after live review
+
+**Ricardo viewed the 780px centred version live and chose `single-wide.php` instead: image
+presence wins for this photo-heavy archive.** This supersedes the reading-measure rationale in the
+entry above — that argument still holds on its own terms (1200px is ~150 characters a line), but it
+is outweighed here by how the galleries actually present. One-word change in
+`vw_force_single_column_template()`; hook, admin/REST gate and pre-DB short-circuit all unchanged.
+
+**POST-LAUNCH TYPOGRAPHY ROUND PARKED:** narrow the prose measure while keeping media wide via the
+alignment classes (`alignwide`/`alignfull`), so body text reads at a comfortable width inside a
+template whose media can still span the full column. Not a launch gate; revisit after launch.
+
+**Re-verified at 1440px, all five posts now `post-template-single-wide`, `.entry-content` 1200px at
+113→1313, gutters 0/0, no horizontal overflow:** 129 (`meta=none`), 274 (`meta="default"`), 65491
+(heavy text — 0 images, 2,762 chars of prose, dead-media suppression still working), 65419 (36 live
+images, 0 broken, 37 figures / 36 figcaptions, **gallery now 1200px wide**), 542 (video embed —
+iframe still 560×315, `overflowsText` false, no page overflow, so the `jetpack_content_width` bump
+still causes no inflation). The 420px dead gutter is gone in every case.
+
+**ZERO DB WRITES RE-CONFIRMED after the switch**, read back from the raw `postmeta` table: post 129
+has **no meta row at all**, 274 and 542 still hold literal `"default"`. Rows anywhere in the
+database with `_wp_page_template LIKE 'single-%'`: **0**. Published-post counts unchanged at 1,158
+`default` / 2,215 absent — identical to the pre-change census. The forced value exists only in the
+render path.
+
+Note on verification: the Browser pane was hidden for part of this session, so the requested
+screenshot of 65419 could not be captured — a hidden pane is not painted, and the captures came
+back blank while JS measurement continued to work normally. The geometry above is DOM-measured and
+reliable; the visual confirmation of images at full width is **outstanding** and should be eyeballed
+directly at
+`http://vancouverweekly-local.local/36-stunning-photos-of-vince-staples-with-kilo-kish-at-the-vogue-theatre-57288-2/`.

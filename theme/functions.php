@@ -4,7 +4,7 @@ require_once get_stylesheet_directory() . '/inc/dead-media.php';
 add_filter( 'the_content', 'vw_dead_media_filter', 20 );
 
 /**
- * Force every single post to the theme's "One column" layout.
+ * Force every single post to the theme's "One column wide" layout.
  *
  * Filters the meta READ rather than swapping the template file: Newspack keys
  * both its body class (post-template-*) and newspack_is_default_template() off
@@ -25,7 +25,7 @@ function vw_force_single_column_template( $value, $object_id, $meta_key, $single
 
 	if ( ! is_singular( 'post' ) || (int) $object_id !== get_queried_object_id() ) return $value;
 
-	return $single ? 'single-feature.php' : array( 'single-feature.php' );
+	return $single ? 'single-wide.php' : array( 'single-wide.php' );
 }
 
 add_action( 'wp_enqueue_scripts', 'vw_enqueue_styles' );
