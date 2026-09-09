@@ -1,6 +1,11 @@
 /* ================================================================
-   Article header — story-rail treatment. PREVIEW ONLY (?vw_header=1).
+   Article header — adaptive. PREVIEW ONLY (?vw_header=1).
    Loaded only when the flag is set, so live singles are unaffected.
+
+   Case A  featured image ≥ 1140px → full-width headline + image, credit strip
+   Case B  featured image < 1140px → headline + stacked credits left, image right
+   Case C  no featured image       → headline + credit strip
+   No dek anywhere; the headline is the anchor.
    ================================================================ */
 
 /* The parent theme's own header and featured image are suppressed here; this
@@ -15,7 +20,7 @@
 }
 
 .vw-ah {
-	margin: 0 0 36px;
+	margin: 0 0 40px;
 }
 
 .vw-ah__kicker {
@@ -38,83 +43,15 @@
 	line-height: 1.06;
 	letter-spacing: -0.015em;
 	color: var(--vw-ink);
-	margin: 0 0 24px;
+	margin: 0 0 20px;
 }
 
-/* Featured image ~62%, rail centred beside it, hairline between. */
-.vw-ah__row {
-	display: grid;
-	grid-template-columns: 62% 1fr;
-	column-gap: 32px;
-	align-items: center;
-}
-
-.vw-ah--no-media .vw-ah__row {
-	grid-template-columns: 1fr;
-}
-
-.vw-ah__media { grid-column: 1; }
-
-/* width:auto, not 100% — a small featured image sits at its natural size
-   rather than being upscaled to fill the column. */
+/* Images never upscale: width:auto, capped at the container. */
 .vw-ah__img {
 	display: block;
 	max-width: 100%;
 	width: auto;
 	height: auto;
-}
-
-.vw-ah__rail {
-	border-left: 1px solid var(--vw-border);
-	padding-left: 32px;
-	align-self: center;
-}
-
-.vw-ah--no-media .vw-ah__rail {
-	border-left: none;
-	padding-left: 0;
-	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	gap: 6px 24px;
-}
-
-.vw-ah__dek {
-	font-family: 'Inter', sans-serif;
-	font-size: 16px;
-	line-height: 1.55;
-	color: var(--vw-ink-muted);
-	margin: 0 0 20px;
-}
-
-.vw-ah__credits { margin: 0 0 14px; }
-
-.vw-ah--no-media .vw-ah__credits { margin: 0; }
-
-.vw-ah__credit {
-	font-family: 'Inter', sans-serif;
-	font-size: 14px;
-	line-height: 1.5;
-	color: var(--vw-ink);
-	margin: 0 0 4px;
-}
-
-.vw-ah__label {
-	display: inline-block;
-	font-size: 10px;
-	font-weight: 700;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	color: var(--vw-ink-muted);
-	margin-right: 8px;
-}
-
-.vw-ah__meta {
-	font-family: 'Inter', sans-serif;
-	font-size: 12px;
-	letter-spacing: 0.02em;
-	color: var(--vw-byline-ink);
-	margin: 0;
 }
 
 .vw-ah__caption {
@@ -126,7 +63,75 @@
 	margin: 10px 0 0;
 }
 
-/* Section marks — same geometry as the homepage/section fronts. */
+
+/* ── Case A: full-width ─────────────────────────────────────────── */
+
+.vw-ah--a .vw-ah__media { margin: 0; }
+.vw-ah--a .vw-ah__img { width: 100%; }
+
+/* One line, one family, two colours: labels muted, values ink. */
+.vw-ah__strip {
+	font-family: 'Inter', sans-serif;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--vw-ink);
+	margin: 18px 0 0;
+	padding: 10px 0;
+	border-top: 1px solid var(--vw-border);
+	border-bottom: 1px solid var(--vw-border);
+}
+
+.vw-ah__label {
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--vw-ink-muted);
+	margin-right: 7px;
+}
+
+.vw-ah__dot { color: var(--vw-ink-muted); }
+
+/* Case C reuses the strip, with no image above it. */
+.vw-ah--c .vw-ah__strip { margin-top: 4px; }
+
+
+/* ── Case B: split ──────────────────────────────────────────────── */
+
+/* fit-content(45%) caps the TRACK, not just the image. An `auto` track sizes to
+   the picture's intrinsic width, which squeezed the headline to a 223px ribbon
+   on a 1000px image (measured on 65419); capping the item alone did not help,
+   because the track still resolved to max-content. fit-content sizes to the
+   image when it is small and stops at 45% when it is not — so a 370px picture
+   still sits at 370px and a 1000px one scales DOWN to the cap, never up. */
+.vw-ah__split {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) fit-content(45%);
+	column-gap: 40px;
+	align-items: start;
+}
+
+.vw-ah__split-text { grid-column: 1; }
+.vw-ah__split-media { grid-column: 2; }
+
+/* The image sets its own column width and is never stretched. */
+.vw-ah__split-media .vw-ah__img { width: auto; max-width: 100%; }
+
+.vw-ah--b .vw-ah__hed { margin-bottom: 22px; }
+
+.vw-ah__credits--stacked { margin: 0; }
+
+.vw-ah__credit {
+	font-family: 'Inter', sans-serif;
+	font-size: 13px;
+	line-height: 1.6;
+	color: var(--vw-ink);
+	margin: 0 0 2px;
+}
+
+
+/* ── Section marks — same geometry as homepage/section fronts ───── */
+
 .vw-ah__mark { display: inline-block; position: relative; flex-shrink: 0; }
 
 .vw-ah__mark--music { width: 12px; height: 12px; }
@@ -157,7 +162,9 @@
 
 .vw-ah__mark--books { width: 14px; height: 3px; background: #5B3E7A; margin-top: 5px; }
 
+
 @media (max-width: 782px) {
-	.vw-ah__row { grid-template-columns: 1fr; row-gap: 20px; }
-	.vw-ah__rail { border-left: none; padding-left: 0; }
+	.vw-ah__split { grid-template-columns: 1fr; row-gap: 20px; }
+	.vw-ah__split-media { grid-column: 1; }
+	.vw-ah__strip { font-size: 12px; }
 }

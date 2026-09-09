@@ -1,13 +1,22 @@
 <?php
 /**
- * Article header — story-rail treatment. PREVIEW ONLY.
+ * Article header — adaptive. PREVIEW ONLY.
  *
  * Reachable only with ?vw_header=1 on a single post, so live singles are
- * untouched until Ricardo signs off. ?vw_dek=… injects a sample dek for review:
- * exactly 1 of 3,373 published posts carries a manual excerpt (and it holds a
- * photo credit, not a dek), so the with-dek state cannot be shown from real
- * content yet. Nothing is written to the database.
+ * untouched until Ricardo signs off. Nothing is written to the database.
+ *
+ * The header shape follows the picture, not the post type:
+ *   A  featured image ≥ VW_AH_WIDE_MIN px  → full-width headline, full-width
+ *      image, one-line credit strip between hairlines
+ *   B  featured image < VW_AH_WIDE_MIN px  → split row: serif headline and
+ *      stacked credits left, image at natural size (never upscaled) right
+ *   C  no usable featured image            → stacked headline + credit line
+ *
+ * There is no dek: the headline is the anchor. (Only 1 of 3,373 published posts
+ * carries a manual excerpt, and it holds a photo credit rather than a dek.)
  */
+
+const VW_AH_WIDE_MIN = 1140;
 
 function vw_ah_active(): bool {
 	return is_singular( 'post' ) && isset( $_GET['vw_header'] ) && '1' === $_GET['vw_header']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -74,7 +83,10 @@ function vw_ah_read_time( WP_Post $post ): int {
 	return max( 1, (int) round( vw_ah_word_count( $post ) / 230 ) );
 }
 
-/** Primary category name + the mark modifier that goes with it. */
+/**
+ * Primary category name + mark modifier. Uncategorized carries no editorial
+ * meaning, so it yields nothing and the kicker is skipped entirely.
+ */
 function vw_ah_section( int $post_id ): array {
 	$marks = [
 		'a-la-music'          => 'music',
@@ -95,31 +107,57 @@ function vw_ah_section( int $post_id ): array {
 	foreach ( $terms as $t ) {
 		if ( isset( $marks[ $t->slug ] ) ) return [ $t->name, $marks[ $t->slug ] ];
 	}
-	return [ $terms[0]->name, '' ];
+	foreach ( $terms as $t ) {
+		if ( 'uncategorized' !== $t->slug ) return [ $t->name, '' ];
+	}
+	return [ '', '' ];
+}
+
+/** The credit atoms, in reading order, shared by all three cases. */
+function vw_ah_credits( WP_Post $post ): array {
+	$out       = [];
+	$author    = get_the_author_meta( 'display_name', (int) $post->post_author );
+	$shooter   = vw_ah_photographer( $post );
+	$photo_led = vw_ah_is_photo_led( $post );
+
+	if ( $author )  $out[] = [ 'By', $author ];
+	if ( $shooter ) $out[] = [ 'Photos', $shooter ];
+	$out[] = [ '', get_the_date( 'F j, Y', $post ) ];
+	$out[] = [ '', $photo_led
+		? sprintf( '%d photos', vw_ah_photo_count( $post ) )
+		: sprintf( '%d min read', vw_ah_read_time( $post ) ) ];
+
+	return $out;
+}
+
+function vw_ah_credit_html( array $credits, string $sep ): string {
+	$parts = [];
+	foreach ( $credits as $c ) {
+		list( $label, $value ) = $c;
+		$parts[] = ( $label ? '<span class="vw-ah__label">' . esc_html( $label ) . '</span>' : '' )
+			. esc_html( $value );
+	}
+	return implode( $sep, $parts );
 }
 
 function vw_ah_render( WP_Post $post ): string {
 	list( $section, $mark ) = vw_ah_section( $post->ID );
 
-	$dek = isset( $_GET['vw_dek'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		? sanitize_text_field( wp_unslash( $_GET['vw_dek'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		: trim( wp_strip_all_tags( $post->post_excerpt ) );
-
-	$author       = get_the_author_meta( 'display_name', (int) $post->post_author );
-	$photographer = vw_ah_photographer( $post );
-	$photo_led    = vw_ah_is_photo_led( $post );
-	$meta         = get_the_date( 'F j, Y', $post ) . ' · ' . ( $photo_led
-		? sprintf( '%d photos', vw_ah_photo_count( $post ) )
-		: sprintf( '%d min read', vw_ah_read_time( $post ) ) );
-
 	$thumb_id = get_post_thumbnail_id( $post->ID );
 	$src      = $thumb_id ? wp_get_attachment_image_src( $thumb_id, 'full' ) : false;
 	$path     = $thumb_id ? get_attached_file( $thumb_id ) : '';
 	$has_img  = $src && $path && file_exists( $path );
+	$width    = $has_img ? (int) $src[1] : 0;
+
+	$case = ! $has_img ? 'c' : ( $width >= VW_AH_WIDE_MIN ? 'a' : 'b' );
+
+	$credits = vw_ah_credits( $post );
+	$caption = $thumb_id ? trim( wp_strip_all_tags( (string) get_post_field( 'post_excerpt', $thumb_id ) ) ) : '';
 
 	ob_start();
 	?>
-	<div class="vw-ah<?php echo $has_img ? '' : ' vw-ah--no-media'; ?>">
+	<div class="vw-ah vw-ah--<?php echo esc_attr( $case ); ?>" data-vw-ah-case="<?php echo esc_attr( strtoupper( $case ) ); ?>" data-vw-ah-imgw="<?php echo esc_attr( (string) $width ); ?>">
+
 		<?php if ( $section ) : ?>
 			<span class="vw-ah__kicker">
 				<?php if ( $mark ) : ?><span class="vw-ah__mark vw-ah__mark--<?php echo esc_attr( $mark ); ?>"></span><?php endif; ?>
@@ -127,38 +165,40 @@ function vw_ah_render( WP_Post $post ): string {
 			</span>
 		<?php endif; ?>
 
-		<h1 class="vw-ah__hed"><?php echo esc_html( get_the_title( $post ) ); ?></h1>
+		<?php if ( 'b' === $case ) : ?>
 
-		<div class="vw-ah__row">
-			<?php if ( $has_img ) : ?>
+			<div class="vw-ah__split">
+				<div class="vw-ah__split-text">
+					<h1 class="vw-ah__hed"><?php echo esc_html( get_the_title( $post ) ); ?></h1>
+					<div class="vw-ah__credits vw-ah__credits--stacked">
+						<?php foreach ( $credits as $i => $c ) : ?>
+							<p class="vw-ah__credit"><?php echo vw_ah_credit_html( [ $c ], '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+						<?php endforeach; ?>
+					</div>
+				</div>
+				<div class="vw-ah__split-media">
+					<?php echo wp_get_attachment_image( $thumb_id, 'full', false, [ 'class' => 'vw-ah__img' ] ); ?>
+					<?php if ( $caption ) : ?>
+						<p class="vw-ah__caption"><?php echo esc_html( $caption ); ?></p>
+					<?php endif; ?>
+				</div>
+			</div>
+
+		<?php else : ?>
+
+			<h1 class="vw-ah__hed"><?php echo esc_html( get_the_title( $post ) ); ?></h1>
+
+			<?php if ( 'a' === $case ) : ?>
 				<div class="vw-ah__media">
 					<?php echo wp_get_attachment_image( $thumb_id, 'full', false, [ 'class' => 'vw-ah__img' ] ); ?>
 				</div>
+				<?php if ( $caption ) : ?>
+					<p class="vw-ah__caption"><?php echo esc_html( $caption ); ?></p>
+				<?php endif; ?>
 			<?php endif; ?>
 
-			<div class="vw-ah__rail">
-				<?php if ( $dek ) : ?>
-					<p class="vw-ah__dek"><?php echo esc_html( $dek ); ?></p>
-				<?php endif; ?>
+			<p class="vw-ah__strip"><?php echo vw_ah_credit_html( $credits, '<span class="vw-ah__dot"> · </span>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 
-				<div class="vw-ah__credits">
-					<?php if ( $author ) : ?>
-						<p class="vw-ah__credit"><span class="vw-ah__label">By</span><?php echo esc_html( $author ); ?></p>
-					<?php endif; ?>
-					<?php if ( $photographer ) : ?>
-						<p class="vw-ah__credit"><span class="vw-ah__label">Photos</span><?php echo esc_html( $photographer ); ?></p>
-					<?php endif; ?>
-				</div>
-
-				<p class="vw-ah__meta"><?php echo esc_html( $meta ); ?></p>
-			</div>
-		</div>
-
-		<?php
-		$caption = $thumb_id ? trim( wp_strip_all_tags( (string) get_post_field( 'post_excerpt', $thumb_id ) ) ) : '';
-		if ( $has_img && $caption ) :
-			?>
-			<p class="vw-ah__caption"><?php echo esc_html( $caption ); ?></p>
 		<?php endif; ?>
 	</div>
 	<?php

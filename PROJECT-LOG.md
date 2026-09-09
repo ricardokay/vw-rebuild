@@ -2104,3 +2104,63 @@ no-upscale behaviour, but centring or shrinking the column is a design choice wo
 `/unikkaaqtuat-transports-its-audience-into-inuit-stories/?vw_header=1` (no dek),
 `/36-stunning-photos-of-vince-staples-with-kilo-kish-at-the-vogue-theatre-57288-2/?vw_header=1`
 (photo-led), `/harper-fights-dirty-on-the-northern-gateway-pipeline/?vw_header=1` (no featured).
+
+## 2026-09-08 (later) — Article header iteration 4: ADAPTIVE header, side rail retired
+
+**PREVIEW ONLY, flag unchanged (`?vw_header=1`).** Live singles verified untouched: 0 occurrences
+of the markup on an unflagged post. No DB writes.
+
+**THE SIDE RAIL IS RETIRED, AND SO IS THE DEK.** Both code paths are gone — a grep for
+`vw-ah__rail`, `vw-ah__dek` and `vw_dek` returns 0 in both the PHP and the CSS. The header shape is
+now driven by the picture rather than by post type, and the headline is the sole anchor.
+
+**THE RULE, as built.** `VW_AH_WIDE_MIN = 1140`.
+**Case A** (featured ≥ 1140px): kicker, full-width serif headline, full-width image, caption, then a
+single-line credit strip between hairlines above and below — one sans family, two colours (labels
+muted, values ink). **Case B** (featured < 1140px): kicker, then a split row — serif headline left
+with the same credit content stacked beneath it in sans, image right at natural size, top-aligned,
+caption under the image. **Case C** (no usable featured image): kicker, headline, credit strip, no
+media box. Derivation rules are unchanged from iteration 3 (photographer parsed from caption text,
+omitted when zero or three-plus distinct names; read time = words ÷ 230 min 1; photo-led = 5+
+rendered images **and** under 50 words per image, counted after dead-media suppression).
+
+**KICKER FALLBACK:** Uncategorized carries no editorial meaning, so `vw_ah_section()` now skips it
+and falls through to any other assigned category; when none exists the kicker is omitted entirely
+rather than printing "UNCATEGORIZED" — which affects roughly 1,637 posts.
+
+**Six posts rendered at 1440px, every case resolving as intended:**
+
+| post | featured | case | geometry | notes |
+|---|---|---|---|---|
+| 299 | 1924px | **A** | headline 1200, image 1200 (from 1440 served) | kicker OUT N ABOUT |
+| 918 | 2362px | **A** | headline 1200, image 1200 | kicker A LA MUSIC |
+| 267 | 370px | **B** | split **790 / 370**, image 370 = natural | PHOTOS Bob Hanham derived |
+| 65390 | 800px | **B** | split **620 / 540**, image 540 | kicker **hidden** (uncategorized) |
+| 65419 | 1000px | **B** | split **620 / 540**, image 540 | kicker **hidden**; meta "36 photos" |
+| 129 | none | **C** | headline 1200, no media box, strip only | kicker POLITICAL MEGAPHONE |
+
+No horizontal overflow in any case. **No upscaling anywhere:** 267's 370px image renders at exactly
+370px; the larger ones scale down only.
+
+**DEFECT FOUND AND FIXED DURING VERIFICATION.** Case B was first built with
+`grid-template-columns: 1fr auto`. On a 1000px image the `auto` track claimed the picture's
+intrinsic width and squeezed the headline into a **223px vertical ribbon** (measured on 65419:
+`222.93px 937.07px`); 65390 collapsed the same way at `360px 800px`. Capping the image item with
+`max-width:45%` shrank the picture but **did not fix the track**, which still resolved to
+max-content — a second measurement caught that the columns were unchanged. The working fix caps the
+TRACK: `grid-template-columns: minmax(0, 1fr) fit-content(45%)`, which sizes to the image when it is
+small (267 still 790/370) and stops at 45% when it is not (620/540). Both stages were verified by
+measurement rather than assumed.
+
+**STOPPED for Ricardo's verdict — nothing enabled on live singles.** Review URLs:
+`/disney-on-ice-presents-mickeys-search-party-at-pacific-coliseum/?vw_header=1` (A),
+`/le-ren-delivers-heart-wrenching-debut-ep-with-morning-melancholia/?vw_header=1` (A),
+`/wrestling-battleworld-88-at-the-rickshaw-theatre/?vw_header=1` (B, small image),
+`/10-of-b-c-s-finest-ski-destinations-to-choose-from-this-winter/?vw_header=1` (B, kicker hidden),
+`/36-stunning-photos-of-vince-staples-with-kilo-kish-at-the-vogue-theatre-57288-2/?vw_header=1`
+(B, photo-led), `/harper-fights-dirty-on-the-northern-gateway-pipeline/?vw_header=1` (C).
+
+Note: case B and C screenshots captured cleanly. **Case A's screenshot never captured the image
+paint** across three attempts even though the file decoded (naturalWidth 1440, source 1924×1200
+rendering 1200×748) — the layout is measured and correct, but the full-width look is unconfirmed
+visually and needs Ricardo's eyes on the two case-A URLs specifically.
