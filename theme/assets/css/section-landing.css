@@ -956,3 +956,31 @@
   .vw-module__inner { padding-left: 20px; padding-right: 20px; }
   .vw-hero__img { aspect-ratio: 16 / 9; }
 }
+
+/* A byline whose author is a category or desk label prints nothing
+   (vw_byline_inner); collapse the empty span so it leaves no gap. */
+.vw-byline:empty {
+	display: none;
+}
+
+/* Closing handoff from a depth-capped section front to the real archive. */
+.vw-section-more {
+	padding: 8px 0 4px;
+}
+
+.vw-section-more__link {
+	font-family: 'Inter', sans-serif;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--vw-red);
+	text-decoration: none;
+	border-top: 3px solid var(--vw-ink);
+	display: block;
+	padding-top: 14px;
+}
+
+.vw-section-more__link:hover {
+	text-decoration: underline;
+}

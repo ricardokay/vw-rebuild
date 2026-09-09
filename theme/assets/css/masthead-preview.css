@@ -18,9 +18,10 @@
 }
 
 /* Newspack injects a top margin on #content that assumed a header above it;
-   the masthead now plays that role, so the gap is redundant here. */
+   the masthead now plays that role. Zeroing it entirely put the heavy rule 3px
+   off the content on single posts, which read as a collision — give it air. */
 .vw-masthead-preview #content {
-	margin-top: 0;
+	margin-top: 28px;
 }
 
 /* Section fronts keep their own section header (title + mark) below the

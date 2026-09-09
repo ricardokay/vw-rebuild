@@ -186,16 +186,91 @@ function vw_image_tier( int $post_id ): int {
 /**
  * Returns the display name of the first category that matches a preferred list.
  * Falls back to the first assigned category.
+ *
+ * On a section front the kicker would just repeat the section you are already
+ * looking at, so it returns '' there and every call site (all of which already
+ * guard with `if ( $cat )`) drops the kicker. Cross-section cards — the
+ * homepage, or a card from another section — keep theirs.
  */
 function vw_primary_cat_name( int $post_id, array $preferred_cat_ids ): string {
 	$terms = get_the_terms( $post_id, 'category' );
 	if ( ! $terms || is_wp_error( $terms ) ) return '';
+
+	$name = '';
 	foreach ( $preferred_cat_ids as $cid ) {
 		foreach ( $terms as $t ) {
-			if ( (int) $t->term_id === (int) $cid ) return $t->name;
+			if ( (int) $t->term_id === (int) $cid ) { $name = $t->name; break 2; }
 		}
 	}
-	return $terms[0]->name ?? '';
+	if ( '' === $name ) $name = $terms[0]->name ?? '';
+
+	if ( is_category() ) {
+		$viewed = get_queried_object();
+		if ( $viewed instanceof WP_Term && strcasecmp( $viewed->name, $name ) === 0 ) return '';
+	}
+	return $name;
+}
+
+/**
+ * Author names that are categories or desk labels rather than people —
+ * "Photography", "Contests", "News Feed". Display-layer only: the stored author
+ * is untouched, the byline is simply not printed. The underlying data is an
+ * editor-backlog item, not a rendering bug.
+ */
+function vw_is_junk_author( string $name ): bool {
+	$name = trim( $name );
+	if ( '' === $name ) return true;
+
+	static $cat_names = null;
+	if ( null === $cat_names ) {
+		$cat_names = [];
+		foreach ( get_categories( [ 'hide_empty' => false ] ) as $c ) {
+			$cat_names[] = mb_strtolower( $c->name );
+		}
+	}
+	$extra = [ 'news feed', 'music contributing editor', 'energy forum' ];
+
+	$key = mb_strtolower( $name );
+	return in_array( $key, $cat_names, true ) || in_array( $key, $extra, true );
+}
+
+/** "By <strong>Name</strong>", or '' when the author is a category/desk label. */
+function vw_byline_inner( int $author_id ): string {
+	$name = (string) get_the_author_meta( 'display_name', $author_id );
+	if ( vw_is_junk_author( $name ) ) return '';
+	return 'By <strong>' . esc_html( $name ) . '</strong>';
+}
+
+/**
+ * Closing "Browse all N …" link for a section front. Prints nothing when the
+ * section holds no more than what the front already showed — small sections
+ * just show what they have.
+ */
+function vw_section_browse_all( array $cat_ids, string $label, int $shown ): void {
+	$q = new WP_Query( [
+		'category__in'           => $cat_ids,
+		'posts_per_page'         => 1,
+		'fields'                 => 'ids',
+		'no_found_rows'          => false,
+		'update_post_meta_cache' => false,
+		'update_post_term_cache' => false,
+	] );
+	$total = (int) $q->found_posts;
+	wp_reset_postdata();
+
+	if ( $total <= $shown ) return;
+
+	$term = get_queried_object();
+	$base = ( $term instanceof WP_Term ) ? get_category_link( $term->term_id ) : home_url( '/' );
+	?>
+	<div class="vw-module vw-section-more">
+		<div class="vw-module__inner">
+			<a class="vw-section-more__link" href="<?php echo esc_url( trailingslashit( $base ) . 'page/2/' ); ?>">
+				<?php printf( 'Browse all %s %s stories', esc_html( number_format_i18n( $total ) ), esc_html( $label ) ); ?> &rarr;
+			</a>
+		</div>
+	</div>
+	<?php
 }
 
 add_action( 'after_setup_theme', 'vw_theme_support' );

@@ -28,7 +28,10 @@ $tpl_html = in_array( $slug, $curated, true ) ? $dir . $slug . '.html' : '';
 $use_php  = $tpl_php  && file_exists( $tpl_php );
 $use_html = ! $use_php && $tpl_html && file_exists( $tpl_html );
 
-if ( $use_php || $use_html ) {
+// Page 2+ falls through to the standard archive: the curated front is the
+// section's front page, not its whole index. Without this the router served the
+// same front at /page/2/, so curated sections had no working pagination at all.
+if ( ( $use_php || $use_html ) && ! is_paged() ) {
     $cat = get_queried_object();
     get_header();
     ?>

@@ -2264,3 +2264,82 @@ a city paper that prints the date in its masthead this matters. Fix is admin-onl
 `/category/photography/?vw_masthead=1`,
 `/harper-fights-dirty-on-the-northern-gateway-pipeline/?vw_masthead=1`. The masthead and article-
 header previews are independent flags and can be combined: `?vw_masthead=1&vw_header=1`.
+
+## 2026-09-08 (later) — Section-front cleanup: nav fix, kicker/byline suppression, depth cap, real pagination
+
+**1. NAV LINKS FIXED.** `header.php` hand-built its URLs as `/a-la-music/` etc., omitting the
+`/category/` base — **all four 404'd**, i.e. the site's main navigation was entirely broken. Rebuilt
+as a loop over the **same six sections as the masthead**, resolving through `get_category_link()`.
+All six now return **200**: a-la-music, photography, food-drink, out-n-about, political-megaphone,
+book-reviews.
+
+**2. KICKER REDUNDANCY REMOVED.** `vw_primary_cat_name()` now returns `''` when the card's category
+is the section being viewed, and every call site already guarded with `if ( $cat )`, so one helper
+change cleaned all four fronts. Measured: **Photography renders zero kickers**; A La Music still
+renders "MUSIC INTERVIEWS" — correct, because A La Music is an umbrella over six music categories,
+so a sub-category kicker is genuinely informative rather than a repeat. Cross-section cards
+elsewhere (homepage) are unaffected.
+
+**3. PHOTOGRAPHY DUPLICATES — DIAGNOSED AS DATA, NOT A TEMPLATE BUG. NOTHING DELETED.** Each visible
+pair is **two distinct post IDs** with the same title, so the template's `post__not_in` dedupe is
+working correctly and cannot help. **14 duplicate-title groups among 144 Photography posts.** The
+shape is consistent: a low-ID copy with a clean slug, and a high-ID Wayback-recovered copy with a
+numeric-suffix slug.
+
+| story | clean-slug copy | recovered copy |
+|---|---|---|
+| Alan Doyle \| Queen Elizabeth | **228** | **67485** |
+| ALEXISONFIRE with The Distillers | **1438** (2020-06-26) | **67487** (2020-01-26) |
+| Antibalas \| Rickshaw | **243** | **67495** |
+| BATTLEWORLD '88 Wrestling | **1429** | **67508** |
+| Black Label Society \| Vogue | **237** | **67520** |
+| Brad Paisley \| Abbotsford | **231** | **67524** |
+| King Diamond \| Queen Elizabeth | **1457** | **67633** |
+| King Princess \| Queen Elizabeth | **1442** (2020-06-19) | **66854** (2020-01-19) |
+| Platinum Blonde \| Commodore | **246** | **67788** |
+| Sinéad O'Connor \| Vogue | **1433** | **67821** |
+| Tebey \| Commodore | **1447** | **67838** |
+| The Interrupters \| Commodore | **67860** (2019-04-16) | **67859** (2019-10-18) |
+| The Strokes \| Rogers Arena | **234** | **67874** |
+| WWE Friday Night SmackDown | **249** | **67914** |
+
+Two pairs carry **mismatched dates** (ALEXISONFIRE and King Princess differ by five months), so
+picking a survivor is an editorial call, not a mechanical one — which copy holds the right date and
+the better gallery. **Listed for a gated decision; no post was deleted, retired or edited.** Note
+this is Photography only; the wider archive had ~104 duplicate-title groups logged in July.
+
+**4. DEPTH CAP.** Fronts ran roughly 34 stories across four zones, which read as a dump. Zones C
+(10-item headline list) and D (6-card grid) were removed, leaving **Zone A (12) + Zone B (6) = 18**,
+and every front now ends with a single `vw_section_browse_all()` handoff. Measured: Photography and
+A La Music both render **17 headlines**, closing with "Browse all 144 Photography stories →" and
+"Browse all 1,055 A La Music stories →". Sections at or under the cap print no link.
+
+**5. "BY PHOTOGRAPHY" BYLINES SUPPRESSED AT THE DISPLAY LAYER ONLY.** New `vw_is_junk_author()`
+matches any author display name against the site's category names plus a small desk-label list, and
+`vw_byline_inner()` returns '' for those, so the byline simply does not print (`.vw-byline:empty` is
+collapsed in CSS). **Counts: "Contests" 49 posts, "Photography" 10, "News Feed" 5 — 64 published
+posts total.** Measured on the Photography front: **4 bylines suppressed**, real photographer
+credits (Ryan Johnson, Tom Paillé) untouched. **No author was reassigned; `post_author` is
+unchanged.** The underlying data is an editor-backlog item.
+Related and worth its own pass: the author table holds many duplicate person accounts (Leslie Ken
+Chu at ids 89 and 255, Mary Matheson at 179 and 261, and others), plus wire-service authors
+(The Canadian Press, The Associated Press) that are legitimate and deliberately NOT suppressed.
+
+**6. SINGLE-POST SPACING.** The masthead's heavy rule sat **3px** off the content under the preview
+flag; `#content` margin re-opened to 28px, measured **31px** gap.
+
+**BONUS FIX — curated sections had NO working pagination.** `/category/photography/page/2/` served
+the *same* section front, because `category.php` intercepted curated slugs regardless of `paged`
+(non-curated `/category/uncategorized/page/2/` paginated normally). Without this the new Browse-all
+link would have pointed at a copy of the page it sits on. `category.php` now falls through to the
+standard archive when `is_paged()`: page 2 renders the real archive listing, page 1 the curated
+front. This also satisfies the standing rule that real paginated URLs must exist and render on
+direct load.
+
+**Regression caught during verification:** the first pass broke `/category/a-la-music/` with a
+**500** — that front names its category list `$music_cats`, not `$cats` like the other three, so
+the appended helper call received null. Caught by checking all six nav targets rather than only the
+two being screenshotted; fixed and re-verified 200 across all six plus `must-see-films`.
+
+**STOPPED for Ricardo's verdict.** Review: `/category/photography/?vw_masthead=1` and
+`/category/a-la-music/?vw_masthead=1`.

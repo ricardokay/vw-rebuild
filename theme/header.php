@@ -26,22 +26,28 @@
       </a>
 
       <nav class="vw-nav__links" aria-label="Main navigation">
-        <a href="<?php echo esc_url( home_url( '/a-la-music/' ) ); ?>"
-           class="vw-nav__link<?php echo is_category( 'a-la-music' ) ? ' vw-nav__link--active' : ''; ?>">
-          A La Music
-        </a>
-        <a href="<?php echo esc_url( home_url( '/photography/' ) ); ?>"
-           class="vw-nav__link<?php echo is_category( 'photography' ) ? ' vw-nav__link--active' : ''; ?>">
-          Photography
-        </a>
-        <a href="<?php echo esc_url( home_url( '/food-drink/' ) ); ?>"
-           class="vw-nav__link<?php echo is_category( 'food-drink' ) ? ' vw-nav__link--active' : ''; ?>">
-          Food &amp; Drink
-        </a>
-        <a href="<?php echo esc_url( home_url( '/out-n-about/' ) ); ?>"
-           class="vw-nav__link<?php echo is_category( 'out-n-about' ) ? ' vw-nav__link--active' : ''; ?>">
-          Out N About
-        </a>
+        <?php
+        // Six sections, matching the homepage-v2 masthead. Links resolve through
+        // get_category_link() — the previous hand-built "/a-la-music/" style URLs
+        // omitted the /category/ base and every one of them 404'd.
+        $vw_nav_sections = [
+          'a-la-music'          => 'A La Music',
+          'photography'         => 'Photography',
+          'food-drink'          => 'Food &amp; Drink',
+          'out-n-about'         => 'Out N About',
+          'political-megaphone' => 'Political Megaphone',
+          'book-reviews'        => 'Book Reviews',
+        ];
+        foreach ( $vw_nav_sections as $vw_slug => $vw_label ) :
+          $vw_term = get_category_by_slug( $vw_slug );
+          if ( ! $vw_term ) continue;
+          $vw_active = is_category( $vw_slug ) ? ' vw-nav__link--active' : '';
+        ?>
+          <a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>"
+             class="vw-nav__link<?php echo esc_attr( $vw_active ); ?>">
+            <?php echo wp_kses( $vw_label, [] ); ?>
+          </a>
+        <?php endforeach; ?>
       </nav>
 
     </div>
