@@ -15,7 +15,7 @@ $used_ids   = [];
 $vw_get_excerpt = static function ( WP_Post $post ): string {
 	$manual = trim( wp_strip_all_tags( $post->post_excerpt ) );
 	if ( $manual ) return $manual;
-	$content = strip_shortcodes( wp_strip_all_tags( $post->post_content ) );
+	$content = vw_strip_scrape_chrome( strip_shortcodes( wp_strip_all_tags( $post->post_content ) ) );
 	return wp_trim_words( $content, 25, '…' );
 };
 
@@ -144,9 +144,7 @@ if ( $anchor ) :
 						<p class="vw-lead-block__main-dek"><?php echo esc_html( $anchor_dek ); ?></p>
 					<?php endif; ?>
 					<span class="vw-byline">
-						<?php echo vw_byline_inner( (int) $anchor->post_author ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						&nbsp;·&nbsp;
-						<time datetime="<?php echo esc_attr( get_the_date( 'c', $anchor ) ); ?>"><?php echo esc_html( get_the_date( 'M j, Y', $anchor ) ); ?></time>
+						<?php echo vw_meta_line( $anchor ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</span>
 
 					<?php if ( $anchor2 ) :
@@ -157,7 +155,7 @@ if ( $anchor ) :
 						<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $a2_cat ); ?></span>
 					<?php endif; ?>
 					<a class="vw-lead-block__sub-hed" href="<?php echo esc_url( get_permalink( $anchor2 ) ); ?>"><?php echo esc_html( get_the_title( $anchor2 ) ); ?></a>
-					<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( (int) $anchor2->post_author ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+					<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( $anchor2 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 					<?php endif; ?>
 				</div>
 
@@ -173,7 +171,7 @@ if ( $anchor ) :
 									<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $lcat ); ?></span>
 								<?php endif; ?>
 								<a class="vw-lead-block__list-hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
-								<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( (int) $p->post_author ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+								<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( $p ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 							</li>
 						<?php endforeach; ?>
 					</ul>
@@ -192,7 +190,7 @@ if ( $anchor ) :
 									<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $rcat ); ?></span>
 								<?php endif; ?>
 								<a class="vw-lead-block__list-hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
-								<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( (int) $p->post_author ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+								<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( $p ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 							</li>
 						<?php endforeach; ?>
 					</ul>
@@ -253,7 +251,7 @@ if ( $feat_posts ) {
 					<h3 class="vw-feat-list__hed">
 						<a href="<?php echo esc_url( get_permalink( $lead ) ); ?>"><?php echo esc_html( get_the_title( $lead ) ); ?></a>
 					</h3>
-					<span class="vw-byline"><?php echo vw_byline_inner( (int) $lead->post_author ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+					<span class="vw-byline"><?php echo vw_byline_inner( $lead ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 				</div>
 
 				<ul class="vw-feat-list__items">
@@ -265,7 +263,7 @@ if ( $feat_posts ) {
 								<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $item_cat ); ?></span>
 							<?php endif; ?>
 							<a class="vw-feat-list__item-hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
-							<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( (int) $p->post_author ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+							<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( $p ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 						</li>
 					<?php endforeach; ?>
 				</ul>

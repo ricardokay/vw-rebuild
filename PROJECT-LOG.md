@@ -2343,3 +2343,70 @@ two being screenshotted; fixed and re-verified 200 across all six plus `must-see
 
 **STOPPED for Ricardo's verdict.** Review: `/category/photography/?vw_masthead=1` and
 `/category/a-la-music/?vw_masthead=1`.
+
+## 2026-09-08 (later) — Regression diagnosis, archive inheritance, display dedupe
+
+**1. THE "COMMENT ×11" REGRESSION WAS NOT A REGRESSION, AND NOT IN THE META LINE.** Diagnosed from
+rendered output rather than assumed. The repeated "Comment" text sits in
+`<p class="vw-lead-block__main-dek">` — the **auto-excerpt** — not the card's meta area, and it comes
+from **stored `post_content`**: post 222 literally begins
+`Comment &nbsp; Comment &nbsp; …` ×11 before "Chantal Kreviazuk at Massey Theatre", scraped
+Disqus/Facebook chrome baked in at import. **48 published posts** carry that pattern, and since
+**3,372 of 3,373 posts have no manual excerpt**, every dek on the site is generated from content and
+inherits whatever noise is in it. Commit 6d691a5 touched only byline spans and did not cause this.
+
+Fixed at the display layer with `vw_strip_scrape_chrome()`, called from `vw_get_excerpt()` and each
+front's excerpt closure. **First attempt silently did nothing**: `wp_strip_all_tags()` leaves
+entities as literal text, so `&nbsp;` arrives as six characters that neither `\s` nor `\x{00A0}`
+matches — the cleaner now decodes entities first. Post 222's dek now reads "Chantal Kreviazuk at
+Massey Theatre on Oct. 28, 2020 by Tom Paillé-8…".
+
+**The missing byline was my own rule working as specified**: the featured card's post (240) has
+author "Photography" (user 171), which `vw_is_junk_author()` suppresses by design. Suppressing the
+name was intended; leaving an empty meta line was not — `vw_byline_inner()` now falls back to the
+post date, so no card renders an empty meta.
+
+**2. TWO REGRESSIONS I INTRODUCED THIS ROUND, CAUGHT BY MEASUREMENT BEFORE COMMIT.**
+(a) The first dedupe implementation filtered `the_posts` request-wide with a static seen-set. The
+fronts run **candidate scans** (a 30-post query from which one anchor is chosen), so the filter
+marked all 30 titles as spent and **the Photography front collapsed from 18 stories to 1**. Replaced
+with `vw_older_duplicate_ids()`, which precomputes the older half of each duplicate-title pair and
+seeds `$used_ids` — every zone already excludes those, so nothing is starved.
+(b) The date fallback then printed twice on the lead card ("Oct 29, 2020 · Oct 29, 2020"), because
+the anchor markup appends its own `· <time>`. New `vw_meta_line()` appends the date only when the
+byline is a real name.
+
+**3. ARCHIVE INHERITANCE.** New `assets/css/archive.css`, enqueued on `is_archive()`/`is_search()`:
+PT Serif headlines in `--vw-ink`, palette link colours replacing Newspack's blue, section-front
+byline treatment, category chips hidden (they repeat the archive you are in), palette pagination.
+The masthead already applied sitewide under the existing flag. **The "Category:" label needed CSS,
+not PHP**: Newspack renders it as `<h1 class="page-title"><span class="page-subtitle">Category: </span>…`
+via its own `get_the_archive_title` filter, which runs *after* a child-theme filter and re-adds the
+label — `get_the_archive_title_prefix` → `__return_empty_string` and a regex on
+`get_the_archive_title` both had **no effect**, verified in the rendered markup. Those two dead
+filters were removed rather than left in place, and the span is hidden in CSS.
+
+**4. DISPLAY DEDUPE (interim, data untouched).** Section fronts now exclude the older copy of each
+duplicate-title pair. Fronts order by date DESC so the survivor is the newer copy. **No post was
+deleted, retired or edited**; the ~14 Photography pairs (and ~104 archive-wide) remain a gated
+editorial decision, listed in the previous entry.
+
+**Regression sweep — all four fronts plus homepage, every card type:**
+
+| front | headlines | dupes | bylines | empty | dangling sep | doubled date | polluted deks |
+|---|---|---|---|---|---|---|---|
+| Photography | 18 | **0** | 18 | **0** | **0** | **0** | **0** |
+| A La Music | 18 | **0** | 18 | **0** | **0** | **0** | **0** |
+| Food & Drink | 18 | **0** | 18 | **0** | **0** | **0** | **0** |
+| Out N About | 18 | **0** | 18 | **0** | **0** | **0** | **0** |
+
+Browse-all links: 144 Photography, 1,055 A La Music, 27 Food & Drink, 211 Out N About. Zero
+"Comment" links anywhere. `must-see-films` and the homepage report 0 because neither uses a PHP
+section part — must-see-films renders the `.html` block template, the homepage is still page 9.
+
+**Archive verified**, `/category/a-la-music/page/2/`: title reads **"A La Music"** with the prefix
+span hidden, headlines in PT Serif `rgb(26,22,30)`, masthead present, old nav hidden, 12 entries,
+pagination present, no overflow. Non-curated `/category/live-music-reviews/` inherits identically.
+HTTP 200 across all four fronts, must-see-films, page 2, uncategorized, live-music-reviews and `/`.
+
+**STOPPED for verdict.**

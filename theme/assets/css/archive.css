@@ -1,0 +1,129 @@
+/* ================================================================
+   Archive inheritance — the Browse-all destination, /category/{slug}/page/N/,
+   and every non-curated category.
+
+   Inheritance only: no new layout. Newspack's own archive structure stays; it
+   simply adopts the design system's serif headlines, palette links, and byline
+   treatment instead of the theme's blue defaults. The "Category:" prefix is
+   dropped in functions.php, not here.
+   ================================================================ */
+
+.archive .entry-title,
+.archive .entry-title a,
+.search .entry-title,
+.search .entry-title a {
+	font-family: 'PT Serif', Georgia, serif;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	line-height: 1.18;
+	color: var(--vw-ink);
+	text-decoration: none;
+}
+
+.archive .entry-title a:hover,
+.search .entry-title a:hover {
+	color: var(--vw-red);
+}
+
+/* Archive heading: same weight and rule as a section front's title. */
+.archive .page-title,
+.archive .archive-title {
+	font-family: 'PT Serif', Georgia, serif;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	color: var(--vw-ink);
+	border-bottom: 3px solid var(--vw-ink);
+	padding-bottom: 10px;
+}
+
+.archive .archive-subtitle,
+.archive .taxonomy-description {
+	font-family: 'Inter', sans-serif;
+	font-size: 14px;
+	line-height: 1.6;
+	color: var(--vw-ink-muted);
+}
+
+/* Links inherit the palette rather than Newspack's blue. */
+.archive .entry-meta a,
+.archive .cat-links a,
+.archive .entry-content a,
+.archive .author a {
+	color: var(--vw-red);
+	text-decoration: none;
+}
+
+.archive .entry-meta a:hover,
+.archive .cat-links a:hover,
+.archive .entry-content a:hover {
+	text-decoration: underline;
+}
+
+/* Byline treatment matching the section fronts: quiet sans, name carries the
+   weight, date one step lighter. */
+.archive .entry-meta,
+.archive .author-name,
+.archive .posted-on {
+	font-family: 'Inter', sans-serif;
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--vw-byline-ink);
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+.archive .entry-meta .author a,
+.archive .author-name a {
+	font-weight: 600;
+	color: var(--vw-ink);
+}
+
+.archive .posted-on,
+.archive .entry-meta time {
+	color: var(--vw-ink-muted);
+}
+
+/* Category chips above archive headlines repeat the archive you are already
+   in, exactly as the kickers did on section fronts. */
+.archive .cat-links {
+	display: none;
+}
+
+.archive .entry-excerpt,
+.archive .entry-summary {
+	font-family: 'Inter', sans-serif;
+	font-size: 14px;
+	line-height: 1.6;
+	color: var(--vw-ink-muted);
+}
+
+/* Pagination in the palette. */
+.archive .pagination .page-numbers {
+	font-family: 'Inter', sans-serif;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	color: var(--vw-ink);
+	text-decoration: none;
+}
+
+.archive .pagination .page-numbers.current {
+	color: var(--vw-red);
+}
+
+.archive .pagination .page-numbers:hover {
+	color: var(--vw-red);
+}
+
+/* Newspack renders the archive prefix as its own element —
+   <h1 class="page-title"><span class="page-subtitle">Category: </span>… — added
+   by its own get_the_archive_title filter, which runs after a child-theme
+   filter and re-adds the label. Suppressing the span is what actually works;
+   two PHP filter attempts did not. */
+.archive .page-title .page-subtitle {
+	display: none;
+}
+
+.archive .page-title .page-description {
+	display: inline;
+}

@@ -112,6 +112,17 @@ function vw_enqueue_styles() {
 		);
 	}
 
+	// Archive inheritance: the Browse-all destination and every non-curated
+	// category adopt the design system instead of Newspack's blue defaults.
+	if ( is_archive() || is_search() ) {
+		wp_enqueue_style(
+			'vw-archive',
+			$uri . '/assets/css/archive.css',
+			[ 'vw-styles' ],
+			filemtime( $dir . '/assets/css/archive.css' )
+		);
+	}
+
 	// Sitewide-masthead preview: reuses homepage-v2.css so the preview shows the
 	// real masthead styling rather than a lookalike.
 	if ( function_exists( 'vw_masthead_active' ) && vw_masthead_active() ) {
@@ -155,7 +166,7 @@ function vw_enqueue_styles() {
 function vw_get_excerpt( WP_Post $post, int $words = 25 ): string {
 	$manual = trim( wp_strip_all_tags( $post->post_excerpt ) );
 	if ( $manual ) return $manual;
-	$content = strip_shortcodes( wp_strip_all_tags( $post->post_content ) );
+	$content = vw_strip_scrape_chrome( strip_shortcodes( wp_strip_all_tags( $post->post_content ) ) );
 	return wp_trim_words( $content, $words, '…' );
 }
 
@@ -234,12 +245,93 @@ function vw_is_junk_author( string $name ): bool {
 	return in_array( $key, $cat_names, true ) || in_array( $key, $extra, true );
 }
 
-/** "By <strong>Name</strong>", or '' when the author is a category/desk label. */
-function vw_byline_inner( int $author_id ): string {
-	$name = (string) get_the_author_meta( 'display_name', $author_id );
-	if ( vw_is_junk_author( $name ) ) return '';
+/**
+ * "By <strong>Name</strong>" — or the post date when the author is a category
+ * or desk label, so a card never renders an empty meta line. Suppressing the
+ * name is deliberate; suppressing the whole line was not.
+ */
+function vw_byline_inner( $post ): string {
+	$post = get_post( $post );
+	if ( ! $post ) return '';
+
+	$name = (string) get_the_author_meta( 'display_name', (int) $post->post_author );
+	if ( vw_is_junk_author( $name ) ) {
+		return '<time datetime="' . esc_attr( get_the_date( 'c', $post ) ) . '">'
+			. esc_html( get_the_date( 'M j, Y', $post ) ) . '</time>';
+	}
 	return 'By <strong>' . esc_html( $name ) . '</strong>';
 }
+
+/**
+ * Scrape chrome that ended up inside post_content and surfaces through the
+ * auto-excerpt — runs of "Comment", Disqus/Facebook widget leftovers, stray
+ * "Share this" lines. 3,372 of 3,373 published posts have no manual excerpt, so
+ * every dek on the site is generated from this content and inherits the noise.
+ * Display-layer only: post_content is not touched.
+ */
+function vw_strip_scrape_chrome( string $text ): string {
+	// wp_strip_all_tags() leaves entities as literal text, so "&nbsp;" arrives as
+	// six characters that no whitespace class matches. Decode before cleaning.
+	$text = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	$text = preg_replace( '/(?:\bComments?\b[\s\x{00A0}·|,–—-]*){2,}/iu', ' ', $text );
+	$text = preg_replace( '/\b(?:Share this|Like this|Loading\.\.\.|Related Posts?|Tweet|Pin It)\b[\s\x{00A0}:·|,-]*/iu', ' ', $text );
+	$text = preg_replace( '/^[\s\x{00A0}·|,–—-]+/u', '', (string) $text );
+	return trim( preg_replace( '/[\s\x{00A0}]+/u', ' ', (string) $text ) );
+}
+
+/**
+ * Older halves of duplicate-title pairs within a set of categories.
+ *
+ * The archive holds pairs of distinct posts with identical titles — a clean-slug
+ * copy and a Wayback-recovered copy. Deleting one is an editorial decision that
+ * has not been made, so the fronts simply never query the older copy: the ids
+ * seed $used_ids, and every zone already excludes those.
+ *
+ * An earlier attempt filtered `the_posts` request-wide, which starved the front
+ * to a single story — the fronts run candidate scans (30 posts, one picked), and
+ * that filter marked all 30 titles as spent. Excluding at the source avoids it.
+ */
+function vw_older_duplicate_ids( array $cat_ids ): array {
+	if ( ! $cat_ids ) return [];
+
+	$q = new WP_Query( [
+		'category__in'           => $cat_ids,
+		'posts_per_page'         => -1,
+		'orderby'                => 'date',
+		'order'                  => 'DESC',
+		'no_found_rows'          => true,
+		'update_post_meta_cache' => false,
+		'update_post_term_cache' => false,
+	] );
+
+	$seen = [];
+	$older = [];
+	foreach ( $q->posts as $p ) {
+		$key = mb_strtolower( trim( $p->post_title ) );
+		if ( '' === $key ) continue;
+		if ( isset( $seen[ $key ] ) ) { $older[] = (int) $p->ID; continue; }
+		$seen[ $key ] = true;
+	}
+	wp_reset_postdata();
+	return $older;
+}
+
+/**
+ * Byline plus date for the lead card. The date is appended only when the byline
+ * is a real name — vw_byline_inner() already falls back to the date for
+ * category/desk-label authors, and appending it again printed it twice.
+ */
+function vw_meta_line( $post ): string {
+	$post = get_post( $post );
+	if ( ! $post ) return '';
+
+	$inner = vw_byline_inner( $post );
+	if ( false === strpos( $inner, '<strong>' ) ) return $inner;
+
+	return $inner . '&nbsp;·&nbsp;<time datetime="' . esc_attr( get_the_date( 'c', $post ) ) . '">'
+		. esc_html( get_the_date( 'M j, Y', $post ) ) . '</time>';
+}
+
 
 /**
  * Closing "Browse all N …" link for a section front. Prints nothing when the
