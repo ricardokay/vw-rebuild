@@ -2212,3 +2212,55 @@ every prior screenshot. Scrolling first captured it correctly. Nothing was ever 
 
 **STOPPED for Ricardo's verdict — nothing enabled on live singles.** Same six review URLs as
 iteration 4.
+
+## 2026-09-08 (later) — Sitewide masthead PREVIEW + two pre-existing header bugs found
+
+**MASTHEAD CONSISTENCY IS A LAUNCH GATE.** Until now the homepage-v2 masthead existed only inside
+the homepage module, while every other page rendered a different, older header. Judging the site as
+a whole was impossible. This round renders the v2 masthead sitewide behind `?vw_masthead=1` so the
+chrome can be assessed before rollout. **Preview only — unflagged pages verified untouched.**
+
+**How the chrome is actually built (correcting a common assumption): the sitewide header is NOT
+Newspack's.** The child theme fully overrides `header.php` and renders its own
+`<header class="vw-nav">` — logo plus **four** nav links. The homepage-v2 masthead is separate inline
+markup (`.vwh2-masthead`) inside `section-parts/homepage-v2.php`, styled by `homepage-v2.css`, which
+also hides `.vw-nav` on the homepage preview template. So there were already two different headers
+in the codebase, differing in structure and in section count (4 vs 6).
+
+**Approach.** New `inc/masthead.php` prints the masthead at `wp_body_open` when the flag is set, and
+`masthead-preview.css` hides `.vw-nav` on flagged views only. The preview **reuses `homepage-v2.css`**
+rather than restyling, so what Ricardo judges is the real masthead, not a lookalike. Two deliberate
+differences from the homepage module: the dateline shows the **real current date** instead of the
+mockup's frozen "Saturday, July 25, 2026", and nav links resolve through `get_category_link()`
+instead of `#`. **Preview-grade**: hiding `.vw-nav` with CSS is acceptable here, as with the article
+header; a real rollout replaces `header.php` properly.
+
+**Rendered at 1440px — consistent across all three page types:** masthead 1345px wide ending at
+y=236 with content beginning at y=239 on every page; exactly **one** masthead per page; `.vw-nav`
+computed `display:none`; six nav items resolving to `/category/{slug}/`; no horizontal overflow.
+Verified on `/category/a-la-music/`, `/category/photography/` and single post 129. Unflagged
+`/category/a-la-music/`, `/category/photography/`, post 129 and `/` all return **0** occurrences of
+the masthead markup.
+
+**Section fronts do NOT render their own masthead — no duplicate to suppress.** `category.php`
+renders a `.vw-section-header` (section mark + title + description) which sits *below* the masthead
+at y=247. That is section identity, not a second masthead, so it stays. The stack reads
+masthead → heavy rule → section mark + title + description → article grid.
+
+**TWO PRE-EXISTING BUGS FOUND, BOTH LAUNCH-GATE, NEITHER FIXED (each needs a write):**
+
+1. **Every nav link in the live sitewide header 404s.** `header.php` links to `/a-la-music/`,
+`/photography/`, `/food-drink/`, `/out-n-about/` — all four return **404**. The real archives are at
+`/category/{slug}/` (confirmed 200). The site's main navigation is entirely broken today. The new
+masthead avoids this by using `get_category_link()`, but `header.php` itself still needs the fix.
+2. **The site timezone is unset**, so WordPress runs on UTC: `timezone_string` is empty and
+`gmt_offset` is 0. At the time of writing WordPress believes it is **Wednesday, September 9, 2026
+3:05am** while Vancouver is **Tuesday, September 8, 2026 8:05pm** — the masthead dateline is a day
+ahead for roughly seven hours out of every twenty-four, and post publish times are shifted too. For
+a city paper that prints the date in its masthead this matters. Fix is admin-only, no code:
+**Settings → General → Timezone → America/Vancouver**. Not done here — it is a database write.
+
+**STOPPED for Ricardo's verdict.** Review URLs: `/category/a-la-music/?vw_masthead=1`,
+`/category/photography/?vw_masthead=1`,
+`/harper-fights-dirty-on-the-northern-gateway-pipeline/?vw_masthead=1`. The masthead and article-
+header previews are independent flags and can be combined: `?vw_masthead=1&vw_header=1`.

@@ -4,6 +4,7 @@ require_once get_stylesheet_directory() . '/inc/dead-media.php';
 add_filter( 'the_content', 'vw_dead_media_filter', 20 );
 
 require_once get_stylesheet_directory() . '/inc/article-header.php';
+require_once get_stylesheet_directory() . '/inc/masthead.php';
 
 /**
  * Force every single post to the theme's "One column wide" layout.
@@ -108,6 +109,23 @@ function vw_enqueue_styles() {
 			$uri . '/assets/css/homepage.css',
 			[ 'vw-styles' ],
 			filemtime( $dir . '/assets/css/homepage.css' )
+		);
+	}
+
+	// Sitewide-masthead preview: reuses homepage-v2.css so the preview shows the
+	// real masthead styling rather than a lookalike.
+	if ( function_exists( 'vw_masthead_active' ) && vw_masthead_active() ) {
+		wp_enqueue_style(
+			'vw-homepage-v2',
+			$uri . '/assets/css/homepage-v2.css',
+			[ 'vw-palette', 'vw-fonts' ],
+			filemtime( $dir . '/assets/css/homepage-v2.css' )
+		);
+		wp_enqueue_style(
+			'vw-masthead-preview',
+			$uri . '/assets/css/masthead-preview.css',
+			[ 'vw-homepage-v2' ],
+			filemtime( $dir . '/assets/css/masthead-preview.css' )
 		);
 	}
 

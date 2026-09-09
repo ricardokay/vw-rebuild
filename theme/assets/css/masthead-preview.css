@@ -1,0 +1,31 @@
+/* ================================================================
+   Sitewide masthead — PREVIEW ONLY (?vw_masthead=1).
+   Loaded only when the flag is set; unflagged pages are untouched.
+
+   PREVIEW-GRADE: the existing .vw-nav header is hidden rather than replaced.
+   A real rollout overrides header.php properly.
+   ================================================================ */
+
+.vw-masthead-preview .vw-nav {
+	display: none;
+}
+
+/* The masthead prints at wp_body_open, i.e. before #page, so it needs the
+   page ground itself — otherwise it sits on the browser's default white. */
+.vw-masthead-preview__wrap {
+	background: var(--vw-bg-subtle);
+	padding-top: 10px;
+}
+
+/* Newspack injects a top margin on #content that assumed a header above it;
+   the masthead now plays that role, so the gap is redundant here. */
+.vw-masthead-preview #content {
+	margin-top: 0;
+}
+
+/* Section fronts keep their own section header (title + mark) below the
+   masthead — that is section identity, not a second masthead, so it stays.
+   It only needs a little air under the heavy rule. */
+.vw-masthead-preview .vw-section-landing {
+	padding-top: 8px;
+}
