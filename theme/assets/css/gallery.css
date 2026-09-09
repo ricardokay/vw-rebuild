@@ -46,3 +46,9 @@
 		font-size: 13px;
 	}
 }
+
+/* Dead-media net: the JS marks an image that failed to load, and its whole
+   enclosing element goes — no orphaned caption, no empty frame. */
+.vw-media-dead {
+	display: none !important;
+}

@@ -1,5 +1,8 @@
 <?php
 
+require_once get_stylesheet_directory() . '/inc/dead-media.php';
+add_filter( 'the_content', 'vw_dead_media_filter', 20 );
+
 add_action( 'wp_enqueue_scripts', 'vw_enqueue_styles' );
 function vw_enqueue_styles() {
 	$dir = get_stylesheet_directory();
@@ -46,6 +49,16 @@ function vw_enqueue_styles() {
 		[],
 		filemtime( $dir . '/assets/js/vw-lightbox-caption.js' ),
 		true
+	);
+
+	// Head, not footer: a footer-loaded listener would miss image errors that
+	// fire while the document is still parsing.
+	wp_enqueue_script(
+		'vw-dead-media',
+		$uri . '/assets/js/vw-dead-media.js',
+		[],
+		filemtime( $dir . '/assets/js/vw-dead-media.js' ),
+		false
 	);
 
 	if ( is_front_page() ) {

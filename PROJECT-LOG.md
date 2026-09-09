@@ -1702,3 +1702,79 @@ and still stale.
 
 NOT DONE this round, by instruction: 6 remaining `images.unsplash.com` hotlinks (Photography band
 + 4-thumb strip, Food, Books) — round 5 / phase 2 scope. Round 3 fixed only the A La Music one.
+
+## 2026-09-08 — Dead-image suppression, session 1 of 2 (theme-layer, splice-only)
+
+**NOT DONE until session 2.** The splice scanner has passed a filter-level gate but has NOT had a
+render sweep across the 1,774 affected posts. Until that sweep runs, this feature is not
+considered complete.
+
+**CORRECTED CENSUS (supersedes the working assumption that files were missing from disk).**
+Scanned all 3,373 published posts: **local images 11,091, of which ZERO are missing from disk.**
+The dead images are external hotlinks — **10,989 `web.archive.org` references across 1,764 posts**,
+19 other-remote across 10 posts, plus 2,237 relative/data-URI srcs across 679 posts (unclassified,
+deliberately passed through). **1,774 published posts (52.6%) carry at least one dead image.** The
+often-quoted ~70% corresponds to posts referencing any external image, a wider set. 1,201 dead
+images sit inside a `<figure>`, and every one of those figures carries a `<figcaption>` — 1,201
+orphaned credits archive-wide. 7,754 of 24,336 body images sit inside `<noscript>` and never render.
+
+**WAYBACK-URL CORRUPTION (new finding, future recovery channel).** Most archive URLs are
+self-defeating: a domain search-replace rewrote the *original* hostname **inside** the archive URL,
+producing `web.archive.org/web/<ts>im_/http://vancouverweekly-local.local/wp-content/...`. Wayback
+has no capture of `vancouverweekly-local.local`, so these can never resolve — 6/6 sampled returned
+404 with `text/html`. **Reversing that rewrite (restoring the original host inside the archive URL)
+is a plausible future recovery channel and should be evaluated before writing these images off.**
+
+**DOMDocument GATE FAILURE -> switch to splice.** The originally-approved parser approach was
+gated first, with no suppression rules active, and failed. Over 300 published posts: 48
+byte-identical, 231 cosmetic-only, **21 REAL divergences (7%)**, 0 parse failures. Real classes:
+structural tag added 11 (auto-closed `</div>` the source never had), URL percent-encoding 6
+(`Paillé-0348.jpg` -> `Paill%C3%A9-0348.jpg`, `Car-Bomb-w^w^^w^w.jpg` -> `...w%5Ew%5E%5Ew%5Ew.jpg`),
+boolean attribute collapsed 3, other 1. The structural class is not random: **149 of 3,373
+published posts have unbalanced `<div>` counts** — the same population as the PARKED wrapper-div
+shells. A DOMDocument filter would silently restructure those 149 on every render. Approach
+rejected and replaced with a **splice-only** design that deletes byte ranges and never
+reserializes, so retained bytes are bit-identical by construction.
+
+**EARLY-ERA CENSUS GAP (investigation queued).** Published-post populations by era: **pre-2011 = 1
+post**, 2011-2016 = 2,173, 2017+ = 1,199. There is effectively no published pre-2011 content, so
+the 2006-2010 era could not be sampled. Whether that era sits in the unimported remainder, the spam
+trash, or was never recovered is unresolved and needs its own look.
+
+**Built.** `inc/dead-media.php`: classifier (local -> `file_exists`; remote -> proven-dead host list
+`web.archive.org` + `*.fbcdn.net`; everything else passes through), `<noscript>` range skip, bounded
+balanced wrapper scan (enclosing `<figure>` taking its figcaption, else an `<a>` wrapping only the
+image, else the `<img>` alone as the documented fallback for malformed markup), range merge, and a
+conservative empty-gallery-container sweep. Registered on `the_content` at priority 20, skipped in
+admin and feeds. `assets/js/vw-dead-media.js`: capture-phase `error` listener plus a
+DOMContentLoaded/load sweep, enqueued in the HEAD so it cannot miss errors fired during parse.
+`.vw-media-dead{display:none!important}` in `gallery.css`. **No DB writes, no post_content edits,
+no transient cache** — suppression is render-time only, so a recovered file or a rewritten src
+self-heals with no further action.
+
+**Gate results (filter run over all 3,373 published posts, 0.86s total).** Subsequence violations
+**0**, bytes added **0**, `</div>` added **0** — the splice invariant holds. On the 1,609 posts with
+nothing dead the filter is a **byte-for-byte no-op, 1,609/1,609** — the exact test DOMDocument
+failed. Removed across the archive: 3,901 images, 1,200 figures, 1,200 figcaptions, 2.48 MB of
+markup; 1,498 posts end up image-free (text-forward, as designed).
+
+Reference posts: **65491** 53 imgs -> 0, 51 figures and 51 figcaptions gone (no orphaned credits),
+rendered article 0 broken images and **0 outbound archive.org requests, down from 53**, prose
+intact at 2,762 chars. **65419** 37 -> 36 imgs (a dead ad banner), all 37 figures and 36 figcaptions
+of the repaired gallery retained, prose unchanged. **67156** (JIG) noscript block intact 1 -> 1,
+prose delta 0.
+
+**DEVIATION FROM THE APPROVED PROPOSAL — flagged for review.** The proposal claimed the 230
+noscript/JIG posts would be "byte-untouched". They are not: **179 of 261 JIG posts are modified.**
+The noscript blocks themselves are fully intact and every noscript-enclosed image is skipped, but
+these posts also carry a dead image *outside* the noscript — one visible broken image each, ~240
+bytes — and the filter suppresses it like any other. The noscript/JIG problem itself remains
+untouched and out of scope. Current behaviour was kept because those images genuinely render broken
+to readers; if strict exclusion is wanted instead, it is a one-line guard on `jigSgConnect`.
+
+Note: removing a figure removes its figcaption text from the *rendered page* (65491 prose -1,238
+chars, all of it photo credits). Nothing is deleted from the database — the credits return
+automatically if the image is ever recovered.
+
+**Session 2:** render sweep across the 1,774 affected posts; decide the JIG deviation above;
+evaluate the Wayback-URL reversal as a recovery channel.
