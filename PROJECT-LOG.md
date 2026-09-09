@@ -1938,3 +1938,65 @@ back blank while JS measurement continued to work normally. The geometry above i
 reliable; the visual confirmation of images at full width is **outstanding** and should be eyeballed
 directly at
 `http://vancouverweekly-local.local/36-stunning-photos-of-vince-staples-with-kilo-kish-at-the-vogue-theatre-57288-2/`.
+
+## 2026-09-08 (later) — FB galleries to 2 columns + "Powered by Newspack" findings
+
+**GALLERY DIAGNOSIS: the constraint was core's `columns-3` rule, not our CSS and not the files.**
+After the single-wide switch, images were still 393px. Measured cause: every repaired gallery
+carries `columns-3`, and WordPress **core's** gallery block stylesheet (inline
+`<style id="wp-block-gallery-inline-css">`) sets
+`@media(min-width:600px){.wp-block-gallery.has-nested-images.columns-3 figure.wp-block-image:not(#individual-image){width:calc(33.33333% - var(--wp--style--unstable-gallery-gap,16px)*.66667)}}`
+→ 393.33px. Ruled out by measurement: the `img` is only `max-width:100%` of its figure (not the
+constraint), and the **original file is what's served** — 65419's attachments have no registered
+`large` size at all, so there is nothing bigger to serve.
+
+**Source files cap the ambition.** 65419's originals are 739–1000px wide; 66024's are 589–1368px.
+At the old 393px every file was ample. **2 columns (595px) was chosen because it stays inside the
+real pixels for nearly every image; 1 column (1200px) would upscale 65419 by 1.2×–1.62× and all but
+two of 66024's images.** No layout change can make small files sharp — that is recovery work, not
+CSS. **1-column revisit is queued for after the FB re-migration**, when higher-resolution originals
+may be available.
+
+**Change:** one scoped rule appended to `assets/css/gallery.css`, targeting
+`.entry-content .wp-block-gallery.vw-fb-gallery.has-nested-images figure.wp-block-image:not(#individual-image)`
+with core's own 2-column gap math. Scoped to `.vw-fb-gallery` so editorial galleries keep core
+behaviour, and confined to the same `min-width:600px` breakpoint so nothing below 600px changes.
+Specificity (1 ID, 5 classes, 1 element) beats core's (1,4,1) without depending on stylesheet
+order. All 363 repaired galleries are uniformly `columns-3`, so the rule applies evenly.
+
+**Verified at 1440px:** 65419 — 36 figures at **595px**, 18 clean rows of 2, no overflow. 66024 —
+19 figures at 595px, 9 rows of 2 plus one orphan.
+
+**ORPHAN LAST TILE (pre-existing, not introduced here).** An odd image count leaves a lone final
+tile that **stretches to the full 1200px**, because core sets `flex-grow:1` on gallery figures.
+Verified pre-existing by restoring core's 3-column width in the browser: the last tile measured
+1200px there too. What changed is the frequency — **176 of 363 galleries (48%) have odd image
+counts** and now show it. It reads as one over-large, upscaled photo closing the grid. Not fixed
+this round; a `flex-grow:0` override on the last child would pin it to 595px and is the obvious
+follow-up if Ricardo dislikes it.
+
+**CROPPING COMPARISON (measured only — committed CSS does NOT change cropping this round).**
+With `is-cropped` (current): `object-fit:cover`, tiles uniform within each row (e.g. 744/744, then
+1058/1058) — tidy grid, but a portrait beside a landscape gets cut. With cropping defeated: natural
+ratios, heights ragged (744, 402, 744, 1058, 1058, 397) — nothing cropped, uneven bottoms.
+**Ricardo should look at post 66024**, whose mixed portrait/landscape set shows the trade most
+clearly. For a photography archive the no-crop option preserves the photographer's framing; the
+grid option looks tidier. Decision deferred.
+
+**"POWERED BY NEWSPACK" — NO ADMIN TOGGLE EXISTS.** It is hard-coded in the parent theme at
+`newspack-theme/footer.php:53-55` as
+`<a target="_blank" href="https://newspack.com/" class="imprint">Powered by Newspack</a>`, with
+**no conditional and no filter around it**. Confirmed rendering on a live post (line 184-185 of the
+output). The nearby `footer_show_branding` theme mod (currently `false`) governs the footer *logo*
+only — "Display the site logo in the footer when the footer widget area is populated" — not this
+credit. Removing it therefore needs code; proposed and **awaiting approval, nothing implemented**:
+the string passes through `esc_html__( 'Powered by Newspack', 'newspack-theme' )`, so a
+`gettext_newspack-theme` filter in the child theme can blank it in ~5 lines without copying
+`footer.php` (which would fork a 70-line parent file and drift on updates). Note the filter leaves
+an empty `<a class="imprint">` in the markup; a one-line CSS `display:none` on `.site-info .imprint`
+is the alternative. Ricardo's call.
+
+Note: the Browser pane was hidden again, so screenshots came back blank while DOM measurement
+worked normally. All geometry above is measured; the visual check is outstanding at
+`/dan-mangan-blacksmith-hayden-astral-swans-at-the-vogue-theatre/` and
+`/36-stunning-photos-of-vince-staples-with-kilo-kish-at-the-vogue-theatre-57288-2/`.

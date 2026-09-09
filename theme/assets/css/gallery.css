@@ -52,3 +52,17 @@
 .vw-media-dead {
 	display: none !important;
 }
+
+/* Repaired Facebook galleries: 2 columns, not core's 3.
+   The constraint on image size was never CSS on the img (max-width:100%) nor a
+   too-small size being served (the original file is served) — it was core's
+   gallery block rule, which at columns-3 gives each figure a third of the
+   container. Scoped to .vw-fb-gallery so editorial galleries keep core's
+   behaviour. Specificity beats core's
+   `.wp-block-gallery.has-nested-images.columns-3 figure.wp-block-image:not(#individual-image)`
+   without depending on stylesheet order; gap math mirrors core's own 2-column rule. */
+@media (min-width: 600px) {
+	.entry-content .wp-block-gallery.vw-fb-gallery.has-nested-images figure.wp-block-image:not(#individual-image) {
+		width: calc(50% - var(--wp--style--unstable-gallery-gap, 16px) / 2);
+	}
+}
