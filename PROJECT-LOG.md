@@ -1778,3 +1778,66 @@ automatically if the image is ever recovered.
 
 **Session 2:** render sweep across the 1,774 affected posts; decide the JIG deviation above;
 evaluate the Wayback-URL reversal as a recovery channel.
+
+## 2026-09-08 — Dead-image suppression session 2 of 2: render sweep gate — **COMPLETE**
+
+**DEAD-IMAGE SUPPRESSION IS COMPLETE.** The render-sweep gate on commit d0c35ad passed clean.
+
+**RULINGS ACCEPTED (Ricardo via reviewer) — logged as explicit known states.**
+
+1. *JIG deviation accepted, no guard added.* The filter suppresses dead images that sit **outside**
+the `<noscript>` block on JIG posts; 179 of 261 such posts are therefore modified. Their noscript
+blocks stay byte-intact and every noscript-enclosed image is skipped. This stands as designed and
+is largely mooted by the upcoming retirement of the 230 empty JIG posts to draft.
+2. *Suppressed figcaptions accepted.* ~1,200 photo credits are **not displayed** while their images
+are dead. Nothing is deleted — `post_content` is untouched, suppression is render-time only, and
+each credit returns automatically the moment its image is recovered.
+
+**RENDER SWEEP — 1,764 posts, full template path over HTTP, 10 concurrent, checkpointed.**
+Target set is every published post carrying at least one proven-dead image. (Note: 1,764, not the
+1,774 previously quoted — the 10-post difference is the `other_remote` bucket, which is
+deliberately NOT suppressed, so those posts are unaffected by the filter. Of the 1,764, 1,701 are
+actually modified; the other 63 have their dead images only inside `<noscript>`, which the filter
+skips.)
+
+Results: **HTTP 200 on 1,764 / 1,764. Zero real failures.** Zero surviving dead-host images outside
+noscript, zero empty `<figure>`, zero orphaned `<figcaption>`, zero lost noscript blocks. 87.9 MB
+of HTML analysed.
+
+One post flagged and **cleared as a detector false positive**: 68815 matched the substring
+"Warning:", which is article prose — a Fringe show description reading *"Warning: include learning
+the 'car dance' and a few of Grandpa's vaudeville skits"*. No page anywhere in the sweep contained
+the strict PHP-error signature (`Warning: … in /path on line N`), and since the strict pattern is a
+subset of the loose one and only this single page matched the loose one, **there are zero real PHP
+errors across the whole sweep.**
+
+**VISUAL SAMPLE — 10 posts at 1280px, screenshotted, all clean.** Across every failure mode:
+heavy-all-dead (65491 53→0 imgs, 68597 18→0, 66844 17→0), single-dead-emptied (65423, 65433),
+JIG/noscript (67156, 67792, 67837 — noscript intact 1→1 on each), and unbalanced-div fallback
+(65419 37→36, 66024 20→19). Every one reported **0 broken images, 0 Wayback requests, 0 empty
+figures, 0 orphaned captions**. Prose intact throughout (e.g. 65491 2,762 chars, 68597 9,541,
+66844 13,076). Repaired galleries are untouched: 65419 still renders all 36 images with 36
+captions, 66024 all 19. Featured images are unaffected — 68597 still shows its park photo, since
+featured images are local files that exist.
+
+**PERFORMANCE — full template renders, filter toggled at runtime, median of 7 alternating runs.**
+
+| post | body images | filter ON | filter OFF | delta |
+|---|---|---|---|---|
+| 67156 | 255 | 14.2 ms | 13.9 ms | +0.4 ms (+2.6%) |
+| 67792 | 133 | 6.1 ms | 5.9 ms | +0.1 ms (+2.4%) |
+| 67837 | 125 | 5.2 ms | 5.1 ms | +0.1 ms (+2.5%) |
+
+Renders were real full pages (237 KB / 110 KB / 86 KB). **The no-cache decision is data-backed:
+~2.5% overhead, well under a millisecond even on the worst post in the archive. No transient cache
+is warranted, so the no-DB-writes constraint costs nothing.** Live HTTP render times across the
+sweep: median 63 ms, p95 108 ms, max 2.18 s.
+
+**Observation for the content backlog (not a filter issue):** post 65433 renders a Facebook API
+error string stored in its own `post_content` — *"The requested album cannot be loaded at this
+time. Error: OAuthException…"*. Scraped text, pre-existing, unrelated to this work; it belongs to
+the gallery-import backlog.
+
+Still open, unchanged by this session: the 230 empty JIG posts (retirement to draft pending), the
+Wayback-URL reversal as a possible recovery channel, and the early-era census gap (1 published post
+pre-2011).
