@@ -2410,3 +2410,14 @@ pagination present, no overflow. Non-curated `/category/live-music-reviews/` inh
 HTTP 200 across all four fronts, must-see-films, page 2, uncategorized, live-music-reviews and `/`.
 
 **STOPPED for verdict.**
+
+2026-09-11 — Contributor Kit source images captured from the live site before production
+disappears: 5 JPGs (FRONT-PAGE 2000×1458, PAGE-ONE/TWO3/THREE1/FOUR each 720×1152; 2.1 MB total,
+all HTTP 200 / image/jpeg, md5-verified) in `source-material/contributor-kit/` (gitignored) and
+mirrored to iCloud `vw-rebuild-backups/contributor-kit/`. Full verbatim transcription alongside them
+in `transcription.md`, so the coded page can be written from text. The kit dates to 2012-2013 and
+the DB page (ID 68) is empty, so this is the only surviving copy of its content. Key terms: contact
+info@vancouverweekly.com; seeks writers/photographers/social/interns; 400-800 words; Google Doc or
+.doc/.docx; 10-30 photos at ~800KB-2MB with credit; **"not all our writing is paid" with no rates
+stated**; no rights or licensing terms anywhere; the social-proof chart is unpopulated placeholder
+("SOME STAT / ANOTHER STAT / SAME THANG") and cites the discontinued Google Currents app.
