@@ -6,33 +6,58 @@ This file governs all Claude Code sessions on this project. Rules here override 
 
 ## CURRENT STATE *(overwrite this section each session — do not append)*
 
-**Done:**
-- Phase 1: 2,789 posts imported (Wayback recovery)
-- Phase 2: 3,585 images imported + thumbnail regen; featured-image back-fill (Option C) applied
-- Phase 3: child theme + all 4 section fronts live (A La Music, Photography, Food & Drink, Out N About) — chrome (vw-nav header + Newspack) confirmed native on all templates via live HTTP check
-- Spam cleanup: 297 posts trashed; vw-security plugin active; XML-RPC disabled
-- Photographer account cleanup: duplicate accounts consolidated, display names corrected (2026-06-18)
-- Album classification COMPLETE (`fb-album-inventory.csv`, 563 albums): REPAIR 374 / ADD 15 / NEEDS_REVIEW 174
-- **ARCHIVE PUBLISH COMPLETE (2026-07-18): all 362/362 repaired galleries live (~11k images)** — copy-in-place onto the real published posts (frozen slugs/dates/authors verified per post), attachments reparented, drafts retired at status draft + `_vw_retired_after_publish=1` (never trash). Published count 3,580 unchanged throughout (replacements, never additions). Runners: `publish_batch.php`, `chrome_strip.php`.
-- **Body-chrome cleanup on lives COMPLETE (2026-07-18): 84 posts stripped** (title-dup paragraphs + inline Tags footers; 76 auto + 8 short-title catches + 2 hand-fixes 67540/67541 keeping lineup/venue lines). Dirty-5 JIG-strip done and published. **Residual chrome scan across all 363 repaired lives: 0.** Real prose verified preserved (67477 UBCP/ACTRA, 83913 Folk Fest essay).
-- **1 draft held:** 85536 getty-rights-hold — never publish without license confirmation. Flags: `_vw_publish_exclude` meta + `db-backups/publish-exclusions.json` (released dirty-body-jig entries kept there as history).
-- **Wrapper-div shells PARKED (known-cosmetic):** empty `post-content entry-content cf` / `<article>` wrappers remain on many lives — invisible in render; needs balanced parser; deliberate non-goal for now.
-- **Rollback assets valid:** `pre-publish` + `pre-chrome-cleanup` full dumps (MD5-verified) + three reversal manifests (`vw_publish_reversal`, `vw_chrome_reversal`, `vw_dirty5_jigstrip_reversal`, all 2026-07-18) + progress files — all in `db-backups/` AND iCloud `vw-rebuild-backups/`.
-- Broken-gallery universe (pre-publish analysis): ~497 caption-only/thin posts still need FB album import, not a display fallback. Fallback design preview: `fallback-preview.html`.
+**Archive:** 3,373 published posts. **85536 (getty-rights-hold) is the only held draft** — never publish without license confirmation; flagged via `_vw_publish_exclude` + `db-backups/publish-exclusions.json`.
 
-**In progress:** gallery quality backlog — remaining NEEDS_REVIEW albums + caption-only/thin posts (see inventory CSV)
+**Done and verified:**
+- Phases 1–3: 2,789 posts imported, 3,585 images, child theme + 4 section fronts. Spam cleanup, photographer account consolidation, album classification (563 albums).
+- **Archive publish COMPLETE (2026-07-18):** 362/362 repaired galleries live (~11k images), body-chrome cleanup on 84 lives, residual chrome scan 0.
+- **207 event listings retired (2026-07-25):** published 3,580 → 3,373, reversal manifest MD5-verified.
+- **Dead-image suppression COMPLETE** (commit `d0c35ad`, render-sweep gated): splice-only `the_content` filter — deletes byte ranges, never reserializes, so retained bytes are bit-identical. DOMDocument was rejected on a 7%-real-divergence gate. **1,764 posts affected; 1,498 now render image-free; ~1,200 photo credits display-suppressed until the image is recovered** (nothing deleted — credits return automatically). Sweep: 1,764/1,764 HTTP 200, zero surviving dead-host images, zero orphaned captions. `recovery-inventory.csv` (1,764 rows) is the manual-recovery worklist.
+- **Single posts:** forced to `single-wide.php` (1200px) via a child-theme `get_post_metadata` filter — **zero DB writes**, beats both meta states (2,215 unset / 1,158 "default"), gated off in admin/REST.
+- **FB galleries:** 3-column CSS-columns masonry, natural aspect ratios, `column-count` is a one-number switch. **"Powered by Newspack" removed** (gettext filter + CSS).
+- **Section fronts:** nav 404s fixed (six sections, real `/category/` URLs); same-section kickers suppressed; junk-author bylines display-suppressed (Contests 49 / Photography 10 / News Feed 5 = 64 posts; authors unchanged); depth cap 17 stories + "Browse all N" handoff; display-layer title dedupe, newer copy wins.
+- **Archive pages** inherit the design system (serif headlines, palette, byline treatment, no "Category:" label) and paginate properly — `category.php` now falls through to the archive when `is_paged()`.
+- **Timezone FIXED:** `America/Vancouver` (gmt_offset −7). WP clock matches local time.
+- **Contributor Kit source captured** (2026-09-11): five JPGs + full verbatim transcription in gitignored `source-material/contributor-kit/`, mirrored to iCloud. DB page 68 is empty, so this is the only surviving copy.
+- Rollback assets valid: `pre-publish` + `pre-chrome-cleanup` dumps + reversal manifests, local + iCloud.
 
-**Next:**
-1. Rebuild homepage (page 9) Newspack-native via Claude Design → port to child theme
-2. Build local→production deploy tooling (greenfield)
+**Approved in PREVIEW, NOT live — rollout rounds pending:**
+- **Adaptive article header** (`?vw_header=1`, iteration 5, Ricardo approved): case A full-width / B split / C stacked, accent rule, sentence-case bylines. Rollout needs: real template override (not CSS-hiding), threshold revisit at 1200, `hr` reset, mobile pass, full sweep.
+- **Sitewide v2 masthead** (`?vw_masthead=1`): dateline, centred wordmark, motto, six-section nav. Rollout needs a proper `header.php` replacement.
 
-**LAUNCH BLOCKERS (real):**
-1. **Homepage** — page 9 is still the old Elementor build (the failed agency restoration this project replaces). Rebuild Newspack-native, switch its page template off `elementor_header_footer`, handle Elementor content — post 65350 (publish, Sigur Rós: `_elementor_edit_mode=builder` but spot-render 2026-07-25 shows zero Elementor markup, full article renders natively; its `_elementor_data` is a single text-editor widget mirroring `post_content`, so nothing to recover), draft 65338 ("Elementor #65338" — retire), and orphan published "Home" page 17055 (Elementor duplicate, not the front page — retire, don't trash) — then deactivate Elementor Pro / ElementsKit / Essential Addons. **65340 is NOT an Elementor article** (no `_elementor_edit_mode`; dormant `_elementor_data` only; spot-render 2026-07-25: HTTP 200, native theme render, prose intact). **Extraction is homepage-only** — live-render check proved chrome is already native (vw-nav + Newspack); Elementor theme-builder header/footer + ElementsKit mega-menu are DORMANT (do not render). Launching on Elementor is rejected.
-2. **Deploy tooling** — greenfield. No CI / Dockerfile / deploy scripts / prod `wp-config` / Namecheap-DNS config in repo (only doc mentions). Full local→production go-live path unbuilt.
+**Launch decisions (Ricardo):**
+- **B1:** retire the **230 JIG/noscript posts** to draft pre-launch (their galleries are inside `<noscript>` and never render).
+- **THIS WEEK strip hidden at launch.**
+- **Rights transfer does not gate launch.**
+- **Hosting PENDING.** Domains at **GoDaddy** (incl. the sister-city set); **Namecheap Stellar Plus cPanel alive**; shortlist **Cloudways / Kinsta**. Payload: 388 MB DB, 4.4 GB originals (12 GB regenerable thumbnails), 263k files — needs 20 GB+.
+- **Entity wording "Vancouver Weekly" everywhere**, pending legal advice (Privacy + Terms currently say "Vancouver Weekly Corp.").
+- **Jobs page = simple email-us** (currently a FreshGigs affiliate iframe).
+- **Newsletter = re-consent** (19 legacy subscribers, signup dates lost).
 
-Gallery repair/import = quality backlog, NOT a launch gate.
+**Known dirt, not blocking:**
+- **~104 duplicate-title pairs** archive-wide (14 in Photography) — distinct post IDs, display-deduped on fronts, **pending editorial review**; two pairs have conflicting dates.
+- **48 posts carry scraped comment chrome** in `post_content` (deks cleaned display-layer only).
+- `must-see-films` front is inconsistent — `.html` template, so no depth cap or dedupe.
+- Archive page layout is consistent but **undesigned**.
+- Wrapper-div shells parked (cosmetic). `uncategorized` holds 1,637 posts; 391 empty spam categories.
 
-**Blocked:** Nothing hard-blocking dev work. Local MySQL socket this session: run-ID `HKOO9D7DI` (`.../Local/run/HKOO9D7DI/mysql/mysqld.sock`) — the run-ID can change when Local restarts; re-detect the live socket each session before DB work. WP-CLI phar/ini in `/tmp` may be wiped between sessions (rebuild via curl, or use the Local `mysql` client directly against the socket — proven simpler for DB work). Working tree clean, local == origin/main.
+**REMAINING LAUNCH MAP (in order):**
+1. Architecture investigation
+2. **Curation system — HARD GATE: the homepage does not cut over without admin curation** + template switcher
+3. Settings panel + footer (light/dark)
+4. Institutional pages
+5. Discovery + card system (incl. missing-image variants)
+6. Credits panel
+7. Metadata / SEO round
+8. Mobile round
+9. Rollouts (article header, masthead)
+10. Operator tutorial + walkthrough
+11. Staging deploy + sweep
+12. Cutover + 301s
+
+**STANDING RULES FOR ALL NEW WORK: mobile-first is mandatory. NO new third-party plugins — custom child-theme code only.**
+
+**Environment:** local MySQL socket run-ID changes when Local restarts — **use `tools/wp.sh`**, which re-detects it. Working tree clean.
 
 ---
 
