@@ -573,10 +573,13 @@ Split into three build sessions. The homepage does not cut over without this rou
   resolver with `$used_ids` threading, pin/auto/hidden slot modes and text-variant fallback;
   admin screen at **Vancouver Weekly → Homepage & Sections** with tier-badged post search,
   drag ordering and visible broken-pin flags. 53 automated checks passing. Front end byte-unchanged.
-- **Session B — homepage-v2 Phase 2.** Replace all hardcoded content in `section-parts/homepage-v2.php`
-  with resolver data: 7 Unsplash hotlinks, 34 `href="#"`, frozen dateline and the wrong
-  "16,412 stories" count all go. Retire `section-parts/homepage.php` and `assets/css/homepage.css`.
-  Stays on the private preview page — no cutover.
+- **Session B ✓ Complete — September 11, 2026.** homepage-v2 phase 2: all eight zones data-driven
+  through the resolver. Removed 7 Unsplash hotlinks, 34 `href="#"`, the frozen dateline, the
+  hardcoded "16,412 stories" (now a live 3,373) and both `content_url()` literals. Credit helpers
+  hoisted to `inc/credits.php`. Political/Books/Food each carry featured + 2 compact. Tier-0 text
+  variants with new mobile-first CSS (`homepage-v2-data.css`). Retired `section-parts/homepage.php`
+  and `assets/css/homepage.css`. Verified at 1440 and 390: zero remote hosts, zero dead links, zero
+  broken images, no horizontal overflow. Stayed on the private preview page — no cutover.
 - **Session C — switcher + sections + cutover.** Template registry (option for home/archive, term
   meta `_vw_tpl` for section fronts), section lead wiring, then `front-page.php` as a separately
   approved final action.
@@ -692,3 +695,10 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Decision: `_newspack_byline` is never read or written — Newspack's custom-byline feature is enabled and its filters are live; the Round 5 credits panel uses its own storage.
 - Verified: `front-page.php` overrides `page_on_front` **the instant the file exists**, with no option change and no cache clear. Session C's cutover gate is real.
 - Logged for post-launch: 16 published posts carry duplicate `_thumbnail_id` meta rows (0 conflicting values).
+
+**September 11, 2026 — Round 1 session B**
+- Decision: `VW_FOUNDED = 2006` is the single source for the publication's age. Deriving it from the archive printed "16 years" beside the masthead's "Independent Since 2006", because the oldest surviving published post is 2010. The archive closer now reads "20 years, 3,373 stories" with "Every issue since 2010" beneath it; wording the 2006-to-2010 gap is an open editorial call.
+- Decision: dek chrome stripping extended — a repeated photo credit collapses to one, a dek that is *only* a credit is dropped, and the `Comments?` run pattern lost its trailing `\b` so unseparated `CommentCommentComment` runs are caught. Measured: stuttering credits 359 → 140 (92 of the remainder are a separate filename-glue defect), `CommentComment` runs 48 → 0. Display-layer only; `post_content` untouched.
+- Decision: junk-author suppression is applied in `vw_credits_inline()`, not in the hoisted `vw_ah_credits()`, so the approved article-header preview stays byte-identical. The header still prints desk-label authors — logged for the Round 8 rollout rather than changed silently inside an approved design.
+- Verified: `VW_CURATION_SCAN = 150` is correct and not excessive. Photography's newest 19 posts hold zero tier-1 images, so a scan depth of 20 would break the photo band; ~40 is the real minimum, 150 gives 4.7× headroom.
+- Verified: drag reorder persists end to end (real mouse drag → production JS renumber → sanitize → save → reload → resolve). Roles are positional: dragging moves a slot's configuration into a different role, not the role itself.

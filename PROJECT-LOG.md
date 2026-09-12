@@ -2543,3 +2543,138 @@ mobile-first, existing conversion deferred to Round 7; broken pins flagged in ad
 granted to administrator; `_newspack_byline` neither read nor written.
 
 **STOPPED for verdict.**
+
+---
+
+2026-09-11 — **ROUND 1, SESSION B: homepage-v2 phase 2.** The approved mockup is now data-driven.
+**Still on the private preview page — no cutover.** `front-page.php` does not exist; verified.
+
+**RETIRED, as decided.** `section-parts/homepage.php` (373 lines) and `assets/css/homepage.css`
+(631 lines) deleted after a final zero-reference grep across the child theme, parent theme, all
+four plugins and mu-plugins. Their useful plumbing — the `$vw_fetch` closure, read-time, the
+tier-seeking zone lead, the live `wp_count_posts()` counter, the photo-band pooling — was lifted
+into the resolver and the template first. The `is_front_page()` enqueue now calls a single
+`vw_enqueue_homepage_v2()` used by both the preview template and, in session C, `front-page.php`,
+so the two surfaces cannot diverge.
+
+**HOISTED.** `inc/credits.php` — `vw_ah_extract_credit`, `vw_ah_photographer`, `vw_ah_word_count`,
+`vw_ah_photo_count`, `vw_ah_is_photo_led`, `vw_ah_read_time`, `vw_ah_section`, `vw_ah_credits`,
+moved **verbatim** out of `inc/article-header.php` and loaded unconditionally, plus one new
+`vw_credits_inline()` for cards. The junk-author suppression every card already applies is filtered
+in `vw_credits_inline()` rather than inside `vw_ah_credits()`, deliberately: the approved article
+header stays byte-identical. **The header does still print "By Photography" on the 64 desk-label
+posts** — pre-existing, logged for the Round 8 rollout, not fixed silently inside an approved
+design. `_newspack_byline` is neither read nor written.
+
+**WIRED.** All eight zones resolve through `vw_curation_resolve()` with `$used_ids` threaded, so no
+story repeats. Gone from the file: **7** `images.unsplash.com` hotlinks, **34** `href="#"`, the
+frozen "Saturday, July 25, 2026" dateline, the hardcoded "16,412 stories", and both `content_url()`
+literals. Political and Books gained the two compact slots each (Food matched, for tri symmetry).
+
+**Text variants**, per zone, image box REMOVED rather than left empty: lead and music collapse to a
+single text column with the Tier-0 3px red rule; tri columns the same, scaled; the photography band
+**hides entirely** if its essay slot cannot meet tier 1, and its strip drops below two usable
+thumbs. Political is image-free by design, not by shortfall. New CSS is `homepage-v2-data.css`,
+**mobile-first** (`min-width` at 641/901/1024, mirroring the approved file's turns);
+`homepage-v2.css` stays desktop-first until Round 7.
+
+**CANDIDATE-SCAN DEPTH — the question from session A's handoff, answered with a number.** Resolving
+all eight zones with an EMPTY option (pure auto-fill): **20 slots filled, 0 text variants, 20/20
+distinct**, and the photography band filled all six image slots (essay tier 1, four strip thumbs
+tier 1/1/1/2). The depth probe is the real finding:
+
+| cat-6 scan depth | tier-1 candidates |
+|---|---|
+| 10 | **0** |
+| 20 | 1 |
+| 40 | 10 |
+| 60 | 20 |
+| 150 (`VW_CURATION_SCAN`) | 47 |
+
+Photography's **newest 19 posts contain zero tier-1 images** — a scan depth of 20 would have broken
+the band outright. 150 covers the whole category with ~4.7× headroom over the ~40 actually needed.
+The constant is correct and not excessive; anything at or below 20 is unsafe.
+
+**DRAG-REORDER PERSISTENCE — verified end to end with a real mouse drag**, not a simulation. The
+real admin markup and the real `vw-curation-admin.js` were served from the site origin, jQuery UI
+sortable initialised, and slot 3 of A La Music dragged to the top. DOM order became
+`Stack 2, Featured, Stack 1`; the production renumber rewrote the field indices; that **verbatim**
+form serialisation was then fed through `vw_curation_sanitize()` → `update_option()` → cache flush →
+`vw_curation_zone_config()` → `vw_curation_resolve()`. Submitted cats `[20, 9, 8]` survived
+sanitize, survived save-and-reload, and the resolver drew slot 0 from cat 20, slot 1 from cat 9,
+slot 2 from cat 8. **Semantics worth stating plainly: roles are positional, so dragging a slot to
+the top makes its configuration the Featured slot — it moves the settings, not the role.** The
+admin copy should say so before an operator meets it.
+
+**BROKEN-PIN FLAG — demonstrated.** A draft (#65338) pinned into Food → Featured renders the slot
+with a red bar and pink ground, the post title, a "No image" tier badge, and
+"**Pin not working:** Not published (draft). This slot is auto-filling instead." The front end stays
+silent and auto-fills (`mode=auto`, `pin_failed=unpublished`). Unpinned and cleared afterwards.
+
+**DEK DEFECT FOUND AND FIXED — found by looking at the rendered page, not by a test.** The
+photography band's dek read "Photo by Jennifer McInnis Photo by Jennifer McInnis Photo by…" for its
+full 26 words. Two rules added to `vw_strip_scrape_chrome()`:
+
+1. Collapse a repeated identical photo credit to one occurrence, then **drop a dek that is only a
+   credit** — the credit line already carries the photographer (`vw_ah_photographer()` reads
+   `post_content` directly, so nothing is lost) and printing it twice under its own byline was
+   duplication, not information. Measured: **359 posts stuttered, 336 of those were credit-only.**
+2. The `Comments?` run pattern carried a **trailing `\b`**, so scrapes that produced
+   `CommentCommentComment…` with no separator had no word boundary between them and survived
+   verbatim into the dek. One leading boundary, then repeats. **The 48-post "scraped comment
+   chrome" known-dirt item now measures 0 in rendered deks** (the `post_content` itself is
+   untouched — this is display-layer only, as before).
+
+Result across 3,373 published posts: stuttering credits **359 → 140**, of which **92 are a different
+defect** (an image filename glued to the credit, e.g. `RLJ_7991Photo by Ryan L. Johnson | …`) which
+is logged, not fixed; `CommentComment` runs **48 → 0**; 340 deks now empty, and every zone template
+already handles an empty dek.
+
+**A debugging note worth keeping:** two earlier attempts at the collapse rule silently matched
+nothing because the backreference was written `"\1"` inside a **double-quoted** PHP string, where
+`\1` is an octal escape and becomes byte `0x01` — it never reached PCRE. Single-quoted now, with a
+comment saying so.
+
+**VERIFIED — rendered output, 1440 and 390.**
+
+| check | result |
+|---|---|
+| `images.unsplash.com` | 0 |
+| any remote image/script host | 0 |
+| `href="#"` | 0 (DOM-verified: 0 dead links) |
+| broken images | 0 of 12 |
+| frozen dateline / "16,412" / mockup bylines | 0 |
+| live dateline | "Friday, September 11, 2026" |
+| live story count | "3,373 stories." — matches `post list --format=count` |
+| horizontal overflow @1440 | none (scrollW 1425 = clientW) |
+| horizontal overflow @390 / @375 | none; zero elements overrun |
+| PHP notices/warnings in output | 0 |
+| zones rendered | masthead, lead, music, photo band + 4-thumb strip, tri ×3, archive closer, footer |
+| This Week | absent, per C1-1 |
+| stylesheets | `homepage-v2.css` + `homepage-v2-data.css`; retired `homepage.css` absent |
+
+Credits confirmed rendering through the hoisted helpers — e.g. **"By William Cook · Photos Kane
+Hopkins · July 29, 2021 · 1 min read"** (#187), **"By Regina Ip · Photos Regina Ip · June 25, 2024 ·
+1 min read"** (#1474).
+
+**ARCHIVE-CLOSER YEAR CONFLICT — found and structurally resolved, copy still Ricardo's.** Deriving
+the age from the archive printed "**16 years**" three inches below the masthead's "Independent Since
+2006", because the oldest surviving published post is **2010**, not 2006. Added `VW_FOUNDED = 2006`
+in `inc/masthead.php`, quoted by the closer, so the headline now reads "**20 years, 3,373 stories**"
+while the line beneath cites the archive's real earliest year: "Every issue since **2010**". The
+markup no longer asserts either untruth; whether to word the 2006-to-2010 gap differently is an
+editorial call.
+
+**CLEANUP.** `vw_curation` option deleted, draft unpinned, drag/flag harness deleted, preview page
+86013 restored to `private` (public access 404). Regression sweep: `/`, five section fronts and
+`/category/a-la-music/page/2/` all HTTP 200. No `front-page.php` — session C's gate is still closed.
+
+**CARRIED FORWARD.** (1) `homepage-v2.css` lines 15/21/30 are scoped to
+`.page-template-page-templatesvw-homepage-preview-php` — that class does not exist on the real front
+page, so hide-`.vw-nav`, `#content{margin-top:0}` and hide-`#colophon` all silently stop applying at
+cutover. Must be re-scoped in session C. (2) A **partial** POST to the save handler silently sets
+`visible=false` on every zone absent from it — correct checkbox semantics, harmless while the whole
+form always submits, a landmine for any future partial save. (3) 92 posts with a filename glued to
+their photo credit. (4) The article header still prints desk-label authors.
+
+**STOPPED for verdict.**

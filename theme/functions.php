@@ -3,6 +3,10 @@
 require_once get_stylesheet_directory() . '/inc/dead-media.php';
 add_filter( 'the_content', 'vw_dead_media_filter', 20 );
 
+// Credit derivation is shared by the article header and the homepage, so it
+// loads first and unconditionally — it is no longer preview-only code.
+require_once get_stylesheet_directory() . '/inc/credits.php';
+
 require_once get_stylesheet_directory() . '/inc/article-header.php';
 require_once get_stylesheet_directory() . '/inc/masthead.php';
 
@@ -115,13 +119,14 @@ function vw_enqueue_styles() {
 		false
 	);
 
+	// Front page: homepage-v2, the approved design. This replaced the old
+	// homepage.css, which styled section-parts/homepage.php — a file nothing had
+	// included since the v2 rebuild. Both retired in Round 1 session B. Until
+	// front-page.php lands in session C the front page is still Elementor page 9,
+	// so this enqueue is currently loading styles for markup that page does not
+	// have; harmless, and correct the moment the cutover happens.
 	if ( is_front_page() ) {
-		wp_enqueue_style(
-			'vw-homepage',
-			$uri . '/assets/css/homepage.css',
-			[ 'vw-styles' ],
-			filemtime( $dir . '/assets/css/homepage.css' )
-		);
+		vw_enqueue_homepage_v2( $dir, $uri );
 	}
 
 	// Archive inheritance: the Browse-all destination and every non-curated
@@ -163,13 +168,35 @@ function vw_enqueue_styles() {
 	}
 
 	if ( is_page_template( 'page-templates/vw-homepage-preview.php' ) ) {
-		wp_enqueue_style(
-			'vw-homepage-v2',
-			$uri . '/assets/css/homepage-v2.css',
-			[ 'vw-palette', 'vw-fonts' ],
-			filemtime( $dir . '/assets/css/homepage-v2.css' )
-		);
+		vw_enqueue_homepage_v2( $dir, $uri );
 	}
+}
+
+/**
+ * Homepage v2 stylesheets, in order.
+ *
+ * homepage-v2-data.css must load after homepage-v2.css and depends on it: it
+ * carries the phase-2 additions — tier-0 text variants, the tri columns' second
+ * compact slot, and the box fixes that wrapping images in real permalinks made
+ * necessary — and several of its rules win only on source order.
+ *
+ * One function rather than two copies because the preview template and the
+ * front page must never diverge; when front-page.php lands in session C it
+ * calls the same thing.
+ */
+function vw_enqueue_homepage_v2( string $dir, string $uri ): void {
+	wp_enqueue_style(
+		'vw-homepage-v2',
+		$uri . '/assets/css/homepage-v2.css',
+		[ 'vw-palette', 'vw-fonts' ],
+		filemtime( $dir . '/assets/css/homepage-v2.css' )
+	);
+	wp_enqueue_style(
+		'vw-homepage-v2-data',
+		$uri . '/assets/css/homepage-v2-data.css',
+		[ 'vw-homepage-v2' ],
+		filemtime( $dir . '/assets/css/homepage-v2-data.css' )
+	);
 }
 
 /**
@@ -285,10 +312,45 @@ function vw_strip_scrape_chrome( string $text ): string {
 	// wp_strip_all_tags() leaves entities as literal text, so "&nbsp;" arrives as
 	// six characters that no whitespace class matches. Decode before cleaning.
 	$text = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-	$text = preg_replace( '/(?:\bComments?\b[\s\x{00A0}·|,–—-]*){2,}/iu', ' ', $text );
+	/*
+	 * The trailing \b this pattern used to carry meant it only caught runs whose
+	 * "Comment"s were separated by something. Scrapes that produced
+	 * "CommentCommentComment…" with no separator at all have no word boundary
+	 * between them, so the run survived into the dek verbatim — measured on
+	 * posts 225 and 237 among others. One leading boundary, then repeats.
+	 */
+	$text = preg_replace( '/\bComments?(?:[\s\x{00A0}·|,–—-]*Comments?)+/iu', ' ', $text );
 	$text = preg_replace( '/\b(?:Share this|Like this|Loading\.\.\.|Related Posts?|Tweet|Pin It)\b[\s\x{00A0}:·|,-]*/iu', ' ', $text );
+
+	/*
+	 * Photo-essay bodies are frequently nothing but one repeated caption credit,
+	 * so the generated dek stuttered: "Photo by Jennifer McInnis Photo by
+	 * Jennifer McInnis Photo by…" for the whole 26 words. Measured across the
+	 * published archive: 359 posts stutter, 336 of those reduce to a credit and
+	 * nothing else.
+	 *
+	 * Two rules. Collapse a repeated identical credit to one occurrence, then
+	 * drop a dek that turns out to be only a credit — the credit line already
+	 * carries the photographer (vw_ah_photographer() reads post_content
+	 * directly, so nothing is lost), and printing it twice under its own byline
+	 * was duplication rather than information.
+	 *
+	 * Single-quoted on purpose: in a double-quoted PHP string "\1" is an OCTAL
+	 * escape and becomes byte 0x01, so the backreference never reaches PCRE —
+	 * which is exactly how the first two attempts at this silently matched
+	 * nothing.
+	 */
+	$credit = 'Photos?\s+(?:by|:)\s*[\p{Lu}][\p{L}\'’.-]+(?:\s+(?!Photos?\b)[\p{Lu}][\p{L}\'’.-]+){0,3}';
+	$text   = preg_replace( '/(' . $credit . ')(?:[\s\x{00A0}·|,–—-]*\1\b)+/u', '$1', (string) $text );
+
 	$text = preg_replace( '/^[\s\x{00A0}·|,–—-]+/u', '', (string) $text );
-	return trim( preg_replace( '/[\s\x{00A0}]+/u', ' ', (string) $text ) );
+	$text = trim( preg_replace( '/[\s\x{00A0}]+/u', ' ', (string) $text ) );
+
+	if ( preg_match( '/^' . $credit . '\s*[.·|,–—-]*$/u', $text ) ) {
+		return '';
+	}
+
+	return $text;
 }
 
 /**

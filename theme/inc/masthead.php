@@ -16,6 +16,14 @@
  * views. A real rollout replaces header.php properly rather than hiding it.
  */
 
+/**
+ * Founding year. The masthead strip, the footer tag and the archive closer all
+ * assert the publication's age, while the archive's earliest surviving
+ * published post is 2010 — so the age must never be derived from the archive.
+ * One constant, quoted by all three.
+ */
+const VW_FOUNDED = 2006;
+
 const VW_MASTHEAD_SECTIONS = [
 	'a-la-music'          => 'A La Music',
 	'photography'         => 'Photography',

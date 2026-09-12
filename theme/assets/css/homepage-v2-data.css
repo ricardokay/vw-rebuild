@@ -1,0 +1,150 @@
+/* ================================================================
+   Homepage v2 — phase-2 data layer.
+
+   Only the rules the live data made necessary: text variants for slots
+   whose image the archive cannot supply (61.3% of published posts are
+   tier 0), the compact slots added to the tri columns, and the handful
+   of places where wrapping content in a real permalink changed the box
+   model the mockup assumed.
+
+   MOBILE-FIRST: every rule below states its narrow behaviour as the
+   base and adds the wide layout in min-width queries. The approved
+   homepage-v2.css is desktop-first and is deliberately left alone until
+   the Round 7 mobile sweep — loading after it, this file only ever adds.
+
+   Breakpoints mirror the approved file's (900 / 1023) so the two never
+   disagree about where the layout turns: min-width 901 and 1024.
+   ================================================================ */
+
+
+/* ── Permalink wrappers ────────────────────────────────────────────
+   Phase 1 printed bare <img>. Every image is now inside its story's
+   <a>, which inserts an inline box between the grid cell and the image
+   and breaks any height that resolved against the cell. */
+
+.vwh2-lead__img-col > a,
+.vwh2-music > a,
+.vwh2-tri__col > a,
+.vwh2-footer > a {
+  display: block;
+}
+
+.vwh2-photo__inner > a {
+  display: block;
+  height: 100%;
+}
+
+.vwh2-footer > a { flex: 0 0 auto; }
+
+
+/* ── Tier-0 text variants ──────────────────────────────────────────
+   The frozen tier decision: no image means a text-forward card with a
+   3px red left bar. The image box is REMOVED, never left empty, so the
+   grid keeps its integrity rather than showing a gap where a picture
+   was meant to be. */
+
+.vwh2-lead--text {
+  display: block;
+  padding: 24px 0 0 16px;
+  border-left: 3px solid var(--vw-red);
+}
+
+.vwh2-lead--text .vwh2-lead__text { max-width: 34em; }
+
+@media (min-width: 1024px) {
+  .vwh2-lead--text { padding: 36px 0 8px 22px; }
+  .vwh2-lead--text .vwh2-lead__hed { font-size: clamp(42px, 5vw, 60px); }
+  .vwh2-lead--text .vwh2-lead__dek { font-size: 16px; max-width: 46em; }
+}
+
+/* Music: the 28% image column is gone, so the remaining three children
+   (feature, rule, stack) re-form the row. */
+.vwh2-music--text {
+  padding-left: 16px;
+  border-left: 3px solid var(--vw-red);
+}
+
+@media (min-width: 901px) {
+  .vwh2-music--text {
+    grid-template-columns: 1fr 1px 30%;
+    align-items: start;
+  }
+}
+
+/* Tri column: same rule, scaled to the column. */
+.vwh2-tri__col--text {
+  padding-left: 14px;
+  border-left: 3px solid var(--vw-red);
+}
+
+.vwh2-tri__col--text .vwh2-tri__hed { font-size: 21px; }
+.vwh2-tri__col--text .vwh2-tri__hed--sub { font-size: 15px; }
+
+@media (min-width: 901px) {
+  .vwh2-tri__col--text .vwh2-tri__hed { font-size: 23px; }
+  .vwh2-tri__col--text .vwh2-tri__hed--sub { font-size: 15px; }
+}
+
+
+/* ── Compact slots in the tri columns ──────────────────────────────
+   Phase 1 gave one column a single sub-item. All three now carry up to
+   two, so consecutive subs need to read as a list rather than as two
+   unrelated blocks: the first keeps its rule, the rest tighten. */
+
+.vwh2-tri__sub + .vwh2-tri__sub {
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.vwh2-tri__col--quote .vwh2-tri__sub {
+  margin-top: 20px;
+}
+
+
+/* ── Elements that changed tag ─────────────────────────────────────
+   The archive card became a single <a>, so its former block children
+   are now spans and need their boxes back. */
+
+.vwh2-archive__issue-quote,
+.vwh2-archive__issue-byline {
+  display: block;
+}
+
+.vwh2-archive__issue-top { display: flex; }
+
+.vwh2-archive__hed { text-wrap: balance; }
+
+
+/* ── This Week links ───────────────────────────────────────────────
+   Hidden at launch (registry default_visible = false), styled now so
+   switching it on is a checkbox and not a follow-up CSS round. */
+
+.vwh2-thisweek__item a {
+  color: inherit;
+  text-decoration: none;
+}
+.vwh2-thisweek__item a:hover {
+  color: var(--vw-red);
+  text-decoration: underline;
+}
+
+
+/* ── Narrow-viewport safety ────────────────────────────────────────
+   The approved file's narrowest query stops at 900px. At 390px the
+   masthead wordmark and the lead headline both overrun without these. */
+
+.vwh2-container { padding-inline: 16px; }
+
+.vwh2-lead__hed { overflow-wrap: break-word; }
+.vwh2-music__hed,
+.vwh2-photo__hed,
+.vwh2-tri__hed,
+.vwh2-archive__issue-hed { overflow-wrap: break-word; }
+
+@media (min-width: 641px) {
+  .vwh2-container { padding-inline: 24px; }
+}
+
+@media (min-width: 1024px) {
+  .vwh2-container { padding-inline: 40px; }
+}

@@ -22,116 +22,12 @@ function vw_ah_active(): bool {
 	return is_singular( 'post' ) && isset( $_GET['vw_header'] ) && '1' === $_GET['vw_header']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 }
 
-/** Pull "Photo(s) by X" out of caption text. Returns names in order found. */
-function vw_ah_extract_credit( string $text ): array {
-	$out = [];
-	if ( preg_match_all( '/Photos?\s*(?:by|:)\s*:?\s*([\p{Lu}][\p{L}\'’.-]+(?:\s+[\p{Lu}][\p{L}\'’.-]+){0,3})/u', $text, $m ) ) {
-		foreach ( $m[1] as $n ) {
-			$out[] = trim( $n );
-		}
-	}
-	return $out;
-}
-
 /**
- * Photographer from existing caption credits, or '' when not cleanly derivable.
- * One name renders as-is, two join with "and", three or more are ambiguous and
- * the line is omitted rather than guessed.
+ * Credit derivation (vw_ah_extract_credit, vw_ah_photographer, vw_ah_word_count,
+ * vw_ah_photo_count, vw_ah_is_photo_led, vw_ah_read_time, vw_ah_credits) moved
+ * to inc/credits.php in Round 1 session B, unchanged, so the homepage can use
+ * the same rules. functions.php requires that file before this one.
  */
-function vw_ah_photographer( WP_Post $post ): string {
-	$names = [];
-	if ( preg_match_all( '#<figcaption[^>]*>(.*?)</figcaption>#is', $post->post_content, $m ) ) {
-		foreach ( $m[1] as $cap ) {
-			$names = array_merge( $names, vw_ah_extract_credit( wp_strip_all_tags( $cap ) ) );
-		}
-	}
-	if ( ! $names && $post->post_excerpt ) {
-		$names = vw_ah_extract_credit( wp_strip_all_tags( $post->post_excerpt ) );
-	}
-
-	$uniq = [];
-	foreach ( $names as $n ) {
-		$uniq[ mb_strtolower( $n ) ] = $n;
-	}
-	$uniq = array_values( $uniq );
-
-	if ( 1 === count( $uniq ) ) return $uniq[0];
-	if ( 2 === count( $uniq ) ) return $uniq[0] . ' and ' . $uniq[1];
-	return '';
-}
-
-function vw_ah_word_count( WP_Post $post ): int {
-	return str_word_count( wp_strip_all_tags( strip_shortcodes( $post->post_content ) ) );
-}
-
-/** Images that will actually render, i.e. after dead-media suppression. */
-function vw_ah_photo_count( WP_Post $post ): int {
-	$html = function_exists( 'vw_dead_media_filter' )
-		? vw_dead_media_filter( $post->post_content )
-		: $post->post_content;
-	return (int) preg_match_all( '#<img\b#i', $html );
-}
-
-/** Photo-led when pictures dominate prose, not merely when pictures exist. */
-function vw_ah_is_photo_led( WP_Post $post ): bool {
-	$imgs = vw_ah_photo_count( $post );
-	if ( $imgs < 5 ) return false;
-	return vw_ah_word_count( $post ) < $imgs * 50;
-}
-
-function vw_ah_read_time( WP_Post $post ): int {
-	return max( 1, (int) round( vw_ah_word_count( $post ) / 230 ) );
-}
-
-/**
- * Primary category name + mark modifier. Uncategorized carries no editorial
- * meaning, so it yields nothing and the kicker is skipped entirely.
- */
-function vw_ah_section( int $post_id ): array {
-	$marks = [
-		'a-la-music'          => 'music',
-		'live-music-reviews'  => 'music',
-		'album-reviews'       => 'music',
-		'music-interviews'    => 'music',
-		'music-videos'        => 'music',
-		'music-editorials'    => 'music',
-		'photography'         => 'photo',
-		'food-drink'          => 'food',
-		'out-n-about'         => 'outabout',
-		'political-megaphone' => 'political',
-		'book-reviews'        => 'books',
-	];
-	$terms = get_the_terms( $post_id, 'category' );
-	if ( ! $terms || is_wp_error( $terms ) ) return [ '', '' ];
-
-	foreach ( $terms as $t ) {
-		if ( isset( $marks[ $t->slug ] ) ) return [ $t->name, $marks[ $t->slug ] ];
-	}
-	foreach ( $terms as $t ) {
-		if ( 'uncategorized' !== $t->slug ) return [ $t->name, '' ];
-	}
-	return [ '', '' ];
-}
-
-/**
- * Credits in two groups: the byline lines, then a single quieter meta line.
- * Hierarchy comes from weight and colour, not from a second font.
- */
-function vw_ah_credits( WP_Post $post ): array {
-	$bylines   = [];
-	$author    = get_the_author_meta( 'display_name', (int) $post->post_author );
-	$shooter   = vw_ah_photographer( $post );
-	$photo_led = vw_ah_is_photo_led( $post );
-
-	if ( $author )  $bylines[] = [ 'By', $author ];
-	if ( $shooter ) $bylines[] = [ 'Photos', $shooter ];
-
-	$meta = get_the_date( 'F j, Y', $post ) . ' · ' . ( $photo_led
-		? sprintf( '%d photos', vw_ah_photo_count( $post ) )
-		: sprintf( '%d min read', vw_ah_read_time( $post ) ) );
-
-	return [ 'bylines' => $bylines, 'meta' => $meta ];
-}
 
 function vw_ah_byline_html( array $bylines, string $sep ): string {
 	$parts = [];
