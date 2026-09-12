@@ -561,7 +561,26 @@ Remaining:
 - Gallery quality backlog (not launch-gating): ~497 caption-only/thin posts needing FB album import + 174 NEEDS_REVIEW albums
 - Single article template (`single.php`) refinements
 - Mobile-first responsive pass
-- Yoast SEO configuration, structured data, sitemap
+- Metadata/SEO round — **custom child-theme code, not Yoast**: Newspack ships no structured data and no OG tags (it delegates to Yoast, which the no-new-plugins rule excludes). Core already provides `wp-sitemap.xml` and `rel_canonical`; NewsArticle JSON-LD, OG/Twitter cards and a branded default card for the 2,068 image-free posts are ours to write.
+
+**Round 1 — Curation system + template switcher (LAUNCH GATE, in progress)**
+
+Split into three build sessions. The homepage does not cut over without this round.
+
+- **Session A ✓ Complete — September 11, 2026.** Curation foundation, no template wiring.
+  Registry as single whitelist (`inc/curation-registry.php`); autoloaded, schema-versioned
+  `vw_curation` option; `vw_curate` capability via a `user_has_cap` filter (zero DB writes);
+  resolver with `$used_ids` threading, pin/auto/hidden slot modes and text-variant fallback;
+  admin screen at **Vancouver Weekly → Homepage & Sections** with tier-badged post search,
+  drag ordering and visible broken-pin flags. 53 automated checks passing. Front end byte-unchanged.
+- **Session B — homepage-v2 Phase 2.** Replace all hardcoded content in `section-parts/homepage-v2.php`
+  with resolver data: 7 Unsplash hotlinks, 34 `href="#"`, frozen dateline and the wrong
+  "16,412 stories" count all go. Retire `section-parts/homepage.php` and `assets/css/homepage.css`.
+  Stays on the private preview page — no cutover.
+- **Session C — switcher + sections + cutover.** Template registry (option for home/archive, term
+  meta `_vw_tpl` for section fronts), section lead wiring, then `front-page.php` as a separately
+  approved final action.
+
 
 **Phase 3: Editorial workflow**
 - PublishPress roles and statuses
@@ -661,3 +680,15 @@ Remaining:
 - Decision: 85536 held on Getty rights — excluded from publish until license confirmed
 - Identity clarification (Ricardo, direct): VW is not a photography-first site — Photography is one section among peers; the gallery-repair phase was heavy because that's what was broken. Homepage follows the alternative-newsweekly model: content-agnostic lead + section zones
 - Current phase: homepage rebuild (Newspack-native front page replacing Elementor page 9), then local→production deploy tooling
+
+**September 11, 2026 — Round 1 architecture decisions**
+- Decision: **Custom curation picker, not Newspack block patterns.** Neither theme has a `theme.json`, so category fronts have no editor surface at all; and Newspack's Homepage Posts block gates images on `has_post_thumbnail()` (meta only), which would emit 106 broken images and cannot express the frozen image-quality tiers against a 61.3%-tier0 archive.
+- Decision: `section-parts/homepage-v2.php` is the approved homepage design; `section-parts/homepage.php` is superseded v1 — reference plumbing, then explicit retirement in session B.
+- Decision: slot model is **pinned post / auto-fill from a category / hidden**, with the lead zone unhideable (enforced in both sanitizer and resolver).
+- Decision: curation gated on a custom `vw_curate` capability granted to administrator, via filter rather than a stored role capability.
+- Decision: broken pins stay **silent on the front end** (fall through to auto-fill) but are **visibly flagged in admin** with a plain-language reason.
+- Decision: **Food & Drink = option (a)** — 27 posts with only 4 usable images; accept the text variant, widen via category cleanup post-launch.
+- Decision: new CSS is mobile-first; converting the desktop-first `homepage-v2.css` is deferred to the Round 7 mobile sweep rather than risking regression against an approved design mid-wiring.
+- Decision: `_newspack_byline` is never read or written — Newspack's custom-byline feature is enabled and its filters are live; the Round 5 credits panel uses its own storage.
+- Verified: `front-page.php` overrides `page_on_front` **the instant the file exists**, with no option change and no cache clear. Session C's cutover gate is real.
+- Logged for post-launch: 16 published posts carry duplicate `_thumbnail_id` meta rows (0 conflicting values).

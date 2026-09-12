@@ -1,0 +1,258 @@
+/* ================================================================
+   Curation admin screen.
+   Mobile-first: base rules are the narrow layout, min-width queries
+   add the wider one. (The approved homepage-v2.css is desktop-first
+   and stays that way until the Round 7 mobile sweep — this file does
+   not inherit that.)
+   ================================================================ */
+
+.vwc__intro {
+  max-width: 46em;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.vwc__surface-head {
+  margin: 28px 0 4px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #1d2327;
+  font-size: 16px;
+}
+
+.vwc__section-head {
+  margin: 20px 0 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #50575e;
+}
+
+/* ── Zone ──────────────────────────────────────────────────────── */
+
+.vwc-zone {
+  margin: 12px 0 18px;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+}
+
+.vwc-zone__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: baseline;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f6f7f7;
+}
+
+.vwc-zone__title {
+  margin: 0;
+  font-size: 14px;
+}
+
+.vwc-zone__vis {
+  font-size: 13px;
+}
+
+.vwc-zone__locked {
+  font-size: 12px;
+  color: #646970;
+  font-style: italic;
+}
+
+/* ── Slots ─────────────────────────────────────────────────────── */
+
+.vwc-slots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vwc-slot {
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.vwc-slot:last-child { border-bottom: 0; }
+
+.vwc-slot--broken {
+  background: #fcf0f1;
+  box-shadow: inset 3px 0 0 #d63638;
+}
+
+.vwc-slot__handle {
+  flex: 0 0 auto;
+  padding-top: 2px;
+  color: #a7aaad;
+  cursor: grab;
+  user-select: none;
+  letter-spacing: -3px;
+}
+
+.vwc-slot.is-dragging .vwc-slot__handle { cursor: grabbing; }
+
+.vwc-slot__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.vwc-slot__role {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.vwc-slot__req {
+  margin-left: 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #646970;
+}
+
+.vwc-slot__modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-bottom: 10px;
+}
+
+.vwc-mode {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* ── Panes ─────────────────────────────────────────────────────── */
+
+.vwc-pane { margin-top: 4px; }
+
+.vwc-search {
+  width: 100%;
+  max-width: 100%;
+}
+
+.vwc-pin {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  background: #f6f7f7;
+  border: 1px solid #dcdcde;
+  border-radius: 3px;
+}
+
+.vwc-pin__title {
+  font-weight: 600;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.vwc-pin__date {
+  font-size: 12px;
+  color: #646970;
+}
+
+.vwc-pin__clear { margin-left: auto; }
+
+.vwc-broken {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  background: #fff;
+  border-left: 3px solid #d63638;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ── Results ───────────────────────────────────────────────────── */
+
+.vwc-results {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid #dcdcde;
+  border-radius: 3px;
+  background: #fff;
+}
+
+.vwc-results li { margin: 0; }
+
+.vwc-result {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid #f0f0f1;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.vwc-result:hover,
+.vwc-result:focus { background: #f0f6fc; }
+
+.vwc-result__title {
+  display: block;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.vwc-result__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+  margin-top: 3px;
+  font-size: 11px;
+  color: #646970;
+}
+
+.vwc-results__msg {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #646970;
+}
+
+/* ── Tier badges ───────────────────────────────────────────────── */
+
+.vwc-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vwc-badge--t1 { background: #d5e8d4; color: #1e4620; }
+.vwc-badge--t2 { background: #e3ecf5; color: #1d3a5c; }
+.vwc-badge--t3 { background: #fdf3d8; color: #5c4708; }
+.vwc-badge--t0 { background: #efefef; color: #50575e; }
+
+.vwc-badge--warn { background: #f7dcdd; color: #8a1f21; }
+
+/* ── Wider viewports ───────────────────────────────────────────── */
+
+@media (min-width: 783px) {
+  .vwc-slot { gap: 14px; padding: 16px 18px; }
+
+  .vwc-slot__modes {
+    gap: 4px 22px;
+    margin-bottom: 12px;
+  }
+
+  .vwc-search { max-width: 460px; }
+
+  .vwc-results { max-width: 460px; }
+}
+
+@media (min-width: 1200px) {
+  .vwc-zone { max-width: 1100px; }
+}

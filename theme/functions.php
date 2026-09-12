@@ -7,6 +7,18 @@ require_once get_stylesheet_directory() . '/inc/article-header.php';
 require_once get_stylesheet_directory() . '/inc/masthead.php';
 
 /**
+ * Curation: storage, capability, resolver, and the admin screen.
+ *
+ * Both load unconditionally. Gating the admin file on is_admin() looks tidier
+ * and is wrong: is_admin() is false during a REST request, so the search
+ * endpoint's rest_api_init registration would never run and the picker's
+ * autocomplete would 404. The file registers hooks only — admin_menu,
+ * admin_enqueue_scripts and admin_post_* never fire on the front end.
+ */
+require_once get_stylesheet_directory() . '/inc/curation.php';
+require_once get_stylesheet_directory() . '/inc/curation-admin.php';
+
+/**
  * Force every single post to the theme's "One column wide" layout.
  *
  * Filters the meta READ rather than swapping the template file: Newspack keys

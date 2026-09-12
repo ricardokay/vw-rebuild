@@ -2421,3 +2421,125 @@ info@vancouverweekly.com; seeks writers/photographers/social/interns; 400-800 wo
 .doc/.docx; 10-30 photos at ~800KB-2MB with credit; **"not all our writing is paid" with no rates
 stated**; no rights or licensing terms anywhere; the social-proof chart is unpopulated placeholder
 ("SOME STAT / ANOTHER STAT / SAME THANG") and cites the discontinued Google Currents app.
+
+---
+
+2026-09-11 — **ROUND 1, SESSION A: curation foundation.** Registry, storage, capability, resolver
+and admin screen. **No template wiring** — nothing on the front end consumes any of this yet; that
+is session B. All front-end output is byte-unchanged, verified by sweep.
+
+**Verification first, as gated.** Three claims from the architecture investigation were re-tested
+independently before any code was written.
+
+**1. Tier distribution CONFIRMED.** Re-measured through a deliberately different code path — raw
+`$wpdb` join + `_wp_attachment_metadata['width']` + uploads-basedir `file_exists`, versus the first
+pass's `get_post_thumbnail_id()` / `get_attached_file()` / `wp_get_attachment_image_src()`. Exact
+agreement on every cell: **tier1 497 (14.7%), tier2 697 (20.7%), tier3 111 (3.3%), tier0 2,068
+(61.3%)**; tier0 splits 1,962 no `_thumbnail_id` + 106 file-not-on-disk. Incidental find: **16
+published posts carry duplicate `_thumbnail_id` meta rows** (36 extra rows, 0 conflicting values) —
+harmless today, logged for post-launch cleanup.
+
+**2. `section-parts/homepage.php` is orphaned — CONFIRMED.** Grepped the entire child theme (all
+file types), the parent theme, all four plugins and mu-plugins. Every child-theme include is
+accounted for: `category.php:53,70`, `functions.php:3,6,7`, `vw-homepage-preview.php:13`. Zero
+references. Note `assets/css/homepage.css` **is** still enqueued on `is_front_page()` and styles
+nothing; both retire together in session B.
+
+**3. `sticky_posts` still empty** (`[]`) — there is no curation on this site today, not even the
+one documented lever.
+
+**Correction carried in:** `homepage-v2.php` holds **7** Unsplash hotlinks, not 4 (lines 94, 107,
+108, 109, 110, 121, 142), plus 34 `href="#"`, a frozen dateline, and "16,412 stories" against an
+actual published count of 3,373.
+
+**Per-zone auto-fill feasibility (new, drives session B's text-variant spec):**
+
+| pool | total | tier1 | tier2 | verdict |
+|---|---|---|---|---|
+| Lead (sitewide) | 3,373 | 497 | 697 | safe |
+| A La Music | 1,055 | 82 | 172 | safe |
+| Photography (6) | 144 | 47 | 37 | safe — but the `_vw_repaired_from` subset is 17 posts / **5 tier1** against 6 image slots, so it is a preference, not a filter |
+| **Food & Drink (13)** | **27** | **2** | **2** | **4 usable images total** — decision (a), runs its text variant most of the time |
+| Political Megaphone (18) | 55 | 1 | 2 | design is already image-free (quote treatment); data endorses it |
+| Book Reviews (30) | 90 | **0** | 21 | slot spec set to tier2, not tier1 |
+
+**BUILT.** `inc/curation-registry.php`, `inc/curation.php`, `inc/curation-admin.php`,
+`assets/css/curation-admin.css`, `assets/js/vw-curation-admin.js`; two requires in `functions.php`.
+
+- **Registry is the single whitelist** — the admin page renders from it, the sanitizer validates
+  against it, the resolver reads its contract. A zone cannot drift between the three.
+- **Storage: one autoloaded option `vw_curation`**, schema-versioned, surface → zone →
+  `{visible, slots[]}`; slot = `{mode: pin|auto|hidden, post, cat}`. The option **does not exist
+  until someone saves and never has to**: every zone falls back to its registry default and every
+  slot to auto-fill, so an uncurated site renders a complete page.
+- **Capability `vw_curate` via a `user_has_cap` filter off `manage_options`** — no database write,
+  no activation hook to go stale, reverts by deleting the filter. Same pattern as the single-wide
+  template filter. Upgrade path when non-admin curators exist is a real `add_cap`; nothing else
+  changes, because every gate asks for the capability and not for a role.
+- **`can_hide => false` on the lead is enforced in the sanitizer AND re-asserted in the resolver**,
+  so a hand-edited option row cannot blank it. Verified by writing exactly that row.
+- **Broken pins are silent on the front end and loud in admin** (promoted from adversarial note to
+  spec this session). A pin that is missing, trashed, unpublished or publication-excluded falls
+  through to auto-fill so the reader sees a complete page, while `vw_curation_pin_status()` drives a
+  red-flagged slot and a plain-language reason on the admin screen.
+- **Search is a custom `vw/v1/post-search` route rather than core `/wp/v2/search`** for one reason:
+  the result rows carry an **image-tier badge**, so a curator sees "No image" before pinning a story
+  into an image slot. Against a 61.3%-tier0 archive that is the difference between a tool and a trap.
+- Admin CSS is **mobile-first** (`min-width` queries). The approved `homepage-v2.css` stays
+  desktop-first until the Round 7 mobile sweep, per decision.
+
+**VERIFIED — 27 functional checks, 8 REST checks, 18 admin checks, all passing.**
+
+- **Option size claim proven**: a *fully* populated config — all 33 slots across 8 home zones and 5
+  section fronts, every slot pinned — serializes to **2,986 bytes (2.92 KB)**, comfortably inside
+  the 8 KB autoload budget asserted in the proposal.
+- **Capability under three contexts**: WP-CLI (`is_admin()` false, `WP_CLI` true) administrator
+  passes, author/subscriber/logged-out all denied; REST dispatch administrator 200, subscriber 403,
+  logged-out 401; real unauthenticated HTTP `GET /wp-json/vw/v1/post-search` returns **401
+  `rest_forbidden`**. A bug was caught and fixed by this check: gating the admin include on
+  `is_admin()` would have silently 404'd the picker's autocomplete, because `is_admin()` is false
+  during a REST request. Both files now load unconditionally and register hooks only.
+- **Security gating**: subscriber rendering the page → `wp_die` 403; subscriber POSTing the save
+  handler → 403 *before* the nonce check; administrator POSTing with no nonce → refused, and the
+  option was confirmed **not** written.
+- **Sanitizer**: unknown surface, unknown zone, unknown section slug all dropped; garbage mode →
+  `auto`; out-of-zone category → 0; nonexistent pin id → 0; schema stamped; every registered zone
+  present.
+- **Resolver end-to-end**: pin honoured and reported as `mode=pin`; a draft pin falls through to
+  auto with `pin_failed=unpublished`; a hidden slot is dropped (3 registered → 2 rendered); a hidden
+  zone resolves to nothing; no story repeats across zones; a tier0 post pinned into an image slot
+  returns `text_variant=true`. Section surface round-trips identically and
+  `vw_curation_slot_by_role()` finds the anchor.
+- **One test failure was the test, not the code**: a whitespace-naive regex missed a `value="hidden"`
+  radio across a line break — which also meant the paired negative assertion had been passing
+  vacuously. Re-run with whitespace-collapsed matching *and positive controls*, all nine hidden-radio
+  assertions pass genuinely.
+- **Front-end regression**: `/`, four section fronts, `/category/book-reviews/`, and
+  `/category/a-la-music/page/2/` all HTTP 200. `vw_curation` option confirmed absent after testing.
+
+**`front-page.php` INSTANT-CUTOVER CLAIM — CONFIRMED, and stronger than stated.** A temporary probe
+`front-page.php` was created, the homepage requested, and the probe deleted (verified gone). With
+`show_on_front=page` and `page_on_front=9` **unchanged and no cache cleared**, the homepage body
+collapsed from page 9's Elementor markup to the probe's 19 bytes — `get_header()`/`get_footer()`
+never ran. Category fronts were unaffected. **Session C must treat `front-page.php` as a live switch
+that flips the moment the file lands**, which is why it is that session's final, separately-approved
+action.
+
+**CARRIED FORWARD TO SESSION C'S CHECKLIST.** `homepage-v2.css` lines 15, 21 and 30 are scoped to
+`.page-template-page-templatesvw-homepage-preview-php` — hide `.vw-nav`, `#content { margin-top: 0 }`,
+hide `#colophon`. That body class does not exist on the real front page, so **all three silently stop
+applying at cutover**. They must be re-scoped to a class present on both surfaces before
+`page-templates/vw-homepage-preview.php` retires.
+
+**NOT DONE / BOUNDARIES.** No template consumes the resolver yet. The admin screen is verified
+server-side (render, gating, nonce, sanitize, escape) but the **browser interaction — drag ordering
+and clicking an autocomplete result — has not been exercised in a real browser**; no WP admin
+credentials were used or guessed. That is the first item in session B, or a two-minute check by
+Ricardo now at **Vancouver Weekly → Homepage & Sections**.
+
+**Decisions locked this session (Ricardo via reviewer):** homepage-v2.php is the approved design,
+homepage.php is superseded v1 and retires in session B; Food & Drink = option (a); new CSS
+mobile-first, existing conversion deferred to Round 7; broken pins flagged in admin; `vw_curate`
+granted to administrator; `_newspack_byline` neither read nor written.
+
+**STOPPED for verdict.**
