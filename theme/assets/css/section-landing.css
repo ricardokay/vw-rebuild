@@ -717,6 +717,24 @@
   align-items: start;
 }
 
+/* Text variant: the featured story has no usable image.
+
+   The PHP guard is correct and stays where it is — vw_image_tier() already
+   returns 0 for a thumbnail whose file is missing from disk, so nothing broken
+   is ever emitted. The defect was purely this grid: with no image the left
+   column collapses to a bare 94px headline beside a ~400px list, and the empty
+   half reads as a broken image slot rather than as a text-led story.
+
+   :has() is the only way to ask "did the PHP emit an image?" from CSS. Below
+   900px the grid is already one column, so this changes nothing on mobile. */
+.vw-feat-list:not(:has(.vw-feat-list__lead-img)) {
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+.vw-feat-list:not(:has(.vw-feat-list__lead-img)) .vw-feat-list__hed {
+  max-width: 34ch;
+}
+
 .vw-feat-list__lead-img-wrap {
   display: block;
   margin-bottom: 18px;
