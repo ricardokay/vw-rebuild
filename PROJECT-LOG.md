@@ -3185,3 +3185,61 @@ stored value no longer decides anything in the editor or on the front end.
 absent, preview page `private`, `front-page.php` still absent.
 
 **STOPPED for verdict.**
+
+---
+
+2026-09-12 — **TWO MICRO-FIXES.** One fixed, one diagnosed and stopped for Ricardo.
+
+**1. MASTHEAD RHYTHM — FIXED.** With the motto setting cleared the wordmark jammed into the nav:
+the motto's `margin: 6px 0 14px` was the only thing holding the two apart, so an optional element
+was carrying structural rhythm. The motto now owns only the space above it and the 14px gap belongs
+to `.vwh2-masthead__nav`, which always exists.
+
+Measured both ways at 1200px: **with** a motto, logo→motto 6px, motto→nav 14px, logo→nav 38px —
+byte-identical to the approved spacing before the change; **without**, logo→nav 14px, where it was
+previously 0. The gap the nav owns is the same 14px in both states and the layout no longer
+collapses. Rhythm that has to survive an element's absence cannot be carried by that element.
+
+**2. BLURRY WORDMARK — DIAGNOSED, NOT FIXED, STOPPED FOR RICARDO.**
+
+Measured on the preview at 1440 / devicePixelRatio 2:
+
+| | |
+|---|---|
+| file served | `assets/images/logo_VW_wordmark.png`, from the theme |
+| intrinsic | **481 × 90** |
+| rendered | **605 × 113** CSS px |
+| CSS upscale at 1× | **1.26×** — already stretched before DPR |
+| device pixels needed at 2× | **1,211** |
+| shortfall | **730 px** — the file covers 40% of what the screen asks for |
+
+So it is **both** faults at once: CSS-upscaled at 1×, and then asked to cover 2.5× its own
+resolution on a retina display. Not a degraded legacy asset — the file is clean, just far too small.
+
+**The blocker is that no high-resolution copy of the APPROVED artwork exists on disk.** The
+masthead uses the black wordmark with the boxed WEEKLY and **no tagline**. Every large source is a
+different lockup or colourway, verified by rendering each one side by side:
+
+| source | size | what it actually is |
+|---|---|---|
+| `assets/images/logo_VW_wordmark.png` | 481×90 | **the approved artwork** — black, boxed WEEKLY, no tagline. Too small. |
+| `VancouverWeekly_Logos/RW Reg.png` | 3860×945 | same lockup but **red**, and **with** the tagline. Alpha. |
+| `VancouverWeekly_Logos/WB Reg.jpg` | 3860×945 | reversed **white on black**, with tagline. No alpha. |
+| `VancouverWeekly_Logos/WR Reg.jpg` | 3860×945 | reversed **white on red**, with tagline. No alpha. |
+| `VW_logo.psd` | 4314×864 | an **older lockup entirely** — lowercase "weekly", different typography |
+| `VancouverWeekly Logo.eps` | vector | not rasterisable here (no ghostscript/imagemagick on this machine) |
+
+Swapping any of them in would change the colour, add a strapline, or change the typeface — a design
+decision, not a resolution fix, so none was made. Per the brief: largest available reported, stopped.
+
+**What would close it:** a black, tagline-free wordmark exported at **≥1,240 px wide** (2× the
+605 px it renders at, with headroom for the 45%-width rule at wider viewports). The `.eps` almost
+certainly holds the vector — exporting from it, or from the original Illustrator file, is the clean
+fix. Ghostscript on this machine would also let it be rasterised here on request.
+
+Deliberately **not** done: capping the CSS width at the asset's 481 px would stop the upscaling but
+shrink the approved wordmark by a fifth, which is the same class of design decision.
+
+Temp comparison files removed; `vw_chrome` and `vw_curation` absent; preview page `private`.
+
+**STOPPED — wordmark asset needs Ricardo.**
