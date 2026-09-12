@@ -203,3 +203,27 @@
 	.vw-ah__split-media { grid-column: 1; }
 	.vw-ah__strip { font-size: 12px; }
 }
+
+
+/* ── Breadcrumb kicker ──────────────────────────────────────────
+   The kicker element grown to hold a trail: identical size, weight, colour and
+   mark, with the levels linked and a light separator between them. Nothing new
+   is introduced above the headline. */
+
+.vw-ah__kicker.vw-crumbs {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 7px;
+}
+
+.vw-crumbs__link {
+	color: inherit;
+	text-decoration: none;
+}
+.vw-crumbs__link:hover { color: var(--vw-red); }
+
+.vw-crumbs__sep {
+	color: var(--vw-border);
+	font-weight: 400;
+}

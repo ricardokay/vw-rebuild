@@ -3070,3 +3070,118 @@ Two rounds were spent on a screen that was working correctly and could not say s
 front-end sweep 200.
 
 **STOPPED for verdict.**
+
+---
+
+2026-09-11 — **BUNDLED ROUND: link wiring, sweep, polish, archive restructure, comments off.**
+Nine items. Child theme only, zero content DB writes.
+
+**1. HOMEPAGE LINK WIRING.** Every section name on the homepage is now a route into that section,
+not just the "All …" affordances: the lead kicker, the A La Music zone head, the Photography band
+head and all three tri-column heads. Rendered: **11 linked section affordances, 0 `href="#"`,
+0 non-clickable section names.**
+
+**2. BYLINE LINKS.** Real authors link to `/author/{slug}/`; desk labels never do —
+`vw_author_html()` applies the same `vw_is_junk_author()` test the cards already use to suppress
+the name, so the 64 posts filed under "Photography"/"Contests"/"News Feed" render plain text rather
+than pointing at an author archive for a person who does not exist. Applied to homepage cards,
+section-front cards and the article header's By line. The author archive is **inheritance only** —
+`is_archive()` already loads `archive.css`, and the rendered page confirms it: PT Serif title, no
+underline, palette, restructured rows, zero overflow.
+
+**3. BROWSE-ALL AT DISPLAY SCALE.** The section-front closer is now a typographic moment in the
+register of the homepage's archive closer — "KEEP READING" eyebrow, the count set in PT Serif at
+`clamp(54px, 7vw, 92px)`, the section line beside it, a red CTA beneath. Rendered on A La Music as
+**1,055**. **Desktop only**, inside `min-width: 900px`; the phone keeps the restrained text link
+pending Round 7, because a numeral that size only earns its space when there is width to set it in.
+
+**4. ADMIN POLISH + THE UNMEASURED NUMBER.** Content gutter on the settings and template panels,
+field rhythm, and the drag handle separated from the arrow buttons (4px → 10px; at 4px they read as
+one four-part control).
+
+The measurement was the real finding. `vw_curation_admin_resolved()` cost **366 ms and 544 queries**
+— ~18 queries per slot, because `vw_image_tier()` does three uncached meta reads per candidate and
+the resolver walks candidates until one meets the slot's image requirement. Egregious, so optimized.
+The obvious fix made it **worse** (`update_meta_cache()` → 1,111 ms: it loads every meta row a post
+owns, and these posts carry dozens of `_oembed_*` rows each from the import). What worked: one
+targeted query for exactly the three values the tier needs, seeding a request-level tier cache.
+
+| | time | queries |
+|---|---|---|
+| before | 366.0 ms | 544 |
+| `update_meta_cache()` attempt | 1,111.3 ms | 257 |
+| **targeted query + tier cache** | **178.5 ms** | **63** |
+
+**Queries −88%, time −51%**, and the canonical tier census is unchanged (497 / 697 / 111 / 2,068).
+The same path runs on the homepage, so the front end gets it too.
+
+**5. PRE-CUTOVER SWEEP.**
+- **(a)** Single post, archive page 2, search and 404 at 390 / 768 / 1024 / 1440. **One real oddity,
+  and it was mine**: the nav's single-row layout was set at `min-width: 768px` in session C, but the
+  six links measure **901px**, so between 768 and ~1100 the document ran to **1269px**. Breakpoint
+  raised to 1100 — the width at which the row actually fits. Re-swept: **zero overflow, zero
+  overrunning elements at all four widths on all four surfaces.**
+- **(b)** `must-see-films` confirmed rendering through the `.html` fallback (Newspack block, 12
+  articles). The grep found **two stray `.html` parts** — `a-la-music.html` and `out-n-about.html`,
+  dead since those categories gained `.php` — **deleted**.
+- **(c)** Three random emptied deks read back from raw `post_content`: all three are nothing but a
+  repeated photo credit (#66353, #66110, #67501 — 363 to 857 chars of "Photo by X" and nothing
+  else). Residue after removing credits and "Comment": empty in every case. **No prose was lost.**
+- **(d)** Rendered `/` and the preview: **zero `2006`, zero "Twenty Years".**
+
+**6. ACTIVE NAV ON SINGLE POSTS.** Derived from the post's primary category through the ancestor
+chain, so a post in "live music reviews" highlights **A La Music** even though no post carries that
+term directly. Verified: the music post highlights A La Music in `rgb(196, 18, 48)`; an
+uncategorized-only post highlights **nothing** — no false positive.
+
+**7. BREADCRUMBS.** The article header's kicker **grew a second level** rather than gaining a
+neighbour above the headline: same element, same mark, same size and position, with the levels
+linked and a hairline `›` between them. Renders "A LA MUSIC › LIVE MUSIC REVIEWS". On single posts
+and **sub**-category archives only — a top-level front would just restate its own title back to
+itself. Uncategorized produces no trail and nothing prints. `BreadcrumbList` JSON-LD is emitted
+**exactly where the trail renders** and nowhere else: present on a flagged single and on
+`/category/live-music-reviews/`, absent on an unflagged single and on `/category/a-la-music/`. Seed
+for Round 6 — this is the site's first structured data, since Newspack ships none.
+
+**One derivation, two consumers**, as specified: `inc/context.php` holds `vw_primary_term()`,
+`vw_term_trail()`, `vw_nav_active_slug()` and `vw_breadcrumb_trail()`. A red nav pointing at one
+section while the breadcrumb names another is worse than neither.
+
+**8. ARCHIVE LIST RESTRUCTURE.** Mixed image/no-image rows used to drift the title's left edge,
+because the thumbnail sat first in the flow and pushed the text across. The title edge is now the
+constant: one text column starting at the same x on every row, a fixed-width image column on the
+**right**, and rows without a picture simply leave it empty. Measured title edges: **20px at 390,
+31px at 768, 44px at 1024 — identical down every row.** Byline/date consistent under every title.
+Pure CSS — the parent's markup already emits `figure` then `entry-container`, so grid ordering does
+the whole job and no template is forked.
+
+**Double rule resolved**: the masthead's heavy rule and the page-title's underline stacked as two
+lines in one band. The masthead keeps its rule; the title lost its underline and differentiates on
+size, weight and the space beneath it.
+
+**Pagination restyled** from Newspack's bordered grey boxes to the design system: no box, PT Serif
+numerals at 17/19px, current page in **#C41230** with a 2px inset underline rather than a filled
+box, 44px minimum hit areas, prev/next labels in Inter that drop to the glyph alone below 600px.
+
+**9. COMMENTS OFF SITEWIDE — display layer only, zero DB writes.** 5,598 comments of unknown
+provenance on a site that was demonstrably compromised; publishing them unvetted is an SEO and
+liability risk, and vetting 5,598 is not a launch task. Two layers: `comments_open()`/`pings_open()`
+report closed everywhere, and the lists, forms, counts, reply links and feeds are suppressed
+directly — because "the template asks first" is not a guarantee. `comments_template()` resolves to
+an empty `comments.php`. **Nothing is deleted or edited**; the whole decision reverts by removing
+one require, and the admin Comments screen is deliberately left working so a future human
+moderation pass has somewhere to happen.
+
+Verified on a post with **599 comments** and one with **none**: zero comment lists, forms,
+respond blocks, reply links, count links, comments-area or comment feeds on either. The only
+surviving "comment" strings are eight occurrences inside the parent theme's JS i18n blob
+(`expand_comments` / `collapse_comments` labels) — inert text, no markup, no links.
+
+The matching `default_comment_status` option is a database write and this round is theme-scoped, so
+it is **left for Ricardo** — but `option_default_comment_status` is filtered to `closed`, so the
+stored value no longer decides anything in the editor or on the front end.
+
+**All ten suites green.** Final sweep: ten URLs, nine 200s and a correct 404. All four options
+absent, preview page `private`, `front-page.php` still absent.
+
+**STOPPED for verdict.**

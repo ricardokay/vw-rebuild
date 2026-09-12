@@ -6,6 +6,11 @@
    not inherit that.)
    ================================================================ */
 
+/* WP admin content gutter. .wrap gives the page its outer margin but our own
+   headings and panels sat flush to it; these align to the same edge the rest of
+   wp-admin uses. */
+.vwc { margin-right: 20px; }
+
 .vwc__intro {
   max-width: 46em;
   font-size: 13px;
@@ -14,6 +19,7 @@
 
 .vwc__surface-head {
   margin: 28px 0 4px;
+  padding-left: 2px;
   padding-bottom: 6px;
   border-bottom: 2px solid #1d2327;
   font-size: 16px;
@@ -21,6 +27,7 @@
 
 .vwc__section-head {
   margin: 20px 0 0;
+  padding-left: 2px;
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -280,7 +287,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 10px;          /* separates the drag handle from the arrow buttons —
+                         at 4px they read as one four-part control */
   padding-top: 2px;
 }
 
@@ -302,6 +310,25 @@
 .vwc-move:hover:not(:disabled) { background: #f0f0f1; border-color: #8c8f94; }
 .vwc-move:focus-visible { outline: 2px solid #2271b1; outline-offset: 1px; }
 .vwc-move:disabled { opacity: 0.35; cursor: default; }
+
+/* Settings/template panels get the same inner gutter as a slot row. */
+.vwc-settings .vwc-fields { padding: 14px; }
+
+@media (min-width: 783px) {
+  .vwc-settings .vwc-fields { padding: 16px 18px; }
+}
+
+.vwc-field { margin: 0 0 16px; }
+.vwc-field:last-child { margin-bottom: 0; }
+.vwc-field label { display: inline-block; margin-bottom: 2px; }
+
+.vwc-field__help {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #646970;
+  max-width: 52em;
+}
 
 /* ── Save summary ──────────────────────────────────────────────── */
 

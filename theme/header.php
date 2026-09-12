@@ -41,10 +41,11 @@
         foreach ( $vw_nav_sections as $vw_slug => $vw_label ) :
           $vw_term = get_category_by_slug( $vw_slug );
           if ( ! $vw_term ) continue;
-          $vw_active = is_category( $vw_slug ) ? ' vw-nav__link--active' : '';
+          $vw_active = ( vw_nav_active_slug() === $vw_slug ) ? ' vw-nav__link--active' : '';
         ?>
           <a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>"
-             class="vw-nav__link<?php echo esc_attr( $vw_active ); ?>">
+             class="vw-nav__link<?php echo esc_attr( $vw_active ); ?>"
+             <?php echo $vw_active ? 'aria-current="page"' : ''; ?>>
             <?php echo wp_kses( $vw_label, [] ); ?>
           </a>
         <?php endforeach; ?>

@@ -925,22 +925,122 @@
 	padding: 8px 0 4px;
 }
 
+/* Browse-all: a display-scale closing moment, in the register of the homepage's
+   archive closer rather than a text link at the bottom of a page.
+
+   MOBILE KEEPS THE RESTRAINED DEFAULT — the numeral only earns its size when
+   there is width to set it in, and the phone treatment is Round 7's call. The
+   display treatment is therefore additive, inside min-width queries only. */
+
 .vw-section-more__link {
+	display: block;
+	border-top: 3px solid var(--vw-ink);
+	padding-top: 14px;
+	text-decoration: none;
+	color: var(--vw-red);
 	font-family: 'Inter', sans-serif;
 	font-size: 12px;
 	font-weight: 600;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: var(--vw-red);
-	text-decoration: none;
-	border-top: 3px solid var(--vw-ink);
-	display: block;
-	padding-top: 14px;
 }
 
-.vw-section-more__link:hover {
-	text-decoration: underline;
+.vw-section-more__link:hover { text-decoration: underline; }
+
+.vw-section-more__eyebrow,
+.vw-section-more__count,
+.vw-section-more__line { display: none; }
+
+.vw-section-more__cta { display: inline; }
+
+@media (min-width: 900px) {
+	.vw-section-more { padding: 26px 0 8px; }
+
+	.vw-section-more__link {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		grid-template-areas:
+			"eyebrow eyebrow"
+			"count   line"
+			"cta     cta";
+		align-items: baseline;
+		column-gap: 24px;
+		row-gap: 4px;
+		padding-top: 22px;
+		text-transform: none;
+		letter-spacing: normal;
+	}
+
+	.vw-section-more__link:hover { text-decoration: none; }
+
+	.vw-section-more__eyebrow {
+		grid-area: eyebrow;
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--vw-ink-muted);
+		margin-bottom: 4px;
+	}
+
+	.vw-section-more__count {
+		grid-area: count;
+		display: block;
+		font-family: 'PT Serif', Georgia, serif;
+		font-weight: 700;
+		font-size: clamp(54px, 7vw, 92px);
+		line-height: 0.92;
+		letter-spacing: -0.03em;
+		color: var(--vw-ink);
+	}
+
+	.vw-section-more__line {
+		grid-area: line;
+		display: block;
+		font-family: 'PT Serif', Georgia, serif;
+		font-size: clamp(20px, 2.2vw, 28px);
+		line-height: 1.2;
+		color: var(--vw-ink);
+		text-transform: none;
+		letter-spacing: -0.01em;
+	}
+
+	.vw-section-more__cta {
+		grid-area: cta;
+		display: block;
+		margin-top: 10px;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--vw-red);
+	}
+
+	.vw-section-more__link:hover .vw-section-more__cta { text-decoration: underline; }
+	.vw-section-more__link:hover .vw-section-more__count { color: var(--vw-red); }
 }
+
+@media (min-width: 1200px) {
+	.vw-section-more__link { column-gap: 32px; }
+}
+
+
+/* ── Author links ───────────────────────────────────────────────
+   Real people link to their archive; desk labels render as plain text and are
+   never linked — see vw_author_html(). The byline keeps its own colour so a
+   linked name does not read as body-copy link. */
+
+.vw-author-link {
+	color: inherit;
+	text-decoration: none;
+	border-bottom: 1px solid transparent;
+}
+.vw-author-link:hover {
+	color: var(--vw-red);
+	border-bottom-color: currentColor;
+}
+
 
 
 /* ── Section front: no header block ─────────────────────────────
@@ -1017,7 +1117,12 @@
   padding: 8px 10px 8px 0;
 }
 
-@media (min-width: 768px) {
+/* 1100, not 768. The six links measure 901px on their own, so at 768 the
+   single-row layout overflowed the document to 1269px — found by the
+   pre-cutover breakpoint sweep, and introduced when this rule was first
+   written against the phone width alone. The breakpoint is now the width at
+   which the row actually fits beside the logo. */
+@media (min-width: 1100px) {
   .vw-nav__inner {
     flex-wrap: nowrap;
     height: 100px;

@@ -152,7 +152,9 @@ function vw_credits_inline( WP_Post $post ): string {
 		if ( 'By' === $label && function_exists( 'vw_is_junk_author' ) && vw_is_junk_author( $value ) ) {
 			continue;
 		}
-		$parts[] = esc_html( $label ) . ' <strong>' . esc_html( $value ) . '</strong>';
+		$parts[] = esc_html( $label ) . ' <strong>'
+			. ( 'By' === $label ? vw_author_html( $post ) : esc_html( $value ) )
+			. '</strong>';
 	}
 	$parts[] = esc_html( $credits['meta'] );
 

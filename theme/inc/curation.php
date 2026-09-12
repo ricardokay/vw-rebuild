@@ -236,8 +236,72 @@ function vw_curation_candidates( array $cats, string $prefer_meta = '', bool $re
 
 	// Preferred pool first, then everything else in date order. Never a filter:
 	// the photo band's preferred pool holds five usable images against six slots.
-	$cache[ $key ] = array_values( array_unique( array_merge( $preferred, $wider ) ) );
+	$ids = array_values( array_unique( array_merge( $preferred, $wider ) ) );
+
+	vw_curation_prime( $ids );
+
+	$cache[ $key ] = $ids;
 	return $cache[ $key ];
+}
+
+/**
+ * Compute the image tier for a whole candidate list in ONE query.
+ *
+ * Measured on the admin screen's 30 slots: 366 ms / 544 queries unprimed.
+ * vw_image_tier() asks each candidate for its _thumbnail_id, then asks that
+ * attachment for _wp_attached_file and _wp_attachment_metadata — three uncached
+ * meta reads per candidate, and the resolver walks candidates until one meets
+ * the slot's image requirement.
+ *
+ * The obvious fix, update_meta_cache() on the candidates, made it WORSE
+ * (1,111 ms): it loads every meta row each post owns, and these posts carry
+ * dozens of _oembed_* rows apiece from the import. So this asks for exactly the
+ * three values the tier needs and nothing else, and seeds vw_image_tier()'s own
+ * request cache with the answers. The same path runs on the homepage, so the
+ * front end gets it too.
+ */
+function vw_curation_prime( array $ids ): void {
+	global $wpdb;
+
+	$ids = array_values( array_filter( array_map( 'intval', $ids ) ) );
+	if ( ! $ids ) {
+		return;
+	}
+
+	$in = implode( ',', $ids );
+
+	// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $in is a list of ints built above.
+	$rows = $wpdb->get_results(
+		"SELECT tm.post_id AS post_id,
+		        af.meta_value AS file,
+		        md.meta_value AS metadata
+		   FROM {$wpdb->postmeta} tm
+		   JOIN {$wpdb->postmeta} af ON af.post_id = tm.meta_value AND af.meta_key = '_wp_attached_file'
+		   LEFT JOIN {$wpdb->postmeta} md ON md.post_id = tm.meta_value AND md.meta_key = '_wp_attachment_metadata'
+		  WHERE tm.meta_key = '_thumbnail_id'
+		    AND tm.post_id IN ( {$in} )"
+	);
+	// phpcs:enable
+
+	$base  = trailingslashit( wp_get_upload_dir()['basedir'] );
+	$tiers = array_fill_keys( $ids, 0 );
+
+	foreach ( $rows as $row ) {
+		$id = (int) $row->post_id;
+		if ( ! $row->file || ! file_exists( $base . $row->file ) ) {
+			continue; // stays tier 0 — the 106 posts whose image is gone from disk
+		}
+
+		$meta  = maybe_unserialize( $row->metadata );
+		$width = ( is_array( $meta ) && ! empty( $meta['width'] ) ) ? (int) $meta['width'] : 0;
+		if ( ! $width ) {
+			continue;
+		}
+
+		$tiers[ $id ] = $width >= 1024 ? 1 : ( $width >= 480 ? 2 : 3 );
+	}
+
+	vw_image_tier_seed( $tiers );
 }
 
 /**

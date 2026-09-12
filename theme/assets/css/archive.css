@@ -25,15 +25,21 @@
 	color: var(--vw-red);
 }
 
-/* Archive heading: same weight and rule as a section front's title. */
+/* Archive heading.
+   The underline is GONE on purpose: the masthead already closes with a heavy
+   rule directly above this band, and the two stacked as a double line. One rule
+   per band — the masthead keeps its, the title differentiates on size, weight
+   and the space beneath it instead. */
 .archive .page-title,
 .archive .archive-title {
 	font-family: 'PT Serif', Georgia, serif;
 	font-weight: 700;
-	letter-spacing: -0.015em;
+	letter-spacing: -0.02em;
+	line-height: 1.05;
 	color: var(--vw-ink);
-	border-bottom: 3px solid var(--vw-ink);
-	padding-bottom: 10px;
+	border-bottom: 0;
+	padding-bottom: 0;
+	margin-bottom: 6px;
 }
 
 .archive .archive-subtitle,
@@ -97,22 +103,103 @@
 	color: var(--vw-ink-muted);
 }
 
-/* Pagination in the palette. */
-.archive .pagination .page-numbers {
-	font-family: 'Inter', sans-serif;
-	font-size: 12px;
-	font-weight: 600;
-	letter-spacing: 0.04em;
-	color: var(--vw-ink);
+/* ══ Pagination ═══════════════════════════════════════════════════
+   Newspack's default is a row of bordered boxes on a grey ground. This keeps
+   the archive's own surface: no box, serif numerals sized to read as type
+   rather than as UI, the current page in the accent, and hit areas large
+   enough to use on a phone. Arrows keep their labels at width and drop to the
+   glyph alone when there is none.
+
+   Mobile-first: the base is the narrow layout; wider rules add spacing. */
+
+.archive .pagination,
+.search .pagination {
+	margin-top: 28px;
+	padding-top: 18px;
+	border-top: 1px solid var(--vw-border);
+}
+
+.archive .pagination .nav-links,
+.search .pagination .nav-links {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px 4px;
+}
+
+.archive .pagination .page-numbers,
+.search .pagination .page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 44px;
+	min-height: 44px;
+	padding: 0 10px;
+	border: 0;
+	background: none;
+	border-radius: 0;
+	font-family: 'PT Serif', Georgia, serif;
+	font-size: 17px;
+	font-weight: 700;
+	letter-spacing: 0;
+	color: var(--vw-ink-muted);
 	text-decoration: none;
+	transition: color 0.12s;
 }
 
-.archive .pagination .page-numbers.current {
+.archive .pagination .page-numbers:hover,
+.search .pagination .page-numbers:hover {
 	color: var(--vw-red);
+	background: none;
 }
 
-.archive .pagination .page-numbers:hover {
+/* The only marked state. A hairline under the numeral rather than a filled
+   box, so the row stays type and not chrome. */
+.archive .pagination .page-numbers.current,
+.search .pagination .page-numbers.current {
 	color: var(--vw-red);
+	box-shadow: inset 0 -2px 0 var(--vw-red);
+}
+
+.archive .pagination .page-numbers.dots,
+.search .pagination .page-numbers.dots {
+	min-width: 22px;
+	padding: 0 2px;
+	color: var(--vw-border);
+}
+
+/* Prev/next: label in Inter, not serif — they are controls, not numerals. */
+.archive .pagination .prev,
+.archive .pagination .next,
+.search .pagination .prev,
+.search .pagination .next {
+	font-family: 'Inter', sans-serif;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	gap: 2px;
+}
+
+.archive .pagination .svg-icon,
+.search .pagination .svg-icon { fill: currentColor; width: 18px; height: 18px; }
+
+@media (max-width: 599px) {
+	.archive .pagination .nav-prev-text,
+	.archive .pagination .nav-next-text,
+	.search .pagination .nav-prev-text,
+	.search .pagination .nav-next-text { display: none; }
+}
+
+@media (min-width: 900px) {
+	.archive .pagination,
+	.search .pagination { margin-top: 40px; padding-top: 24px; }
+
+	.archive .pagination .nav-links,
+	.search .pagination .nav-links { gap: 2px 8px; }
+
+	.archive .pagination .page-numbers,
+	.search .pagination .page-numbers { font-size: 19px; }
 }
 
 /* Newspack renders the archive prefix as its own element —
@@ -127,3 +214,122 @@
 .archive .page-title .page-description {
 	display: inline;
 }
+
+
+/* ══ Archive rows: text-led list ══════════════════════════════════
+   Mixed image/no-image rows used to drift the title's left edge row by row,
+   because the thumbnail sat first in the flow and pushed the text across.
+   The title edge is now the constant: one column of text starting at the same
+   x on every row, and a fixed-width image column on the RIGHT that a row
+   without a picture simply leaves empty. Same principle as the homepage's
+   text-variant cards — the box is removed or empty, never allowed to move
+   anything else.
+
+   Pure CSS: the parent theme's markup already emits <figure class="post-thumbnail">
+   followed by <div class="entry-container">, so grid ordering does the whole
+   job and no template is forked.
+
+   Mobile-first: one column at base, the image column appears at 600px. */
+
+.archive .site-main > article,
+.search .site-main > article {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 4px 20px;
+	align-items: start;
+	padding: 20px 0;
+	margin: 0;
+	border-bottom: 1px solid var(--vw-border);
+}
+
+.archive .site-main > article > .entry-container,
+.search .site-main > article > .entry-container {
+	grid-column: 1;
+	grid-row: 1;
+	min-width: 0;
+}
+
+.archive .site-main > article > .post-thumbnail,
+.search .site-main > article > .post-thumbnail {
+	grid-column: 1;
+	grid-row: 2;
+	margin: 4px 0 0;
+	width: 140px;
+}
+
+.archive .site-main > article > .post-thumbnail img,
+.search .site-main > article > .post-thumbnail img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 3 / 2;
+	object-fit: cover;
+}
+
+/* The byline/date line sits under every title at the same size, whether or not
+   the row has a picture. */
+.archive .site-main > article .entry-meta,
+.search .site-main > article .entry-meta {
+	font-family: 'Inter', sans-serif;
+	font-size: 12px;
+	color: var(--vw-byline-ink);
+	margin-top: 6px;
+}
+
+.archive .site-main > article .author-avatar,
+.search .site-main > article .author-avatar { display: none; }
+
+.archive .site-main > article .entry-meta .updated,
+.search .site-main > article .entry-meta .updated { display: none; }
+
+@media (min-width: 600px) {
+	.archive .site-main > article,
+	.search .site-main > article {
+		grid-template-columns: 1fr 160px;
+	}
+
+	.archive .site-main > article > .entry-container,
+	.search .site-main > article > .entry-container {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	/* Right column, fixed width. A row with no figure leaves it empty and the
+	   title edge does not move. */
+	.archive .site-main > article > .post-thumbnail,
+	.search .site-main > article > .post-thumbnail {
+		grid-column: 2;
+		grid-row: 1;
+		width: auto;
+		margin: 0;
+	}
+}
+
+@media (min-width: 1024px) {
+	.archive .site-main > article,
+	.search .site-main > article {
+		grid-template-columns: 1fr 200px;
+		gap: 4px 32px;
+		padding: 24px 0;
+	}
+}
+
+
+/* ══ Breadcrumb on sub-category archives ═════════════════════════ */
+
+.vw-archive-crumbs {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 10px;
+	font-family: 'Inter', sans-serif;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+.vw-archive-crumbs .vw-crumbs__link { color: var(--vw-ink-muted); text-decoration: none; }
+.vw-archive-crumbs .vw-crumbs__link:hover { color: var(--vw-red); }
+.vw-archive-crumbs .vw-crumbs__link[aria-current] { color: var(--vw-ink); }
+.vw-archive-crumbs .vw-crumbs__sep { color: var(--vw-border); }

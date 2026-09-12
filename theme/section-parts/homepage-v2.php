@@ -43,11 +43,21 @@ $vw_kicker = static function ( WP_Post $post, string $class = 'vwh2-kicker' ): v
 	if ( ! $name ) {
 		return;
 	}
+	// The section name is the reader's route into the section, so it is a link
+	// wherever it appears — kickers included, not just the "All …" affordances.
+	$term = null;
+	foreach ( (array) get_the_terms( (int) $post->ID, 'category' ) as $t ) {
+		if ( $t instanceof WP_Term && $t->name === $name ) { $term = $t; break; }
+	}
+	$href = $term ? get_category_link( $term->term_id ) : '';
+
 	printf(
 		'<span class="%s">%s%s</span>',
 		esc_attr( $class ),
 		$mark ? '<span class="vwh2-mark vwh2-mark--' . esc_attr( $mark ) . '"></span>' : '',
-		esc_html( $name )
+		$href
+			? '<a class="vwh2-kicker__link" href="' . esc_url( $href ) . '">' . esc_html( $name ) . '</a>'
+			: esc_html( $name )
 	);
 };
 
@@ -101,7 +111,7 @@ $vw_nav = VW_MASTHEAD_SECTIONS;
 				$vw_term = get_category_by_slug( $vw_slug );
 				if ( ! $vw_term ) continue;
 				?>
-				<a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>" class="vwh2-masthead__nav-item<?php echo is_category( $vw_slug ) ? ' vwh2-masthead__nav-item--active' : ''; ?>"<?php echo is_category( $vw_slug ) ? ' aria-current="page"' : ''; ?>><?php echo wp_kses( $vw_label, [] ); ?></a>
+				<a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>" class="vwh2-masthead__nav-item<?php echo ( vw_nav_active_slug() === $vw_slug ) ? ' vwh2-masthead__nav-item--active' : ''; ?>"<?php echo ( vw_nav_active_slug() === $vw_slug ) ? ' aria-current="page"' : ''; ?>><?php echo wp_kses( $vw_label, [] ); ?></a>
 			<?php endforeach; ?>
 		</nav>
 	</div>
@@ -174,7 +184,7 @@ $vw_nav = VW_MASTHEAD_SECTIONS;
 		?>
 	<div class="vwh2-zonehead">
 		<span class="vwh2-mark vwh2-mark--music"></span>
-		<span class="vwh2-zonehead__title">A La Music</span>
+		<a class="vwh2-zonehead__title" href="<?php echo esc_url( $vw_cat_url( 7 ) ); ?>">A La Music</a>
 		<a href="<?php echo esc_url( $vw_cat_url( 7 ) ); ?>" class="vwh2-more">All Music →</a>
 	</div>
 	<div class="vwh2-music<?php echo $music_img ? '' : ' vwh2-music--text'; ?>">
@@ -235,7 +245,7 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 	<section class="vwh2-photo">
 		<div class="vwh2-container">
 			<div class="vwh2-photo__head">
-				<span class="vwh2-mark vwh2-mark--photo"></span>Photography
+				<span class="vwh2-mark vwh2-mark--photo"></span><a class="vwh2-photo__head-link" href="<?php echo esc_url( $vw_cat_url( 6 ) ); ?>">Photography</a>
 				<a href="<?php echo esc_url( $vw_cat_url( 6 ) ); ?>" class="vwh2-more">All Photo Essays →</a>
 			</div>
 			<div class="vwh2-photo__inner">
@@ -307,7 +317,7 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 			?>
 			<div class="<?php echo esc_attr( $classes ); ?>">
 				<div class="vwh2-tri__col-hed">
-					<span class="vwh2-mark vwh2-mark--<?php echo esc_attr( $col['mark'] ); ?>"></span><?php echo esc_html( $col['label'] ); ?>
+					<span class="vwh2-mark vwh2-mark--<?php echo esc_attr( $col['mark'] ); ?>"></span><a class="vwh2-tri__col-link" href="<?php echo esc_url( $vw_cat_url( $col['cat'] ) ); ?>"><?php echo esc_html( $col['label'] ); ?></a>
 					<a href="<?php echo esc_url( $vw_cat_url( $col['cat'] ) ); ?>" class="vwh2-more"><?php echo esc_html( $col['more'] ); ?></a>
 				</div>
 

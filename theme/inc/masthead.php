@@ -55,7 +55,7 @@ function vw_masthead_render(): void {
 						$term = get_category_by_slug( $slug );
 						$href = $term ? get_category_link( $term->term_id ) : home_url( '/' );
 						?>
-						<a href="<?php echo esc_url( $href ); ?>" class="vwh2-masthead__nav-item<?php echo is_category( $slug ) ? ' vwh2-masthead__nav-item--active' : ''; ?>"<?php echo is_category( $slug ) ? ' aria-current="page"' : ''; ?>><?php echo wp_kses( $label, [] ); ?></a>
+						<a href="<?php echo esc_url( $href ); ?>" class="vwh2-masthead__nav-item<?php echo ( vw_nav_active_slug() === $slug ) ? ' vwh2-masthead__nav-item--active' : ''; ?>"<?php echo ( vw_nav_active_slug() === $slug ) ? ' aria-current="page"' : ''; ?>><?php echo wp_kses( $label, [] ); ?></a>
 					<?php endforeach; ?>
 				</nav>
 			</div>

@@ -10,6 +10,13 @@ require_once get_stylesheet_directory() . '/inc/credits.php';
 require_once get_stylesheet_directory() . '/inc/article-header.php';
 require_once get_stylesheet_directory() . '/inc/masthead.php';
 
+// Primary-category derivation shared by the active nav and the breadcrumbs,
+// plus author-link rendering. Loads after masthead.php: it reads VW_MASTHEAD_SECTIONS.
+require_once get_stylesheet_directory() . '/inc/context.php';
+
+// Comments off sitewide, display layer only — see inc/comments.php.
+require_once get_stylesheet_directory() . '/inc/comments.php';
+
 /**
  * Curation: storage, capability, resolver, and the admin screen.
  *
@@ -237,6 +244,42 @@ function vw_get_excerpt( WP_Post $post, int $words = 25 ): string {
  * Tier 0 — no image, or file missing on disk (dead Facebook import)
  */
 function vw_image_tier( int $post_id ): int {
+	$cache = vw_image_tier_cache();
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$tier = vw_image_tier_compute( $post_id );
+	vw_image_tier_seed( [ $post_id => $tier ] );
+	return $tier;
+}
+
+/**
+ * Request-level tier cache.
+ *
+ * The tier is three uncached meta reads per post and the resolver asks for it
+ * repeatedly while walking candidates. vw_curation_prime() fills this in one
+ * query for a whole candidate list; single lookups fall through to
+ * vw_image_tier_compute() and memoise themselves.
+ */
+function &vw_image_tier_cache(): array {
+	static $cache = [];
+	return $cache;
+}
+
+function vw_image_tier_seed( array $tiers ): void {
+	$cache = &vw_image_tier_cache();
+	foreach ( $tiers as $id => $tier ) {
+		$cache[ (int) $id ] = (int) $tier;
+	}
+}
+
+function vw_image_tier_flush(): void {
+	$cache = &vw_image_tier_cache();
+	$cache = [];
+}
+
+function vw_image_tier_compute( int $post_id ): int {
 	$thumb_id = get_post_thumbnail_id( $post_id );
 	if ( ! $thumb_id ) return 0;
 
@@ -317,7 +360,8 @@ function vw_byline_inner( $post ): string {
 		return '<time datetime="' . esc_attr( get_the_date( 'c', $post ) ) . '">'
 			. esc_html( get_the_date( 'M j, Y', $post ) ) . '</time>';
 	}
-	return 'By <strong>' . esc_html( $name ) . '</strong>';
+	// Real people link to their archive; desk labels never do — see vw_author_html().
+	return 'By <strong>' . vw_author_html( $post ) . '</strong>';
 }
 
 /**
@@ -451,7 +495,12 @@ function vw_section_browse_all( array $cat_ids, string $label, int $shown ): voi
 	<div class="vw-module vw-section-more">
 		<div class="vw-module__inner">
 			<a class="vw-section-more__link" href="<?php echo esc_url( trailingslashit( $base ) . 'page/2/' ); ?>">
-				<?php printf( 'Browse all %s %s stories', esc_html( number_format_i18n( $total ) ), esc_html( $label ) ); ?> &rarr;
+				<span class="vw-section-more__eyebrow">Keep reading</span>
+				<span class="vw-section-more__count"><?php echo esc_html( number_format_i18n( $total ) ); ?></span>
+				<span class="vw-section-more__line">
+					<?php printf( '%s stories in the archive', esc_html( $label ) ); ?>
+				</span>
+				<span class="vw-section-more__cta">Browse all &rarr;</span>
 			</a>
 		</div>
 	</div>

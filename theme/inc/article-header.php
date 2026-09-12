@@ -35,6 +35,7 @@ function vw_ah_byline_html( array $bylines, string $sep ): string {
 		list( $label, $value ) = $b;
 		$parts[] = '<span class="vw-ah__label">' . esc_html( $label ) . '</span> '
 			. '<span class="vw-ah__name">' . esc_html( $value ) . '</span>';
+		// (Author linking happens in vw_ah_render(), which has the post object.)
 	}
 	return implode( $sep, $parts );
 }
@@ -57,12 +58,26 @@ function vw_ah_render( WP_Post $post ): string {
 	?>
 	<div class="vw-ah vw-ah--<?php echo esc_attr( $case ); ?>" data-vw-ah-case="<?php echo esc_attr( strtoupper( $case ) ); ?>" data-vw-ah-imgw="<?php echo esc_attr( (string) $width ); ?>">
 
-		<?php if ( $section ) : ?>
+		<?php
+		/*
+		 * The kicker grew a second level rather than gaining a neighbour: same
+		 * element, same mark, same position, now carrying the full trail with
+		 * each level linked. A post whose section has no sub-level renders a
+		 * one-item trail, which is visually what the kicker already was.
+		 * Uncategorized posts produce no trail and nothing prints.
+		 */
+		$crumbs = vw_breadcrumb_html( 'vw-ah__kicker', 'vw-ah__mark' );
+		if ( $crumbs ) :
+			echo $crumbs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in vw_breadcrumb_html().
+		elseif ( $section ) :
+			?>
 			<span class="vw-ah__kicker">
 				<?php if ( $mark ) : ?><span class="vw-ah__mark vw-ah__mark--<?php echo esc_attr( $mark ); ?>"></span><?php endif; ?>
 				<?php echo esc_html( $section ); ?>
 			</span>
-		<?php endif; ?>
+			<?php
+		endif;
+		?>
 
 		<?php if ( 'b' === $case ) : ?>
 
