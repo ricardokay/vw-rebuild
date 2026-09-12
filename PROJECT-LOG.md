@@ -3715,3 +3715,5 @@ shortlist. Corrected to decided and provisioned — Cloudways, server `bmm-serve
 DigitalOcean 2 GB Basic, Toronto, app `vancouverweekly`.
 
 Screenshots for the design verdict: `~/Desktop/vw-section-fronts-2026-09-12/`.
+
+**2026-09-12 — permissions policy.** Read-only WP-CLI, curl-against-local, text-search, git-read and `php -l` invocations are pre-allowed per project; `git push` is now denied outright, making the never-push rule structural rather than habitual. `tools/screenshot.sh` wraps headless Chrome with a hardcoded output directory and a leaf-only filename, because no prefix pattern can constrain `--screenshot=<path>`. A stale global settings backup carrying `skipDangerousModePermissionPrompt` was deleted; the live settings never contained it. The allowlist is friction reduction, not a security boundary — prefix patterns cannot stop argument injection.
