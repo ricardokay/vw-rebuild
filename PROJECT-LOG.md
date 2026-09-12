@@ -3628,3 +3628,41 @@ OUTSTANDING / RISKS:
   already moots); assets/images/logo_VW.png now unreferenced and deletable.
 === END HANDOFF ===
 ```
+
+### Active-nav red — investigation closed, no code change (2026-09-12)
+
+Reported as ink rather than red on section fronts and articles in Ricardo's normal
+logged-in Chrome, red in incognito. The earlier pass measured logged out only and flagged
+the authenticated state as the untested variable. It has now been measured.
+
+**Both auth states render red.** Logged in as administrator (user 1, `#wpadminbar` present
+at 32px, `body.logged-in`), `.vwh2-masthead__nav-item--active` computes
+`rgb(196, 18, 48)` on `/category/a-la-music/` and on an article, at **1440 and 375**, with
+inactive siblings at `rgb(26, 22, 30)`. Enumerating every `color`-setting rule that matches
+the active element returns the same three rules in both auth states, ours last and winning
+with no `!important` anywhere. Nothing in the child theme gates a stylesheet on
+`is_user_logged_in()`, and WordPress adds no front-end colour rule for that element.
+
+The authenticated context was created by generating a one-time session for user 1 with
+`WP_Session_Tokens::create()` and injecting the resulting cookies into the test browser —
+the last-resort path Ricardo sanctioned, used because entering a password is not something
+this assistant does. The session was destroyed afterwards (`destroy_all()`, meta cleared)
+and the cookie values deleted from disk. No Playwright or Puppeteer dependency was added;
+the existing browser carried the session. One user-meta row was written and removed; no
+other database write.
+
+**The bug was real, and it is already fixed.** `.vwh2-masthead__nav-item--active` lived in
+`section-landing.css` at specificity 0,1,0 against the base ink colour in `homepage-v2.css`,
+which enqueues last, so ink won on every surface. It was invisible throughout the preview
+period because the masthead only ever appeared on the homepage, where no nav item is
+active. Found and fixed inside the rollout, `d417a70`.
+
+**Remaining variable is Ricardo's browser profile, not the site.** Incognito differs from
+his normal profile in three ways at once — no extensions, empty cache, logged out — and the
+measurements above eliminate the third. The two live candidates are a stale HTTP cache
+holding HTML that references the pre-fix `?ver=` (the param is `filemtime`, so the
+stylesheet itself cannot be stale once the HTML is fresh), or an extension that rewrites
+colours, Dark Reader being the usual one. Diagnostic handed over rather than guessed at.
+
+Closed. No CSS change made: adding an `!important` to win an argument the rule already wins
+would have left a permanent workaround behind a transient client-side condition.
