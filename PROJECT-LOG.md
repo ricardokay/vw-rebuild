@@ -3509,3 +3509,122 @@ Page 9 and preview page 86013 deletion (gated with the 43-page institutional cul
 is still an uncurated `.html` front; 92 filename-glued photo credits; slogan/founding-year drift
 after override; `default_comment_status` (a DB write the filter already makes moot);
 `assets/images/logo_VW.png` is now unreferenced and can be deleted.
+
+### Addendum — reviewer handoff (verbatim)
+
+```
+=== REVIEWER HANDOFF ===
+TASK: ROLLOUT ROUND — v2 masthead + adaptive article header become the sitewide
+defaults (both approved in preview). Template override / hook removal, not
+CSS-hiding. Scope: child theme + PROJECT-LOG. No DB writes.
+
+WHAT I DID:
+- header.php renders vw_masthead_render() directly; legacy .vw-nav markup deleted
+  → class="vw-nav" now appears on 0 of 16 swept surfaces
+- front page skipped in header.php → homepage part renders its own masthead inline;
+  printing a second would stack two
+- vw_masthead_active() kept as `return false;` → old ?vw_masthead=1 links no-op, not fatal
+- deleted masthead-preview.css (32 lines) + ~3.3KB dead .vw-nav rules from section-landing.css
+- NEW template-parts/header/entry-header.php overrides the Newspack part that single.php
+  AND all four large-featured-image.php branches already request → every single-post
+  layout covered without forking single.php
+- NEW template-parts/header/entry-header-newspack.php → require()s the parent file
+  (a child part cannot get_template_part() the file it shadows)
+- functions.php filters newspack_featured_image_position → 'vw-header', gated off in
+  admin/AJAX/REST → parent duplicate hero never paints
+- VW_AH_WIDE_MIN 1140 → 1200 → pure no-upscale rule (content column tops out at 1200)
+- replaced 8 !important declarations with a plain .vw-ah__rule class rule, after
+  measuring that the #content hr selector they targeted does not exist (parent styles
+  hr at element level only: 0,0,1 and 0,1,0)
+- photo-led dedup: featured attachment id among the first three wp-image-N refs in the
+  body → header image suppressed, post falls to case C
+- vw_ah_credits() now runs the author through vw_is_junk_author() and OMITS the By line
+  → was printing "By Photography" on 64 desk-label posts; removed the duplicate copy of
+  the same rule from vw_credits_inline() so header and cards share one source
+
+TWO REAL BUGS FOUND BY RENDERING (both invisible to server-side HTML checks):
+1. Active nav was NEVER red. .vwh2-masthead__nav-item--active lived in
+   section-landing.css; base .vwh2-masthead__nav-item{color:var(--vw-ink)} lives in
+   homepage-v2.css. Both specificity 0,1,0; homepage-v2.css enqueues last → ink won.
+   Hidden during preview because the masthead only appeared on the homepage, where no
+   item is ever active. Fix: rule moved to sit with the base rule it competes with.
+2. Article header rendered at 0x0 on DESKTOP AND MOBILE.
+   .vw-ah-single .entry-header{display:none} was preview-era scaffolding (needed when
+   the header was prepended to the_content). After the template override our header
+   renders INSIDE .entry-header, so the rule hid its own output — pages went masthead
+   straight into body copy, no kicker/headline/rule/image/byline. Fix: .entry-header
+   removed from the suppression list; .featured-image* selectors kept as second line of
+   defence behind the meta filter.
+   NOTE: my previous session's sweep asserted the markup was PRESENT. It was. Presence
+   is not rendering — that is the gap that let this through.
+
+EVIDENCE (verifiable):
+- Sweep: 16 surfaces x 1440 and 390 (/, six section fronts, must-see-films, /archive/,
+  /category/live-music-reviews/, /author/brianna-ferguson/, /?s=vancouver, 404, six posts)
+  → masthead present, .vw-nav 0, SVG wordmark on every one
+  → documentElement.scrollWidth 1425 vs innerWidth 1440; 390 vs 390 → ZERO overflow
+  → active nav getComputedStyle().color = rgb(196, 18, 48) on every surface with one
+- Six article cases resolve A / B / C / C(dedup) / B / B at BOTH widths:
+    A  /sigur-ros-.../                  1440: .vw-ah--a w=1200 img 1200x1074
+                                         390: .vw-ah--a img 351x314
+    B  /air-delivers-.../               1440: .vw-ah--b img 540x283 | 390: img 351x184
+    C  /love-is-sharing-food-.../       1440: .vw-ah--c h=171 img none | 390: h=220
+    C  /bob-seger-...-62900-2/ (dedup)  header img none, entry-content img = 20, hero 0
+    B  /chantal-kraviazuk-.../          strip = "October 29, 2020 · 22 photos"  (no "By Photography")
+    B  /tiger-king-...-70612-2/         kickers = 0  (Uncategorized suppression survived)
+  → exactly one .vw-ah per page; .featured-image/figure.post-thumbnail count 0 everywhere
+- /about/ unaffected: .vw-ah 0, its own .entry-header display:block h=53
+- Suites: 12/12 PASS, each run in isolation via ./tools/wp.sh eval-file
+- Tier census unchanged: 497 / 700 / 121 / 2091 (61.3% tier 0)
+- php -l clean on all 7 changed/new PHP files
+
+STALE-FIXTURE NOTE (not a regression):
+verify_drag_persist FAILED first with [0,0,0]. Root cause: the payload is a verbatim
+browser capture from BEFORE Session C added the [present] marker, so vw_curation_sanitize
+correctly treated the zone as one the form never rendered and returned registry defaults
+(auto/0/0). Confirmed by dumping the registry (home/music cats = [7,9,8,11,20,10], slot
+keys [0,1,2]) and the form field (curation-admin.php:463 emits <prefix>[present]=1).
+Added the marker → [20,9,8] survives submit → sanitize → save → reload → resolve.
+WATCH OUT: that [0,0,0] failure signature is identical to the ORIGINAL drag bug's. It is
+worth not confusing the two again.
+
+CHECKLIST ITEMS CLOSED BY MEASUREMENT:
+- only one is_archive() call exists (functions.php:183), already extended with vw_is_all_archive()
+- elementor body-class filter is correctly front-page-scoped: NO surface carries elementor
+  body classes (checked across 8 URLs incl. /about/) → correct as-is, no change made
+- no dead breadcrumb JSON-LD condition remains (only a historical comment in inc/context.php)
+
+FILES CHANGED (commit d417a70, 12 files, +361/-325):
+- theme/header.php — v2 masthead sitewide, legacy .vw-nav markup removed
+- theme/inc/masthead.php — active() no-op, wp_body_open hook + preview body class removed
+- theme/inc/article-header.php — 1200 threshold, dedup helper, vw-ah-single body class
+- theme/inc/credits.php — desk-label By line omitted; duplicate rule removed
+- theme/functions.php — hero-suppression filter; homepage-v2 assets enqueued unconditionally
+- theme/template-parts/header/entry-header.php — NEW (child override)
+- theme/template-parts/header/entry-header-newspack.php — NEW (parent escape hatch)
+- theme/assets/css/article-header.css — hr reset, .entry-header un-hidden, preview class renamed
+- theme/assets/css/homepage-v2.css — active-nav rule relocated here
+- theme/assets/css/section-landing.css — active-nav rule removed, dead .vw-nav CSS removed
+- theme/assets/css/masthead-preview.css — DELETED
+- PROJECT-LOG.md — round entry appended
+
+VERIFIED: against the RENDERED page via browser at both widths (computed styles +
+getBoundingClientRect), not against HTML source — that distinction is what caught both
+bugs. Suites re-run in isolation against the live DB. Zero DB writes this round.
+
+OUTSTANDING / RISKS:
+- NOT PUSHED (per standing rule). Commit d417a70 is local on main, ahead 1.
+- .gitignore is MODIFIED AND UNCOMMITTED (adds .claude/settings.local.json). Deliberately
+  kept out of the scoped commit. Fold into the next one or take it now.
+- VW-MASTER-PLAN.md and CLAUDE.md CURRENT STATE still say both rollouts are "approved in
+  preview, NOT live". Left alone because the round scope was "child theme + PROJECT-LOG".
+  Needs a decision: update both, or leave until the staging round.
+- Out of scope, observed while sweeping: the homepage lead dek reads
+  "...symphonic approach.Ricardo Khayatte spoke with..." — missing space after the period.
+  Content-side, pre-existing, not touched.
+- Carried forward: page 9 + preview page 86013 deletion (gated with the 43-page cull);
+  must-see-films still an uncurated .html front; 92 filename-glued photo credits;
+  slogan/founding-year drift after override; default_comment_status (DB write the filter
+  already moots); assets/images/logo_VW.png now unreferenced and deletable.
+=== END HANDOFF ===
+```
