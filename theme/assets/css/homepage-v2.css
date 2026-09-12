@@ -12,13 +12,19 @@
   overflow-x: hidden;
 }
 
-.page-template-page-templatesvw-homepage-preview-php .vw-nav {
+.vw-home-v2 .vw-nav {
   display: none;
 }
 
 /* Newspack's default #content margin-top (measured 80px) has no purpose on
-   this template — the masthead itself is the first visual element. */
-.page-template-page-templatesvw-homepage-preview-php #content {
+   this template — the masthead itself is the first visual element.
+
+   Scoped to .vw-home-v2, a body class added by vw_homepage_v2_body_class() on
+   both the preview page and the real front page. These three rules were scoped
+   to the preview template's own body class, which does not exist on the front
+   page — at cutover all three would have silently stopped applying, un-hiding
+   the old nav and Newspack's footer. Fixed in Round 1 session C. */
+.vw-home-v2 #content {
   margin-top: 0;
 }
 
@@ -27,7 +33,7 @@
    get_footer() must still run (it closes #content/#page and fires
    wp_footer()), so the parent's visible footer markup is hidden here
    rather than skipped, which would break the HTML document structure. */
-.page-template-page-templatesvw-homepage-preview-php #colophon {
+.vw-home-v2 #colophon {
   display: none;
 }
 

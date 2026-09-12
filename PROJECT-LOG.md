@@ -2729,3 +2729,120 @@ constant. Preview page restored to `private` (public 404).
 **Logged for review:** the four pre-2012 published posts (#138, #236, #254, #143) — either mis-dated
 imports or genuinely pre-launch pieces. Not touched.
 
+
+---
+
+2026-09-11 — **ROUND 1, SESSION C: template switcher, section-front wiring, chrome settings.**
+`front-page.php` deliberately **not created** — that gate stays closed.
+
+**OPENING VERIFICATION (session B's adversarial items).**
+
+**1. Dek diff — and the requested baseline was wrong.** Ricardo asked to diff against `6d691a5`;
+`vw_strip_scrape_chrome()` did not exist until the next commit (`9e168cf`), so at `6d691a5` deks had
+no chrome stripping at all and the comparison would have been meaningless. Used `fc29c3b` — session
+A, immediately pre-session-B — as the real before-state. Result across 3,373 published posts:
+**3,006 unchanged, 367 changed, 336 emptied, and all 336 emptied deks were chrome-only. Zero posts
+carrying real prose were emptied.** The shortened cases are the intended win, e.g. #225
+"CommentCommentComment…" → the post's actual content.
+
+**2. Photo-band hide branch — forced, and it caught the landmine.** Pinning a tier-0 post into the
+essay slot correctly skipped the whole band (`photo__inner`, `__strip`, `__head` all 0, page still
+200). The **first** run also showed music and the tri-columns vanishing — not a band bug but the
+partial-POST landmine firing in the test config itself, which is the clearest possible argument the
+landmine was real. Re-run after the fix: band removed, **every other zone intact** (lead 1, music 1,
+tri 3, archive 1, footer 1).
+
+**3. Markup diff — static extraction was the wrong tool; the rendered inventory is the right one.**
+Comparing class literals mis-reports loops (phase 1 repeated markup three times; phase 2 emits it
+once in a `foreach`) and PHP-built class names. Against the **rendered** output: 80 phase-1 classes
+vs 75 rendered. All 7 absences are conditional — 4 are This Week (hidden per C1-1), plus
+`lead__caption` (no caption on that image), `photo__dek` (credit-only, suppressed) and
+`mark--outabout` (content-dependent kicker). Both additions are deliberate: `vwh2-page` (preview
+wrapper, pre-existing) and `vwh2-tri__col` (the variant hook added in B). **Markup preserved.**
+
+**PARTIAL-POST LANDMINE FIXED.** Each rendered zone now carries a hidden `[present]` marker. With
+it, an absent checkbox means hidden; without it, the stored value is carried through untouched.
+Verified: a POST mentioning only the photo zone left books visible **and** still pinned, food
+visible with its category, and music deliberately hidden — while a zone never stored and never
+submitted still falls back to its registry default.
+
+**TEMPLATE REGISTRY + SWITCHER.** New `inc/templates.php`. `vw_tpl_home` / `vw_tpl_archive` options,
+`_vw_tpl` term meta with a dropdown on the normal Edit Category screen, one template registered per
+surface. Slugs are whitelisted on write **and** on read — a hostile save of `evil-template` left the
+stored value untouched, and a hand-written bogus option resolved back to `v2`.
+
+**`$curated` RETIRED — and it needed a data migration.** A category is curated because it has a
+template assigned, not because its slug is in an array. That array was the only thing keying the
+router, so **all five section fronts were confirmed down** (falling to the plain archive) until
+`_vw_tpl` was written for a-la-music, photography, food-drink, out-n-about and must-see-films.
+Category taxonomy only — `photography` also exists as a `post_tag` (term 1335) and was not touched.
+`must-see-films` still has only a `.html` part; that path is kept working rather than silently
+dropped, but it cannot be curated and stays on the known-dirt list.
+
+**SECTION-FRONT LEAD WIRED.** The anchor and the story stacked beneath it now resolve through
+`vw_curation_resolve( 'section', 'lead', …, $slug )` in all four PHP parts. **The sticky-post lever
+is gone with it** — it was the fronts' only curation mechanism and `sticky_posts` was empty
+throughout, so it selected nothing while implying it did. Verified end to end: pinning a 2012 post
+into Out N About replaced the anchor, unpinning reverted it to auto-fill.
+
+**SECTION-FRONT DESIGN CHANGE (Ricardo).** The header block (mark + title + description) is removed;
+784 bytes of now-dead CSS deleted with it. The active nav item carries the section identity in
+`--vw-red`, measured `rgb(196, 18, 48)` = **#C41230**. A visually-hidden `h1` with the section name
+survives for SEO and screen readers (`.screen-reader-text`, supplied by the parent theme; confirmed
+`h1Visible: false`). The spacing the header used to provide moved to
+`.vw-section-landing--noheader`, mobile-first: 26 / 40 / 56px at base / 768 / 1024.
+
+**MOBILE DEFECT FOUND AND FIXED.** At 390px the section front measured **scrollWidth 1051 against a
+390px viewport, 26 elements overrunning**. Cause: `.vw-nav__links`, six nowrap fixed-height links in
+a flex row, 752px wide — pre-existing, and survivable only while the header block named the section.
+Removing that block made the red active nav item the **only** thing on the page saying which section
+you are in, and five of six items including the active one sat off-screen on a phone. Mobile-first
+wrap added (two rows under the logo at base, single-row desktop restored at 768px). After:
+**scrollWidth 390 = clientWidth 390, 0 elements overrunning, active item on screen**; desktop
+unchanged at 100px single row.
+
+**CHROME SETTINGS.** New `inc/chrome-settings.php`, rendered as a "Site settings" section on the
+same `vw_curate`-gated, nonced form. Motto, top-right line, founding year, dateline show/hide. The
+slogan's *default* derives from the founding year, so the seeded value is exactly
+"No Ads · No Clickbait · Independent Since 2012" and changing the year updates it until an operator
+overrides it. An emptied slogan resets to that default; an emptied motto genuinely means no motto
+(the element is omitted, verified 0 in HTML). A founding year outside 1900–present is rejected
+(3000 → 2012, "abc" → 2012). `VW_FOUNDED` is gone; everything reads the setting.
+
+**Two bugs this verification caught**, both fixed and re-tested: the archive closer was still
+reading the old constant (founded 2013 printed "14 years / since 2012" while the footer correctly
+said 2013), and the dateline show/hide setting existed but was never wired to the markup. After:
+founded 2013 → "13 years", "Every issue since 2013", footer 2013, dateline strip absent; restoring
+defaults returns 2012 / 14 years / strip shown.
+
+**CUTOVER LANDMINE RE-SCOPED.** The three rules scoped to
+`.page-template-page-templatesvw-homepage-preview-php` now use `.vw-home-v2`, added by
+`vw_homepage_v2_body_class()` on `is_front_page() || is_page_template(...)`. Verified the class is
+present on **both** the real front page (`/`, page-id-9) and the preview page, and that zero old
+selectors remain in the served CSS. The session-B checklist item is closed.
+
+**FOUNDING-YEAR SWEEP (re-run).** Theme is clean: the only `2006` occurrences are three
+documentation comments recording the correction, and the only "Twenty Years" is a **mock article
+headline** in `previews/section-landing.html` — design-preview copy, not a founding claim, left
+alone. Rendered output on both the preview page and `?vw_masthead=1`: **0 occurrences of `2006`,
+0 of "Twenty Years"**.
+
+**REGRESSION — all prior suites re-run and green.** Session A (27 checks), REST (8), admin (18),
+scan-depth, partial-POST. Five session-A checks and one admin check failed on first re-run; **both
+were stale test fixtures, not code**: the session-A configs predated the `present` marker the
+sanitizer now requires, and the admin check was the whitespace-naive regex already identified in
+session A. Fixtures updated to the real form contract and the regex replaced with the
+whitespace-collapsed matcher **plus a positive control**, so it can no longer pass vacuously.
+
+**CLEANUP.** Harness files deleted, `vw_curation` / `vw_chrome` / `vw_tpl_home` absent, preview page
+restored to `private` (public 404). `_vw_tpl` term meta persists — it is the migration, not test
+state. Front-end sweep: `/`, five section fronts, book-reviews and page 2 all HTTP 200. No
+`front-page.php`.
+
+**CARRIED FORWARD.** (1) `front-page.php` is still the separate gate, and still flips the homepage
+the instant it lands. (2) `must-see-films` remains an uncurated `.html` block front. (3) 92 posts
+with an image filename glued to their photo credit. (4) The article header still prints desk-label
+authors. (5) The slogan and founding year can drift apart once an operator overrides the slogan —
+by design, but worth saying in the operator tutorial.
+
+**STOPPED for verdict.**

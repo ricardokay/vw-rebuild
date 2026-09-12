@@ -96,47 +96,6 @@
 }
 
 
-/* ── Section header ──────────────────────────────────────────── */
-
-.vw-section-header {
-  padding: 36px 0 28px;
-}
-
-.vw-section-header__inner {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 40px;
-  text-align: center;
-}
-
-.vw-section-header__kicker {
-  display: block;
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--vw-kicker-ink);
-  margin-bottom: 16px;
-}
-
-.vw-section-header__title {
-  font-family: 'PT Serif', Georgia, serif;
-  font-weight: 700;
-  font-size: 30px;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: var(--vw-ink);
-}
-
-.vw-section-header__desc {
-  margin-top: 10px;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  color: var(--vw-ink-muted);
-}
-
-
 /* ── Section geometric marks — Direction A: Paired Bars ──────── */
 /*
    Two rectangles per section, arrangement varies. Pure CSS via
@@ -586,7 +545,6 @@
 
 @media (max-width: 900px) {
   .vw-nav__inner,
-  .vw-section-header__inner,
   .vw-feature,
   .vw-grid-wrap { padding-left: 24px; padding-right: 24px; }
   .vw-feature { grid-template-columns: 1fr; gap: 24px; }
@@ -594,7 +552,6 @@
 }
 
 @media (max-width: 600px) {
-  .vw-section-header__inner,
   .vw-feature,
   .vw-grid-wrap,
   .vw-art-header,
@@ -983,4 +940,98 @@
 
 .vw-section-more__link:hover {
 	text-decoration: underline;
+}
+
+
+/* ── Section front: no header block ─────────────────────────────
+   The mark + title + description block was removed in Round 1 session C —
+   the active nav item already names the section, in accent red, directly
+   above it. The h1 survives as .screen-reader-text so the page still has
+   one for search engines and screen readers.
+
+   That block also carried the only spacing between the nav and the first
+   module, so the spacing moves here. Mobile-first: the narrow value is the
+   base and the wider ones are added. */
+
+.vw-section-landing--noheader > .vw-section-blocks > .vw-module:first-child,
+.vw-section-landing--noheader > .vw-section-blocks > *:first-child > .vw-module:first-child {
+  padding-top: 26px;
+}
+
+@media (min-width: 768px) {
+  .vw-section-landing--noheader > .vw-section-blocks > .vw-module:first-child,
+  .vw-section-landing--noheader > .vw-section-blocks > *:first-child > .vw-module:first-child {
+    padding-top: 40px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .vw-section-landing--noheader > .vw-section-blocks > .vw-module:first-child,
+  .vw-section-landing--noheader > .vw-section-blocks > *:first-child > .vw-module:first-child {
+    padding-top: 56px;
+  }
+}
+
+/* ── Active section in the nav ──────────────────────────────────
+   .vw-nav__link--active already carried the accent; the masthead nav had no
+   active state at all, so the sitewide-masthead rollout would have shipped
+   without one. Both now use the same token (#C41230). */
+
+.vwh2-masthead__nav-item--active,
+.vw-nav__link--active {
+  color: var(--vw-red);
+}
+
+/* ── Nav on narrow viewports ─────────────────────────────────────
+   Six fixed-height, nowrap links in a flex row measured 752px wide, so at
+   390px the row ran to a 1051px document and five of the six sections —
+   including the active one — sat off-screen.
+
+   That was survivable while the section-header block named the section. It
+   is not now: removing that block in this round made the red active nav item
+   the only thing on the page that says which section you are in, so it has
+   to be reachable on a phone.
+
+   Mobile-first: the base is a wrapping two-row nav under the logo; the
+   single-row desktop layout is restored at 768px. Heights become auto
+   because the fixed 88/100px line-height is what forced the single row. */
+
+.vw-nav__inner {
+  flex-wrap: wrap;
+  height: auto;
+  padding-block: 14px;
+  gap: 4px 0;
+}
+
+.vw-nav__links {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-left: 0;
+  width: 100%;
+  gap: 0 4px;
+}
+
+.vw-nav__link {
+  height: auto;
+  line-height: 1;
+  padding: 8px 10px 8px 0;
+}
+
+@media (min-width: 768px) {
+  .vw-nav__inner {
+    flex-wrap: nowrap;
+    height: 100px;
+    padding-block: 0;
+  }
+  .vw-nav__links {
+    flex-wrap: nowrap;
+    margin-left: auto;
+    width: auto;
+    gap: 0;
+  }
+  .vw-nav__link {
+    height: 100px;
+    line-height: 100px;
+    padding: 0 22px;
+  }
 }

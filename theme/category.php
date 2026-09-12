@@ -2,69 +2,56 @@
 /**
  * Category archive router.
  *
- * Curated sections: renders section header + do_blocks() on a .html
- * template containing a newspack-blocks/homepage-articles block.
- * Everything else falls through to the Newspack parent archive.php.
+ * A category renders a curated front when it has a template assigned (term meta
+ * _vw_tpl, set from a dropdown on the Edit Category screen) AND a matching
+ * section-parts/{slug}.php exists. Everything else falls through to the
+ * Newspack parent archive.
  *
- * To add a section: add its slug to $curated AND create section-parts/{slug}.html.
- * No other code changes needed.
+ * This replaced a hardcoded $curated array plus a parallel display-name map.
+ * Adding a section used to mean editing this file in two places and remembering
+ * to; it is now a dropdown, and the section's name comes from the term itself.
+ *
+ * The section header block (mark + title + description) was removed in Round 1
+ * session C: the active item in the masthead nav already says which section you
+ * are in, in accent red, and the block repeated it directly underneath. An h1
+ * is still emitted for search engines and screen readers — visually hidden,
+ * never absent, because a page with no h1 is an accessibility defect regardless
+ * of how the design reads.
  */
 
-$curated = [ 'a-la-music', 'out-n-about', 'must-see-films', 'photography', 'food-drink' ];
+defined( 'ABSPATH' ) || exit;
 
-$section_display_names = [
-	'a-la-music'    => 'A La Music',
-	'photography'   => 'Photography',
-	'food-drink'    => 'Food & Drink',
-	'out-n-about'   => 'Out N About',
-	'must-see-films' => 'Must See Films',
-];
-
-$slug     = ( get_queried_object() instanceof WP_Term ) ? get_queried_object()->slug : '';
-$dir      = get_stylesheet_directory() . '/section-parts/';
-$tpl_php  = in_array( $slug, $curated, true ) ? $dir . $slug . '.php'  : '';
-$tpl_html = in_array( $slug, $curated, true ) ? $dir . $slug . '.html' : '';
-
-$use_php  = $tpl_php  && file_exists( $tpl_php );
-$use_html = ! $use_php && $tpl_html && file_exists( $tpl_html );
+$vw_term = get_queried_object();
+$vw_part = ( $vw_term instanceof WP_Term ) ? vw_tpl_section_part( $vw_term ) : null;
 
 // Page 2+ falls through to the standard archive: the curated front is the
 // section's front page, not its whole index. Without this the router served the
 // same front at /page/2/, so curated sections had no working pagination at all.
-if ( ( $use_php || $use_html ) && ! is_paged() ) {
-    $cat = get_queried_object();
-    get_header();
-    ?>
+if ( $vw_part && ! is_paged() ) :
+	get_header();
+	?>
 
-    <div class="vw-section-landing">
+	<div class="vw-section-landing vw-section-landing--noheader">
 
-        <header class="vw-section-header">
-            <div class="vw-section-header__inner">
-                <span class="vw-section-mark vw-section-mark--<?php echo esc_attr( $slug ); ?>"></span>
-                <h1 class="vw-section-header__title"><?php echo esc_html( $section_display_names[ $slug ] ?? $cat->name ); ?></h1>
-                <?php if ( $cat->description ) : ?>
-                    <p class="vw-section-header__desc"><?php echo esc_html( $cat->description ); ?></p>
-                <?php endif; ?>
-            </div>
-        </header>
+		<h1 class="screen-reader-text"><?php echo esc_html( $vw_term->name ); ?></h1>
 
-        <div class="vw-section-blocks">
-            <?php if ( $use_php ) : ?>
-                <?php include $tpl_php; ?>
-            <?php else : ?>
-                <?php
-                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                echo do_blocks( file_get_contents( $tpl_html ) );
-                ?>
-            <?php endif; ?>
-        </div>
+		<div class="vw-section-blocks">
+			<?php
+			if ( 'php' === $vw_part['type'] ) {
+				include $vw_part['path'];
+			} else {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- block markup from a theme file.
+				echo do_blocks( (string) file_get_contents( $vw_part['path'] ) );
+			}
+			?>
+		</div>
 
-    </div><!-- .vw-section-landing -->
+	</div><!-- .vw-section-landing -->
 
-    <?php
-    get_footer();
-    return;
-}
+	<?php
+	get_footer();
+	return;
+endif;
 
 // Not a curated section — use Newspack's default archive.
 include get_template_directory() . '/archive.php';

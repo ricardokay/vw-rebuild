@@ -84,20 +84,24 @@ $vw_nav = VW_MASTHEAD_SECTIONS;
 
 	<!-- Masthead -->
 	<div class="vwh2-masthead">
-		<div class="vwh2-masthead__dateline">
-			<span><?php echo esc_html( date_i18n( 'l, F j, Y' ) ); ?> · Vancouver, BC</span>
-			<span>No Ads · No Clickbait · Independent Since <?php echo esc_html( (string) VW_FOUNDED ); ?></span>
-		</div>
+		<?php if ( vw_chrome_show_dateline() ) : ?>
+			<div class="vwh2-masthead__dateline">
+				<span><?php echo esc_html( vw_chrome_dateline() ); ?></span>
+				<span><?php echo esc_html( vw_chrome_slogan() ); ?></span>
+			</div>
+		<?php endif; ?>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
 			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.png' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
 		</a>
-		<p class="vwh2-masthead__motto">The Record of the City's Culture</p>
+		<?php if ( vw_chrome_motto() ) : ?>
+				<p class="vwh2-masthead__motto"><?php echo esc_html( vw_chrome_motto() ); ?></p>
+			<?php endif; ?>
 		<nav class="vwh2-masthead__nav" aria-label="Sections">
 			<?php foreach ( $vw_nav as $vw_slug => $vw_label ) :
 				$vw_term = get_category_by_slug( $vw_slug );
 				if ( ! $vw_term ) continue;
 				?>
-				<a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>" class="vwh2-masthead__nav-item"><?php echo wp_kses( $vw_label, [] ); ?></a>
+				<a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>" class="vwh2-masthead__nav-item<?php echo is_category( $vw_slug ) ? ' vwh2-masthead__nav-item--active' : ''; ?>"<?php echo is_category( $vw_slug ) ? ' aria-current="page"' : ''; ?>><?php echo wp_kses( $vw_label, [] ); ?></a>
 			<?php endforeach; ?>
 		</nav>
 	</div>
@@ -357,7 +361,7 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 	   The story count is live: wp_count_posts(), 3,373 against the phase-1
 	   mockup's hardcoded "16,412".
 
-	   Both years quote VW_FOUNDED. An earlier version derived the "since" year
+	   Both years quote the founding year from Site settings. An earlier version derived the "since" year
 	   from the oldest published post, which was defensible while the founding
 	   year was thought to be 2006 and the data started in 2010. With the year
 	   corrected to 2012 that split stopped being useful: the archive holds 481
@@ -365,7 +369,7 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 	   advertise "since 2010" on the strength of four outliers. Those four are a
 	   data-review item, not the start of the publication. */
 	$vw_total = (int) wp_count_posts( 'post' )->publish;
-	$vw_years = max( 1, (int) date_i18n( 'Y' ) - VW_FOUNDED );
+	$vw_years = vw_chrome_years();
 	$vw_issue = vw_curation_slot_by_role( $vw_archive, 'issue' );
 	?>
 	<div class="vwh2-archive">
@@ -380,7 +384,7 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 					<?php
 					printf(
 						'Every issue since %s, rebuilt and readable. The record of the city&rsquo;s culture doesn&rsquo;t expire.',
-						esc_html( (string) VW_FOUNDED )
+						esc_html( (string) vw_chrome_founded() )
 					);
 					?>
 				</p>
@@ -423,6 +427,6 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 				<a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>"><?php echo wp_kses( $vw_label, [] ); ?></a>
 			<?php endforeach; ?>
 		</nav>
-		<span class="vwh2-footer__tag">Independent Since <?php echo esc_html( (string) VW_FOUNDED ); ?></span>
+		<span class="vwh2-footer__tag">Independent Since <?php echo esc_html( (string) vw_chrome_founded() ); ?></span>
 	</div>
 </div>

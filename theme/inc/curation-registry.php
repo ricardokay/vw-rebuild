@@ -183,7 +183,7 @@ function vw_curation_registry(): array {
 		'section' => [
 			'a-la-music'     => $section_zones( VW_CURATION_MUSIC_CATS ),
 			'photography'    => $section_zones( [ 6 ] ),
-			'food-drink'     => $section_zones( [ 13 ] ),
+			'food-drink'     => $section_zones( [ 13, 14 ] ),   // food-drink + hungry-social, matching the section part
 			'out-n-about'    => $section_zones( [ 17 ] ),
 			'must-see-films' => $section_zones( [ 15 ] ),
 		],

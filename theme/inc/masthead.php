@@ -16,18 +16,6 @@
  * views. A real rollout replaces header.php properly rather than hiding it.
  */
 
-/**
- * Founding year, corrected to 2012 by Ricardo on 2026-09-11. Every "since" and
- * every age on the site quotes this constant — masthead strip, footer tag and
- * the homepage's archive closer — so the number lives in exactly one place.
- *
- * The archive corroborates it: 481 published posts in 2012 and steady volume
- * after, against 4 posts in total before it (one 2010, three 2011). Those four
- * are outliers to review, not evidence of an earlier start, so the archive
- * closer quotes this constant rather than deriving a year from the data.
- */
-const VW_FOUNDED = 2012;
-
 const VW_MASTHEAD_SECTIONS = [
 	'a-la-music'          => 'A La Music',
 	'photography'         => 'Photography',
@@ -49,21 +37,25 @@ function vw_masthead_render(): void {
 	<div class="vwh2-page vw-masthead-preview__wrap">
 		<div class="vwh2-container">
 			<div class="vwh2-masthead">
-				<div class="vwh2-masthead__dateline">
-					<span><?php echo esc_html( date_i18n( 'l, F j, Y' ) ); ?> · Vancouver, BC</span>
-					<span>No Ads · No Clickbait · Independent Since <?php echo esc_html( (string) VW_FOUNDED ); ?></span>
-				</div>
+				<?php if ( vw_chrome_show_dateline() ) : ?>
+					<div class="vwh2-masthead__dateline">
+						<span><?php echo esc_html( vw_chrome_dateline() ); ?></span>
+						<span><?php echo esc_html( vw_chrome_slogan() ); ?></span>
+					</div>
+				<?php endif; ?>
 				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
 					<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.png' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
 				</a>
-				<p class="vwh2-masthead__motto">The Record of the City's Culture</p>
+				<?php if ( vw_chrome_motto() ) : ?>
+				<p class="vwh2-masthead__motto"><?php echo esc_html( vw_chrome_motto() ); ?></p>
+			<?php endif; ?>
 				<nav class="vwh2-masthead__nav">
 					<?php foreach ( VW_MASTHEAD_SECTIONS as $slug => $label ) : ?>
 						<?php
 						$term = get_category_by_slug( $slug );
 						$href = $term ? get_category_link( $term->term_id ) : home_url( '/' );
 						?>
-						<a href="<?php echo esc_url( $href ); ?>" class="vwh2-masthead__nav-item"><?php echo wp_kses( $label, [] ); ?></a>
+						<a href="<?php echo esc_url( $href ); ?>" class="vwh2-masthead__nav-item<?php echo is_category( $slug ) ? ' vwh2-masthead__nav-item--active' : ''; ?>"<?php echo is_category( $slug ) ? ' aria-current="page"' : ''; ?>><?php echo wp_kses( $label, [] ); ?></a>
 					<?php endforeach; ?>
 				</nav>
 			</div>

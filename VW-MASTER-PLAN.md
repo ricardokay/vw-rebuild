@@ -580,9 +580,16 @@ Split into three build sessions. The homepage does not cut over without this rou
   variants with new mobile-first CSS (`homepage-v2-data.css`). Retired `section-parts/homepage.php`
   and `assets/css/homepage.css`. Verified at 1440 and 390: zero remote hosts, zero dead links, zero
   broken images, no horizontal overflow. Stayed on the private preview page — no cutover.
-- **Session C — switcher + sections + cutover.** Template registry (option for home/archive, term
-  meta `_vw_tpl` for section fronts), section lead wiring, then `front-page.php` as a separately
-  approved final action.
+- **Session C ✓ Complete — September 11, 2026.** Template registry (`inc/templates.php`) with
+  `vw_tpl_home` / `vw_tpl_archive` options and a `_vw_tpl` term-meta dropdown on the Edit Category
+  screen; `category.php`'s `$curated` array retired (with the term-meta migration it required);
+  section-front lead blocks wired to the curation option and the unused sticky-post lever removed;
+  section-header block removed in favour of the red active nav item plus a visually-hidden `h1`;
+  chrome settings (motto, top-right line, founding year, dateline toggle) on the same admin form;
+  the partial-POST landmine fixed; the three cutover-landmine CSS rules re-scoped to `.vw-home-v2`
+  and verified on both the preview page and the real front page. A pre-existing mobile defect was
+  found and fixed: the nav overran a 390px viewport to 1051px. **`front-page.php` deliberately not
+  created — the cutover remains its own gate.**
 
 
 **Phase 3: Editorial workflow**
@@ -708,4 +715,13 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Decision: the masthead motto drops its age clause entirely — "The Record of the City's Culture". It cannot go stale, and the dateline strip above it still carries the year.
 - Both dateline strips and the footer tag now echo `VW_FOUNDED` instead of hard-coding a year; the archive closer quotes it for both the age and the "every issue since" line, so the four pre-2012 outliers cannot make the site advertise "since 2010".
 - Open: the four pre-2012 published posts (#138, #236, #254, #143) are either mis-dated imports or pre-launch pieces. Flagged, untouched.
+
+**September 11, 2026 — Round 1 session C**
+- Decision: a category is curated because it has a template assigned (`_vw_tpl` term meta), not because its slug appears in an array. Adding a section is now a dropdown on the category's own edit screen.
+- Decision: the section-header block (mark + title + description) is removed from section fronts. The active nav item carries section identity in #C41230; a visually-hidden `h1` preserves it for SEO and screen readers.
+- Consequence worth recording: that made the nav load-bearing for section identity, which exposed a pre-existing mobile defect — six nowrap nav links overran a 390px viewport to 1051px, putting the active item off-screen. Fixed mobile-first; desktop unchanged.
+- Decision: the sticky-post lead lever is removed from section fronts. It was the only curation mechanism they had, `sticky_posts` was empty throughout, so it selected nothing while implying it did.
+- Decision: chrome text (motto, top-right line, founding year, dateline on/off) is editable in admin. `VW_FOUNDED` is gone; the founding year is a setting, because a value that has been wrong once should not need a deploy to correct.
+- Decision: the top-right slogan's *default* derives from the founding year, so the two stay consistent until an operator deliberately overrides the slogan. They can drift after that — intended, and a line for the operator tutorial.
+- Open: `must-see-films` is still an uncurated `.html` block front. Kept working rather than dropped; it cannot be curated until it is ported to PHP.
 

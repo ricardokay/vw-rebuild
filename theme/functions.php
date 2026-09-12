@@ -19,6 +19,8 @@ require_once get_stylesheet_directory() . '/inc/masthead.php';
  * autocomplete would 404. The file registers hooks only — admin_menu,
  * admin_enqueue_scripts and admin_post_* never fire on the front end.
  */
+require_once get_stylesheet_directory() . '/inc/chrome-settings.php';
+require_once get_stylesheet_directory() . '/inc/templates.php';
 require_once get_stylesheet_directory() . '/inc/curation.php';
 require_once get_stylesheet_directory() . '/inc/curation-admin.php';
 
@@ -170,6 +172,23 @@ function vw_enqueue_styles() {
 	if ( is_page_template( 'page-templates/vw-homepage-preview.php' ) ) {
 		vw_enqueue_homepage_v2( $dir, $uri );
 	}
+}
+
+/**
+ * Body class for every surface that renders the homepage-v2 part.
+ *
+ * homepage-v2.css carries three rules that must apply wherever that markup
+ * renders — hide the old .vw-nav, zero Newspack's #content margin, hide
+ * Newspack's #colophon. They used to be scoped to the preview template's own
+ * body class, so they would have silently stopped applying the moment
+ * front-page.php took over. One class, both surfaces.
+ */
+add_filter( 'body_class', 'vw_homepage_v2_body_class' );
+function vw_homepage_v2_body_class( $classes ) {
+	if ( is_front_page() || is_page_template( 'page-templates/vw-homepage-preview.php' ) ) {
+		$classes[] = 'vw-home-v2';
+	}
+	return $classes;
 }
 
 /**

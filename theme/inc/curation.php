@@ -373,15 +373,20 @@ function vw_curation_slot_by_role( array $resolved, string $role ): ?array {
  * whitelisting is structural rather than a list of rejections to maintain.
  */
 function vw_curation_sanitize( $raw ): array {
-	$raw    = is_array( $raw ) ? $raw : [];
-	$out    = [ '_schema' => VW_CURATION_SCHEMA ];
-	$reg    = vw_curation_registry();
+	$raw = is_array( $raw ) ? $raw : [];
+	$out = [ '_schema' => VW_CURATION_SCHEMA ];
+	$reg = vw_curation_registry();
+	$cur = vw_curation_config();
 
 	foreach ( $reg as $surface => $surface_def ) {
 		if ( 'section' === $surface ) {
 			$out['section'] = [];
 			foreach ( $surface_def as $slug => $zones ) {
-				$clean = vw_curation_sanitize_zones( $zones, $raw['section'][ $slug ] ?? [] );
+				$clean = vw_curation_sanitize_zones(
+					$zones,
+					$raw['section'][ $slug ] ?? [],
+					is_array( $cur['section'][ $slug ] ?? null ) ? $cur['section'][ $slug ] : []
+				);
 				if ( $clean ) {
 					$out['section'][ $slug ] = $clean;
 				}
@@ -389,18 +394,52 @@ function vw_curation_sanitize( $raw ): array {
 			continue;
 		}
 
-		$out[ $surface ] = vw_curation_sanitize_zones( $surface_def, $raw[ $surface ] ?? [] );
+		$out[ $surface ] = vw_curation_sanitize_zones(
+			$surface_def,
+			$raw[ $surface ] ?? [],
+			is_array( $cur[ $surface ] ?? null ) ? $cur[ $surface ] : []
+		);
 	}
 
 	return $out;
 }
 
-function vw_curation_sanitize_zones( array $zone_defs, $raw ): array {
+/**
+ * @param array $zone_defs Registry zone definitions for one surface.
+ * @param mixed $raw       Submitted input for that surface.
+ * @param array $existing  Currently stored config for that surface, preserved
+ *                         for any zone the submission did not include.
+ */
+function vw_curation_sanitize_zones( array $zone_defs, $raw, array $existing = [] ): array {
 	$raw = is_array( $raw ) ? $raw : [];
 	$out = [];
 
 	foreach ( $zone_defs as $zone => $def ) {
 		$in = is_array( $raw[ $zone ] ?? null ) ? $raw[ $zone ] : [];
+
+		/*
+		 * A zone the form did not render must not be rewritten by this save.
+		 *
+		 * An unchecked checkbox submits nothing, so "no visible key" and "zone
+		 * absent from the POST entirely" look identical — which meant a partial
+		 * submission silently hid every zone it omitted. Harmless while the whole
+		 * form always posts, and a live landmine for a future per-zone save or
+		 * any programmatic write. Each rendered zone now carries a hidden
+		 * [present] marker: with it, an absent checkbox means hidden; without
+		 * it, the stored value is carried through untouched.
+		 */
+		if ( empty( $in['present'] ) ) {
+			$stored = $existing[ $zone ] ?? null;
+			if ( is_array( $stored ) && isset( $stored['visible'], $stored['slots'] ) ) {
+				$out[ $zone ] = $stored;
+				continue;
+			}
+			$out[ $zone ] = [
+				'visible' => ! empty( $def['can_hide'] ) ? (bool) $def['default_visible'] : true,
+				'slots'   => array_fill( 0, count( $def['slots'] ), [ 'mode' => 'auto', 'post' => 0, 'cat' => 0 ] ),
+			];
+			continue;
+		}
 
 		$visible = ! empty( $def['can_hide'] )
 			? ! empty( $in['visible'] )

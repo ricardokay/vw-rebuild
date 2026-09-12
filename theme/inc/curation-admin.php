@@ -213,8 +213,27 @@ function vw_curation_handle_save(): void {
 
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by vw_curation_sanitize() against the registry.
 	$raw = isset( $_POST['vw_curation'] ) ? wp_unslash( $_POST['vw_curation'] ) : [];
-
 	update_option( VW_CURATION_OPTION, vw_curation_sanitize( $raw ), true );
+
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by vw_chrome_sanitize().
+	$chrome = isset( $_POST['vw_chrome'] ) ? wp_unslash( $_POST['vw_chrome'] ) : [];
+	update_option( VW_CHROME_OPTION, vw_chrome_sanitize( $chrome ), true );
+
+	// Template choices. Each is whitelisted against the registry before it is
+	// stored; an unregistered slug is simply not written.
+	foreach ( [ 'home', 'archive' ] as $surface ) {
+		$key = 'vw_tpl_' . $surface;
+		if ( ! isset( $_POST[ $key ] ) ) {
+			continue;
+		}
+		$slug = sanitize_key( wp_unslash( $_POST[ $key ] ) );
+		if ( isset( vw_tpl_choices( $surface )[ $slug ] ) ) {
+			update_option( vw_tpl_option_name( $surface ), $slug );
+		}
+	}
+
+	vw_curation_flush_cache();
+	vw_chrome_flush_cache();
 
 	wp_safe_redirect( add_query_arg(
 		[ 'page' => 'vw-curation', 'vw_saved' => '1' ],
@@ -256,6 +275,10 @@ function vw_curation_admin_page(): void {
 			<input type="hidden" name="action" value="vw_curation_save">
 			<?php wp_nonce_field( 'vw_curation_save', 'vw_curation_nonce' ); ?>
 
+			<h2 class="vwc__surface-head">Site settings</h2>
+			<?php vw_chrome_render_fields(); ?>
+			<?php vw_curation_render_templates(); ?>
+
 			<h2 class="vwc__surface-head">Homepage</h2>
 			<?php
 			foreach ( $registry['home'] as $zone => $def ) {
@@ -282,6 +305,69 @@ function vw_curation_admin_page(): void {
 	<?php
 }
 
+/**
+ * Template pickers for the two option-backed surfaces.
+ *
+ * Section fronts are deliberately absent: their template is assigned per
+ * category on the normal Edit Category screen, which is where a section is
+ * configured. This block links there rather than duplicating the control.
+ */
+function vw_curation_render_templates(): void {
+	$assigned = vw_tpl_assigned_sections();
+	?>
+	<section class="vwc-zone vwc-settings">
+		<header class="vwc-zone__head">
+			<h4 class="vwc-zone__title">Templates</h4>
+			<span class="vwc-zone__locked">One per surface today; variants are added in code</span>
+		</header>
+
+		<div class="vwc-fields">
+			<?php foreach ( [ 'home' => 'Homepage', 'archive' => 'Archive pages' ] as $surface => $label ) :
+				$current = vw_tpl_current( $surface );
+				?>
+				<p class="vwc-field">
+					<label for="<?php echo esc_attr( 'vwc-tpl-' . $surface ); ?>"><strong><?php echo esc_html( $label ); ?></strong></label>
+					<select id="<?php echo esc_attr( 'vwc-tpl-' . $surface ); ?>" name="<?php echo esc_attr( 'vw_tpl_' . $surface ); ?>">
+						<?php foreach ( vw_tpl_choices( $surface ) as $slug => $tpl ) : ?>
+							<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $current, $slug ); ?>>
+								<?php echo esc_html( $tpl['label'] ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<span class="vwc-field__help">
+						<?php echo esc_html( vw_tpl_choices( $surface )[ $current ]['note'] ?? '' ); ?>
+					</span>
+				</p>
+			<?php endforeach; ?>
+
+			<p class="vwc-field">
+				<strong>Section fronts</strong>
+				<span class="vwc-field__help">
+					Assigned per category, on the category&rsquo;s own edit screen.
+					<?php if ( $assigned ) : ?>
+						Currently curated:
+						<?php
+						$links = [];
+						foreach ( $assigned as $row ) {
+							$links[] = sprintf(
+								'<a href="%s">%s</a>',
+								esc_url( get_edit_term_link( (int) $row['term']->term_id, 'category' ) ),
+								esc_html( $row['term']->name )
+							);
+						}
+						echo wp_kses( implode( ', ', $links ), [ 'a' => [ 'href' => [] ] ] );
+						?>.
+					<?php else : ?>
+						<strong>No category has a template assigned</strong> — every category is
+						currently using the standard archive.
+					<?php endif; ?>
+				</span>
+			</p>
+		</div>
+	</section>
+	<?php
+}
+
 function vw_curation_render_zone( string $surface, string $zone, array $def, string $context ): void {
 	$config = vw_curation_zone_config( $surface, $zone, $context );
 	$prefix = 'section' === $surface
@@ -289,6 +375,9 @@ function vw_curation_render_zone( string $surface, string $zone, array $def, str
 		: sprintf( 'vw_curation[%s][%s]', $surface, $zone );
 	?>
 	<section class="vwc-zone">
+		<?php // Marks this zone as rendered by the form — see vw_curation_sanitize_zones(). ?>
+		<input type="hidden" name="<?php echo esc_attr( $prefix . '[present]' ); ?>" value="1">
+
 		<header class="vwc-zone__head">
 			<h4 class="vwc-zone__title"><?php echo esc_html( $def['label'] ); ?></h4>
 

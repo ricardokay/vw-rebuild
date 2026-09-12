@@ -21,63 +21,19 @@ $vw_get_excerpt = static function ( WP_Post $post ): string {
 };
 
 
-/* ── Zone A: Lead block ───────────────────────────────────────── */
+/* ── Zone A: Lead block ─────────────────────────────────────────
+   The anchor and the story stacked beneath it now come from the curation
+   option: Vancouver Weekly → Homepage & Sections → this section → Lead block.
+   Nothing has to be curated — both slots fall back to auto-fill, which is the
+   same newest-post-with-a-real-image rule this block used before.
 
-$anchor = null;
+   The old sticky-post lever is gone with this change. It was the only curation
+   mechanism the fronts had and it was never used (sticky_posts has been empty
+   throughout), so it selected nothing while implying it did. */
 
-$sticky_ids = get_option( 'sticky_posts' );
-if ( $sticky_ids ) {
-	$q = new WP_Query( [
-		'post__in'       => $sticky_ids,
-		'category__in'   => $cats,
-		'posts_per_page' => 10,
-		'no_found_rows'  => true,
-	] );
-	while ( $q->have_posts() ) {
-		$q->the_post();
-		if ( vw_image_tier( get_the_ID() ) >= 1 ) {
-			$anchor = get_post();
-			break;
-		}
-	}
-	wp_reset_postdata();
-}
-
-if ( ! $anchor ) {
-	$q = new WP_Query( [
-		'category__in'   => $cats,
-		'posts_per_page' => 30,
-		'orderby'        => 'date',
-		'order'          => 'DESC',
-		'no_found_rows'  => true,
-	] );
-	while ( $q->have_posts() ) {
-		$q->the_post();
-		if ( vw_image_tier( get_the_ID() ) >= 1 ) {
-			$anchor = get_post();
-			break;
-		}
-	}
-	wp_reset_postdata();
-}
-
-if ( $anchor ) $used_ids[] = $anchor->ID;
-
-$anchor2 = null;
-$q = new WP_Query( [
-	'category__in'   => $cats,
-	'post__not_in'   => $used_ids,
-	'posts_per_page' => 1,
-	'orderby'        => 'date',
-	'order'          => 'DESC',
-	'no_found_rows'  => true,
-] );
-if ( $q->have_posts() ) {
-	$q->the_post();
-	$anchor2 = get_post();
-}
-wp_reset_postdata();
-if ( $anchor2 ) $used_ids[] = $anchor2->ID;
+$vw_lead_slots = vw_curation_resolve( 'section', 'lead', $used_ids, 'photography' );
+$anchor  = ( vw_curation_slot_by_role( $vw_lead_slots, 'feat' )['post'] ?? null );
+$anchor2 = ( vw_curation_slot_by_role( $vw_lead_slots, 'compact' )['post'] ?? null );
 
 $left_posts = [];
 $q = new WP_Query( [
