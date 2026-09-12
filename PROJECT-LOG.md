@@ -3243,3 +3243,63 @@ shrink the approved wordmark by a fifth, which is the same class of design decis
 Temp comparison files removed; `vw_chrome` and `vw_curation` absent; preview page `private`.
 
 **STOPPED — wordmark asset needs Ricardo.**
+
+---
+
+2026-09-12 — **WORDMARK SWAPPED TO VECTOR — blurry masthead closed.**
+
+Ricardo supplied `vw-wordmark.svg` rather than the 2400px raster, which is the better answer: an
+SVG is resolution-independent, so the DPR question stops existing rather than being satisfied at
+one particular density.
+
+**The file, inspected before installing.** `viewBox="0 0 321.67 59.4"`, aspect 5.415 against the
+retired PNG's 5.344 — the same artwork. Worth recording because it is not obvious from reading the
+file: **366 of its 516 path Y-coordinates sit at y 62.9–74.7, outside the viewBox.** Those are the
+"VANCOUVER'S WEEKLY NEWS SOURCE" tagline glyphs, present in the source but cropped out of the
+visible area by the viewBox. The rendered result is therefore exactly the approved artwork — black
+wordmark, boxed WEEKLY, **no tagline** — which is what the masthead design calls for. Nothing about
+the artwork was edited.
+
+**Size is a non-issue.** The server gzips `image/svg+xml`, and the delivered file compresses to
+**7,248 bytes** against the retired PNG's **7,230** — effectively identical transfer weight for
+infinite resolution:
+
+| | raw | gzipped |
+|---|---|---|
+| retired `logo_VW_wordmark.png` (481×90) | 7,207 | 7,230 |
+| **installed `logo_VW_wordmark.svg`** | 31,226 | **7,248** |
+| (same SVG with the C2PA credential stripped) | 23,490 | 4,924 |
+
+Installed **as delivered**, C2PA content credential intact — it is Ricardo's file and the credential
+costs 2.3 KB gzipped. Stripping it is a one-line change if he ever wants that back.
+
+**Swapped** in all three references — the homepage masthead, the homepage footer, and the sitewide
+masthead preview (`inc/masthead.php`). The superseded PNG was then **unreferenced everywhere** and
+was deleted; git holds it.
+
+**VERIFIED at devicePixelRatio 2, both motto states**, which is where the old asset failed:
+
+| | with motto | without motto |
+|---|---|---|
+| source served | `logo_VW_wordmark.svg` | `logo_VW_wordmark.svg` |
+| rendered | 605 × 112 | 605 × 112 |
+| loaded | yes | yes |
+| wordmark → nav | **38 px** | **14 px** |
+| sharpness | crisp | crisp |
+
+Both spacings match the values recorded when the motto rhythm was moved onto the nav, so that fix
+still holds with the new asset. The old failure — 481 intrinsic pixels stretched into a 605 px box
+and then asked for 1,211 device pixels — is gone entirely: there is no intrinsic raster size to run
+out of.
+
+Footer logo and `?vw_masthead=1` both confirmed on the SVG; **zero** `logo_VW_wordmark.png`
+references remain in any rendered output, and the removed file correctly 404s with nothing
+requesting it.
+
+**Still on the old raster:** the `.vw-nav` header logo uses `logo_VW.png` (481×112), a **different
+lockup** — it carries the tagline. At its rendered 343×80 it is not upscaled at 1×, but at DPR 2 it
+wants 686 device pixels against 481. Softer than it should be, though far less bad than the masthead
+was. A vector of *that* lockup would close it; not in scope here and not swapped, because it is
+different artwork.
+
+Test state cleared: `vw_chrome` absent, preview page `private`, front-end sweep 200.

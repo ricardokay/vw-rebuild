@@ -101,7 +101,7 @@ $vw_nav = VW_MASTHEAD_SECTIONS;
 			</div>
 		<?php endif; ?>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
-			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.png' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
+			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.svg' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
 		</a>
 		<?php if ( vw_chrome_motto() ) : ?>
 				<p class="vwh2-masthead__motto"><?php echo esc_html( vw_chrome_motto() ); ?></p>
@@ -427,7 +427,7 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 <div class="vwh2-container">
 	<div class="vwh2-footer">
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>">
-			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.png' ); ?>" alt="Vancouver Weekly" class="vwh2-footer__logo">
+			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.svg' ); ?>" alt="Vancouver Weekly" class="vwh2-footer__logo">
 		</a>
 		<nav class="vwh2-footer__nav" aria-label="Sections">
 			<?php foreach ( $vw_nav as $vw_slug => $vw_label ) :
