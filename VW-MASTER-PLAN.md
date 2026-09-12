@@ -697,8 +697,15 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Logged for post-launch: 16 published posts carry duplicate `_thumbnail_id` meta rows (0 conflicting values).
 
 **September 11, 2026 — Round 1 session B**
-- Decision: `VW_FOUNDED = 2006` is the single source for the publication's age. Deriving it from the archive printed "16 years" beside the masthead's "Independent Since 2006", because the oldest surviving published post is 2010. The archive closer now reads "20 years, 3,373 stories" with "Every issue since 2010" beneath it; wording the 2006-to-2010 gap is an open editorial call.
+- Decision: `VW_FOUNDED` is the single source for the publication's age — every "since" and every age on the site quotes it. **Superseded same day: the value is 2012, not 2006 (see below).**
 - Decision: dek chrome stripping extended — a repeated photo credit collapses to one, a dek that is *only* a credit is dropped, and the `Comments?` run pattern lost its trailing `\b` so unseparated `CommentCommentComment` runs are caught. Measured: stuttering credits 359 → 140 (92 of the remainder are a separate filename-glue defect), `CommentComment` runs 48 → 0. Display-layer only; `post_content` untouched.
 - Decision: junk-author suppression is applied in `vw_credits_inline()`, not in the hoisted `vw_ah_credits()`, so the approved article-header preview stays byte-identical. The header still prints desk-label authors — logged for the Round 8 rollout rather than changed silently inside an approved design.
 - Verified: `VW_CURATION_SCAN = 150` is correct and not excessive. Photography's newest 19 posts hold zero tier-1 images, so a scan depth of 20 would break the photo band; ~40 is the real minimum, 150 gives 4.7× headroom.
 - Verified: drag reorder persists end to end (real mouse drag → production JS renumber → sanitize → save → reload → resolve). Roles are positional: dragging moves a slot's configuration into a different role, not the role itself.
+
+**September 11, 2026 — founding year corrected (Ricardo)**
+- **Vancouver Weekly started in 2012, not 2006.** `VW_FOUNDED = 2012`. Corroborated by the archive: 481 published posts in 2012 and steady volume after, against four posts in total before it (one 2010, three 2011).
+- Decision: the masthead motto drops its age clause entirely — "The Record of the City's Culture". It cannot go stale, and the dateline strip above it still carries the year.
+- Both dateline strips and the footer tag now echo `VW_FOUNDED` instead of hard-coding a year; the archive closer quotes it for both the age and the "every issue since" line, so the four pre-2012 outliers cannot make the site advertise "since 2010".
+- Open: the four pre-2012 published posts (#138, #236, #254, #143) are either mis-dated imports or pre-launch pieces. Flagged, untouched.
+

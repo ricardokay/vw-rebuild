@@ -17,12 +17,16 @@
  */
 
 /**
- * Founding year. The masthead strip, the footer tag and the archive closer all
- * assert the publication's age, while the archive's earliest surviving
- * published post is 2010 — so the age must never be derived from the archive.
- * One constant, quoted by all three.
+ * Founding year, corrected to 2012 by Ricardo on 2026-09-11. Every "since" and
+ * every age on the site quotes this constant — masthead strip, footer tag and
+ * the homepage's archive closer — so the number lives in exactly one place.
+ *
+ * The archive corroborates it: 481 published posts in 2012 and steady volume
+ * after, against 4 posts in total before it (one 2010, three 2011). Those four
+ * are outliers to review, not evidence of an earlier start, so the archive
+ * closer quotes this constant rather than deriving a year from the data.
  */
-const VW_FOUNDED = 2006;
+const VW_FOUNDED = 2012;
 
 const VW_MASTHEAD_SECTIONS = [
 	'a-la-music'          => 'A La Music',
@@ -47,12 +51,12 @@ function vw_masthead_render(): void {
 			<div class="vwh2-masthead">
 				<div class="vwh2-masthead__dateline">
 					<span><?php echo esc_html( date_i18n( 'l, F j, Y' ) ); ?> · Vancouver, BC</span>
-					<span>No Ads · No Clickbait · Independent Since 2006</span>
+					<span>No Ads · No Clickbait · Independent Since <?php echo esc_html( (string) VW_FOUNDED ); ?></span>
 				</div>
 				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
 					<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.png' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
 				</a>
-				<p class="vwh2-masthead__motto">The Record of the City's Culture — Twenty Years and Counting</p>
+				<p class="vwh2-masthead__motto">The Record of the City's Culture</p>
 				<nav class="vwh2-masthead__nav">
 					<?php foreach ( VW_MASTHEAD_SECTIONS as $slug => $label ) : ?>
 						<?php

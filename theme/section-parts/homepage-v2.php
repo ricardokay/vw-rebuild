@@ -86,12 +86,12 @@ $vw_nav = VW_MASTHEAD_SECTIONS;
 	<div class="vwh2-masthead">
 		<div class="vwh2-masthead__dateline">
 			<span><?php echo esc_html( date_i18n( 'l, F j, Y' ) ); ?> · Vancouver, BC</span>
-			<span>No Ads · No Clickbait · Independent Since 2006</span>
+			<span>No Ads · No Clickbait · Independent Since <?php echo esc_html( (string) VW_FOUNDED ); ?></span>
 		</div>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
 			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.png' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
 		</a>
-		<p class="vwh2-masthead__motto">The Record of the City's Culture — Twenty Years and Counting</p>
+		<p class="vwh2-masthead__motto">The Record of the City's Culture</p>
 		<nav class="vwh2-masthead__nav" aria-label="Sections">
 			<?php foreach ( $vw_nav as $vw_slug => $vw_label ) :
 				$vw_term = get_category_by_slug( $vw_slug );
@@ -354,29 +354,19 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 
 	<?php
 	/* ── Archive closer ────────────────────────────────────────────────
-	   The story count is live: wp_count_posts(), which is 3,373 against the
-	   phase-1 mockup's hardcoded "16,412".
+	   The story count is live: wp_count_posts(), 3,373 against the phase-1
+	   mockup's hardcoded "16,412".
 
-	   The two years are different facts and are sourced differently on purpose.
-	   The masthead and footer both say "Independent Since 2006", so the age of
-	   the publication counts from VW_FOUNDED. The archive's own earliest
-	   surviving published post is 2010, so the "every issue since" line cites
-	   that instead — deriving the age from the archive would have printed
-	   "16 years" three inches below "Independent Since 2006", and claiming the
-	   archive reaches 2006 would be false. Copy for this gap is Ricardo's call;
-	   the markup just stops asserting either untruth. */
-	$vw_total  = (int) wp_count_posts( 'post' )->publish;
-	$vw_oldest = get_posts( [
-		'post_type'      => 'post',
-		'post_status'    => 'publish',
-		'posts_per_page' => 1,
-		'orderby'        => 'date',
-		'order'          => 'ASC',
-		'no_found_rows'  => true,
-	] );
-	$vw_first_year = $vw_oldest ? (int) get_the_date( 'Y', $vw_oldest[0] ) : VW_FOUNDED;
-	$vw_years      = max( 1, (int) date_i18n( 'Y' ) - VW_FOUNDED );
-	$vw_issue      = vw_curation_slot_by_role( $vw_archive, 'issue' );
+	   Both years quote VW_FOUNDED. An earlier version derived the "since" year
+	   from the oldest published post, which was defensible while the founding
+	   year was thought to be 2006 and the data started in 2010. With the year
+	   corrected to 2012 that split stopped being useful: the archive holds 481
+	   posts in 2012 and exactly 4 before it, so deriving from the data would
+	   advertise "since 2010" on the strength of four outliers. Those four are a
+	   data-review item, not the start of the publication. */
+	$vw_total = (int) wp_count_posts( 'post' )->publish;
+	$vw_years = max( 1, (int) date_i18n( 'Y' ) - VW_FOUNDED );
+	$vw_issue = vw_curation_slot_by_role( $vw_archive, 'issue' );
 	?>
 	<div class="vwh2-archive">
 		<div class="vwh2-archive__inner">
@@ -390,7 +380,7 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 					<?php
 					printf(
 						'Every issue since %s, rebuilt and readable. The record of the city&rsquo;s culture doesn&rsquo;t expire.',
-						esc_html( (string) ( $vw_first_year ? $vw_first_year : 2006 ) )
+						esc_html( (string) VW_FOUNDED )
 					);
 					?>
 				</p>
@@ -433,6 +423,6 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 				<a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>"><?php echo wp_kses( $vw_label, [] ); ?></a>
 			<?php endforeach; ?>
 		</nav>
-		<span class="vwh2-footer__tag">Independent Since 2006</span>
+		<span class="vwh2-footer__tag">Independent Since <?php echo esc_html( (string) VW_FOUNDED ); ?></span>
 	</div>
 </div>

@@ -2678,3 +2678,54 @@ form always submits, a landmine for any future partial save. (3) 92 posts with a
 their photo credit. (4) The article header still prints desk-label authors.
 
 **STOPPED for verdict.**
+
+---
+
+2026-09-11 — **FOUNDING-YEAR CORRECTION (Ricardo): the publication started in 2012, not 2006.**
+Applied on top of session B, same day, before either was pushed.
+
+**The data corroborates it independently.** Published-post volume by year: **481 in 2012**, then 618
+/ 339 / 431 / 301 / 374 / 350 / 295 through 2019. Before 2012 there are **four posts in total** — one
+in 2010 (#138 *Rebuilding Guatemala From The Ground Up*) and three in 2011 (#236, #254, #143). 2012
+is where the publication actually begins; the four earlier items are outliers to review, not
+evidence of an earlier start.
+
+**Changed.** `VW_FOUNDED` 2006 → **2012** (`inc/masthead.php`). Both dateline strips and the footer
+tag stopped hard-coding a year and now echo the constant, so there is exactly one place to edit:
+`inc/masthead.php:54`, `section-parts/homepage-v2.php:89`, `section-parts/homepage-v2.php:426`.
+
+**Motto: age clause dropped** (Ricardo's choice). "The Record of the City's Culture — Twenty Years
+and Counting" → **"The Record of the City's Culture"**, in both the homepage masthead and the
+sitewide masthead preview. It cannot go stale, and the dateline strip directly above still carries
+the year.
+
+**Archive closer simplified.** Session B deliberately sourced the headline age and the "every issue
+since" year differently, because the founding year was believed to be 2006 while the data started in
+2010. With 2012 that split stopped earning its keep: deriving the "since" year from the data would
+advertise "since 2010" on the strength of four outlier posts. Both now quote `VW_FOUNDED`, and
+`$vw_first_year` and its query were removed. The closer reads **"14 years, 3,373 stories"** with
+"Every issue since 2012" beneath it.
+
+**Sweep — every theme file, `2006` / `twenty` / `20 years` / `decade` / `anniversary` / `since`:**
+
+| hit | disposition |
+|---|---|
+| `inc/masthead.php:25` `VW_FOUNDED = 2006` | → 2012 |
+| `inc/masthead.php:50` dateline "Independent Since 2006" | → echoes `VW_FOUNDED` |
+| `inc/masthead.php:55` motto "Twenty Years and Counting" | → clause dropped |
+| `section-parts/homepage-v2.php:89` dateline | → echoes `VW_FOUNDED` |
+| `section-parts/homepage-v2.php:94` motto | → clause dropped |
+| `section-parts/homepage-v2.php:436` footer "Independent Since 2006" | → echoes `VW_FOUNDED` |
+| `section-parts/homepage-v2.php:393` archive-closer `2006` fallback | → removed with the two-source split |
+| `section-parts/homepage-v2.php:361-366` explanatory comment | → rewritten for the 2012 reasoning |
+| `previews/section-landing.html:582` "…Best It's Been in Twenty Years" | **left alone** — mock article headline in a static design preview, not a founding-year claim |
+
+**Verified in rendered output:** "Independent Since 2012" ×2, motto "The Record of the City's
+Culture", "14 years," / "3,373 stories." / "Every issue since 2012"; **zero occurrences of `2006`
+and zero of "Twenty Years"** anywhere on the page. The sitewide masthead preview
+(`?vw_masthead=1` on a section front) reads identically, confirming both surfaces draw from the one
+constant. Preview page restored to `private` (public 404).
+
+**Logged for review:** the four pre-2012 published posts (#138, #236, #254, #143) — either mis-dated
+imports or genuinely pre-launch pieces. Not touched.
+
