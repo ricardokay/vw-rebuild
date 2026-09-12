@@ -23,8 +23,6 @@ require_once get_stylesheet_directory() . '/inc/chrome-settings.php';
 require_once get_stylesheet_directory() . '/inc/templates.php';
 require_once get_stylesheet_directory() . '/inc/curation.php';
 require_once get_stylesheet_directory() . '/inc/curation-admin.php';
-// TEMPORARY: drag-reorder diagnostics. Delete with inc/curation-debug.php once closed.
-require_once get_stylesheet_directory() . '/inc/curation-debug.php';
 
 /**
  * Force every single post to the theme's "One column wide" layout.

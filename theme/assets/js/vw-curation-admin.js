@@ -14,82 +14,6 @@
 	var cfg = window.vwCuration || {};
 	var strings = cfg.strings || {};
 
-	/* ── TEMPORARY DIAGNOSTICS ──────────────────────────────────────
-	   Added 2026-09-11: every harness test passed while the real admin page
-	   failed, so the real page has to report on itself. Off unless the screen
-	   was opened with ?vwc_debug=1. Delete this block, its call sites, and
-	   inc/curation-debug.php once the drag bug is closed. */
-
-	var DEBUG = !! cfg.debug;
-	var STASH = 'vwcDebugTrace';
-
-	function dbg( label, data ) {
-		if ( ! DEBUG ) {
-			return;
-		}
-		/* eslint-disable no-console */
-		if ( typeof data === 'undefined' ) {
-			console.log( '%c[VWC] ' + label, 'color:#C41230;font-weight:bold' );
-		} else {
-			console.log( '%c[VWC] ' + label, 'color:#C41230;font-weight:bold', data );
-		}
-		/* eslint-enable no-console */
-	}
-
-	/** Everything about one zone's slots, as the DOM currently holds it. */
-	function zoneState( zoneEl ) {
-		return [].slice.call( zoneEl.querySelectorAll( '[data-vwc-slot]' ) ).map( function ( slot, i ) {
-			var checked = slot.querySelector( '[data-vwc-mode]:checked' );
-			var pin = slot.querySelector( '[data-vwc-pin-id]' );
-			var label = slot.querySelector( '.vwc-slot__role strong' );
-			return {
-				domIndex: i,
-				label: label ? label.textContent.trim() : '?',
-				modeFieldName: ( slot.querySelector( '[data-vwc-mode]' ) || {} ).name,
-				checkedMode: checked ? checked.value : '*** NONE CHECKED ***',
-				pinFieldName: pin ? pin.name : '?',
-				pinValue: pin ? pin.value : '?'
-			};
-		} );
-	}
-
-	function zoneOf( el ) {
-		return el.closest( '.vwc-zone' );
-	}
-
-	function zoneKey( zoneEl ) {
-		var f = zoneEl.querySelector( '[name*="[present]"]' );
-		return f ? f.name.replace( '[present]', '' ) : '(unknown zone)';
-	}
-
-	/** Duplicate field names are the signature of a renumber collision. */
-	function duplicateNames( form ) {
-		var seen = {};
-		var dupes = {};
-		[].slice.call( form.querySelectorAll( '[name]' ) ).forEach( function ( f ) {
-			if ( f.type === 'radio' ) {
-				return; // radios legitimately share a name within one group
-			}
-			seen[ f.name ] = ( seen[ f.name ] || 0 ) + 1;
-			if ( seen[ f.name ] > 1 ) {
-				dupes[ f.name ] = seen[ f.name ];
-			}
-		} );
-		return dupes;
-	}
-
-	/** Radio groups with no checked member — the failure mode we are hunting. */
-	function uncheckedGroups( form ) {
-		var out = [];
-		[].slice.call( form.querySelectorAll( '[data-vwc-slot]' ) ).forEach( function ( slot ) {
-			var radios = slot.querySelectorAll( '[data-vwc-mode]' );
-			if ( radios.length && ! slot.querySelector( '[data-vwc-mode]:checked' ) ) {
-				out.push( radios[ 0 ].name );
-			}
-		} );
-		return out;
-	}
-
 	/* ── Mode panes ─────────────────────────────────────────────── */
 
 	function syncPanes( slot ) {
@@ -338,14 +262,10 @@
 	function renumber( listEl ) {
 		var slots = [].slice.call( listEl.querySelectorAll( '[data-vwc-slot]' ) );
 
-		dbg( 'renumber PASS 0 — state on entry', zoneState( zoneOf( listEl ) ) );
-
 		var checkedModes = slots.map( function ( slot ) {
 			var c = slot.querySelector( '[data-vwc-mode]:checked' );
 			return c ? c.value : null;
 		} );
-
-		dbg( 'renumber PASS 1 — captured checked modes', checkedModes.slice() );
 
 		slots.forEach( function ( slot, index ) {
 			slot.querySelectorAll( '[name]' ).forEach( function ( field ) {
@@ -359,8 +279,6 @@
 			} );
 		} );
 
-		dbg( 'renumber PASS 2 — after placeholder + final rename', zoneState( zoneOf( listEl ) ) );
-
 		slots.forEach( function ( slot, index ) {
 			if ( checkedModes[ index ] ) {
 				var radio = slot.querySelector(
@@ -373,112 +291,82 @@
 			syncPanes( slot );
 		} );
 
-		dbg( 'renumber PASS 3 — after restore + syncPanes', zoneState( zoneOf( listEl ) ) );
 	}
 
+	/**
+	 * Up/down buttons — a reorder path that does not require a mouse drag.
+	 *
+	 * Deliberately routed through the same renumber() as the drag, so the two can
+	 * never disagree about the field contract. Added after a reorder was reported
+	 * as broken and turned out to be a drag of interchangeable slots: a
+	 * pointer-free path makes the operation reachable by keyboard and testable
+	 * without simulating a drag.
+	 */
+	function refreshMoveButtons( listEl ) {
+		var slots = [].slice.call( listEl.querySelectorAll( '[data-vwc-slot]' ) );
+		slots.forEach( function ( slot, i ) {
+			var up = slot.querySelector( '[data-vwc-move="up"]' );
+			var down = slot.querySelector( '[data-vwc-move="down"]' );
+			if ( up ) {
+				up.disabled = 0 === i;
+			}
+			if ( down ) {
+				down.disabled = i === slots.length - 1;
+			}
+		} );
+	}
+
+	document.addEventListener( 'click', function ( e ) {
+		var btn = e.target.closest( '[data-vwc-move]' );
+		if ( ! btn || btn.disabled ) {
+			return;
+		}
+		e.preventDefault();
+
+		var slot = btn.closest( '[data-vwc-slot]' );
+		var list = slot.parentElement;
+		var up = 'up' === btn.getAttribute( 'data-vwc-move' );
+		var sibling = up ? slot.previousElementSibling : slot.nextElementSibling;
+
+		if ( ! sibling ) {
+			return;
+		}
+
+		if ( up ) {
+			list.insertBefore( slot, sibling );
+		} else {
+			list.insertBefore( sibling, slot );
+		}
+
+		renumber( list );
+		refreshMoveButtons( list );
+
+		// Keep focus on the control just used, which has moved with the slot —
+		// otherwise a keyboard user is dropped back to the top of the document.
+		var moved = slot.querySelector( '[data-vwc-move="' + ( up ? 'up' : 'down' ) + '"]' );
+		if ( moved && ! moved.disabled ) {
+			moved.focus();
+		}
+	} );
+
 	$( function () {
-		var lists = $( '[data-vwc-sortable]' );
-
-		dbg( 'init — sortable lists found', lists.length );
-		dbg( 'init — jQuery ' + ( $ && $.fn && $.fn.jquery ) + ', UI sortable ' + ( $.ui && $.ui.sortable ? $.ui.sortable.version : 'MISSING' ) );
-
-		lists.sortable( {
+		$( '[data-vwc-sortable]' ).sortable( {
 			handle: '.vwc-slot__handle',
 			items: '> [data-vwc-slot]',
 			axis: 'y',
 			tolerance: 'pointer',
 			start: function ( e, ui ) {
 				ui.item.addClass( 'is-dragging' );
-				dbg( 'sortable START — ' + zoneKey( zoneOf( this ) ), zoneState( zoneOf( this ) ) );
-			},
-			update: function () {
-				dbg( 'sortable UPDATE — DOM reordered, before renumber', zoneState( zoneOf( this ) ) );
 			},
 			stop: function ( e, ui ) {
 				ui.item.removeClass( 'is-dragging' );
-				dbg( 'sortable STOP — calling renumber' );
 				renumber( this );
-				dbg( 'sortable STOP — renumber returned' );
 			}
 		} );
 
 		document.querySelectorAll( '[data-vwc-slot]' ).forEach( syncPanes );
+		document.querySelectorAll( '[data-vwc-sortable]' ).forEach( refreshMoveButtons );
 
-		if ( ! DEBUG ) {
-			return;
-		}
-
-		/* ── Save-click payload dump ─────────────────────────────────
-		   The form does a normal POST + redirect, so the console is wiped
-		   before the result is visible. The trace is stashed in
-		   sessionStorage and re-printed after the reload, so one copy/paste
-		   carries both the payload that was sent and the state that came
-		   back. */
-
-		var form = document.querySelector( 'form' );
-
-		form.addEventListener( 'submit', function () {
-			var fd = new FormData( form );
-			var all = [];
-			var entries = 0;
-			for ( var pair of fd.entries() ) {
-				entries++;
-				all.push( encodeURIComponent( pair[ 0 ] ) + '=' + encodeURIComponent( pair[ 1 ] ) );
-			}
-			var serialized = all.join( '&' );
-
-			var zones = {};
-			document.querySelectorAll( '.vwc-zone' ).forEach( function ( z ) {
-				if ( z.querySelector( '[data-vwc-slot]' ) ) {
-					zones[ zoneKey( z ) ] = zoneState( z );
-				}
-			} );
-
-			var trace = {
-				when: new Date().toISOString(),
-				formDataEntryCount: entries,
-				serializedByteLength: serialized.length,
-				duplicateFieldNames: duplicateNames( form ),
-				radioGroupsWithNothingChecked: uncheckedGroups( form ),
-				zonesAtSubmit: zones,
-				serializedPayload: serialized
-			};
-
-			dbg( '=== SUBMIT — payload being sent ===', trace );
-
-			try {
-				sessionStorage.setItem( STASH, JSON.stringify( trace ) );
-			} catch ( err ) {
-				dbg( 'could not stash trace', String( err ) );
-			}
-		} );
-
-		// Re-print the pre-save trace next to what the server sent back.
-		var stashed = null;
-		try {
-			stashed = sessionStorage.getItem( STASH );
-		} catch ( err ) {
-			stashed = null;
-		}
-
-		if ( stashed ) {
-			dbg( '=== PREVIOUS SUBMIT (recovered after reload) ===', JSON.parse( stashed ) );
-			try {
-				sessionStorage.removeItem( STASH );
-			} catch ( err ) {}
-		}
-
-		var after = {};
-		document.querySelectorAll( '.vwc-zone' ).forEach( function ( z ) {
-			if ( z.querySelector( '[data-vwc-slot]' ) ) {
-				after[ zoneKey( z ) ] = zoneState( z );
-			}
-		} );
-		dbg( '=== PAGE LOAD — what the server just rendered ===', {
-			url: window.location.href,
-			savedFlagPresent: window.location.search.indexOf( 'vw_saved=1' ) !== -1,
-			zonesAsRendered: after
-		} );
 	} );
 
 }( window.jQuery ) );

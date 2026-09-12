@@ -336,6 +336,7 @@ function vw_curation_resolve( string $surface, string $zone, array &$used_ids, s
 		$tier       = vw_image_tier( (int) $post->ID );
 
 		$out[] = [
+			'slot'         => $i,
 			'role'         => $slot_def['role'],
 			'post'         => $post,
 			'tier'         => $tier,
@@ -513,4 +514,76 @@ function vw_curation_sanitize_zones( array $zone_defs, $raw, array $existing = [
 	}
 
 	return $out;
+}
+
+
+/* ── Change detection ──────────────────────────────────────────────────── */
+
+/**
+ * Describe what a save actually changed, zone by zone.
+ *
+ * Exists because of a real incident: three auto-fill slots were dragged into a
+ * new order and saved. Every slot held the identical configuration
+ * (mode=auto, post=0, cat=0), so reordering them was a genuine no-op — the
+ * stored option was byte-identical before and after, confirmed in the
+ * server-side trace. The screen said "Curation saved." and re-rendered its
+ * positional labels in registry order, which read as the save having silently
+ * reverted. Saying plainly that nothing changed is the fix for that.
+ *
+ * Returns a list of human-readable sentences, empty when nothing changed.
+ */
+function vw_curation_describe_changes( array $before, array $after ): array {
+	$messages = [];
+	$registry = vw_curation_registry();
+
+	$walk = static function ( array $zone_defs, array $old, array $new, string $prefix ) use ( &$messages ) {
+		foreach ( $zone_defs as $zone => $def ) {
+			$o = $old[ $zone ] ?? null;
+			$n = $new[ $zone ] ?? null;
+			if ( $o === $n ) {
+				continue;
+			}
+
+			$label = $prefix . $def['label'];
+
+			$o_slots = is_array( $o['slots'] ?? null ) ? $o['slots'] : [];
+			$n_slots = is_array( $n['slots'] ?? null ) ? $n['slots'] : [];
+
+			if ( ( $o['visible'] ?? null ) !== ( $n['visible'] ?? null ) ) {
+				$messages[] = sprintf(
+					'%s is now %s.',
+					$label,
+					! empty( $n['visible'] ) ? 'shown' : 'hidden'
+				);
+			}
+
+			if ( $o_slots === $n_slots ) {
+				continue;
+			}
+
+			// Same slots, different sequence: a reorder and nothing else.
+			$o_sorted = $o_slots;
+			$n_sorted = $n_slots;
+			sort( $o_sorted );
+			sort( $n_sorted );
+
+			$messages[] = ( $o_sorted === $n_sorted )
+				? sprintf( 'Order updated in %s.', $label )
+				: sprintf( '%s updated.', $label );
+		}
+	};
+
+	$walk( $registry['home'], $before['home'] ?? [], $after['home'] ?? [], '' );
+
+	foreach ( $registry['section'] as $slug => $zones ) {
+		$term = get_category_by_slug( $slug );
+		$walk(
+			$zones,
+			$before['section'][ $slug ] ?? [],
+			$after['section'][ $slug ] ?? [],
+			( $term ? $term->name : $slug ) . ' — '
+		);
+	}
+
+	return $messages;
 }

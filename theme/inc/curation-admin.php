@@ -73,7 +73,6 @@ function vw_curation_admin_assets( string $hook ): void {
 	wp_localize_script( 'vw-curation-admin', 'vwCuration', [
 		'searchUrl' => esc_url_raw( rest_url( 'vw/v1/post-search' ) ),
 		'nonce'     => wp_create_nonce( 'wp_rest' ),
-		'debug'     => function_exists( 'vw_curation_debug' ) && vw_curation_debug(),
 		'strings'   => [
 			'searching' => 'Searching…',
 			'none'      => 'No matching stories.',
@@ -215,14 +214,24 @@ function vw_curation_handle_save(): void {
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by vw_curation_sanitize() against the registry.
 	$raw = isset( $_POST['vw_curation'] ) ? wp_unslash( $_POST['vw_curation'] ) : [];
 
-	/** Diagnostics only — see inc/curation-debug.php. No-ops unless ?vwc_debug=1. */
-	do_action( 'vw_curation_before_sanitize', $raw );
-
-	$clean = vw_curation_sanitize( $raw );
-
-	do_action( 'vw_curation_after_sanitize', $clean );
+	$before = vw_curation_config();
+	$clean  = vw_curation_sanitize( $raw );
 
 	update_option( VW_CURATION_OPTION, $clean, true );
+
+	/*
+	 * Tell the operator what the save actually did.
+	 *
+	 * A flat "Curation saved." was itself the cause of a false bug report: three
+	 * identical auto-fill slots were dragged into a new order, which is a genuine
+	 * no-op, and the unchanged screen read as the save having reverted. A transient
+	 * rather than query args because the summary is a list of sentences.
+	 */
+	set_transient(
+		'vw_curation_notice_' . get_current_user_id(),
+		vw_curation_describe_changes( $before, $clean ),
+		60
+	);
 
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by vw_chrome_sanitize().
 	$chrome = isset( $_POST['vw_chrome'] ) ? wp_unslash( $_POST['vw_chrome'] ) : [];
@@ -245,7 +254,7 @@ function vw_curation_handle_save(): void {
 	vw_chrome_flush_cache();
 
 	wp_safe_redirect( add_query_arg(
-		apply_filters( 'vw_curation_redirect_args', [ 'page' => 'vw-curation', 'vw_saved' => '1' ] ),
+		[ 'page' => 'vw-curation', 'vw_saved' => '1' ],
 		admin_url( 'admin.php' )
 	) );
 	exit;
@@ -270,8 +279,28 @@ function vw_curation_admin_page(): void {
 	<div class="wrap vwc">
 		<h1>Homepage &amp; Sections</h1>
 
-		<?php if ( $saved ) : ?>
-			<div class="notice notice-success is-dismissible"><p>Curation saved.</p></div>
+		<?php
+		if ( $saved ) :
+			$changes = get_transient( 'vw_curation_notice_' . get_current_user_id() );
+			delete_transient( 'vw_curation_notice_' . get_current_user_id() );
+			?>
+			<?php if ( is_array( $changes ) && $changes ) : ?>
+				<div class="notice notice-success is-dismissible">
+					<p><strong>Saved.</strong></p>
+					<ul class="vwc-changes">
+						<?php foreach ( $changes as $line ) : ?>
+							<li><?php echo esc_html( $line ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			<?php else : ?>
+				<div class="notice notice-info is-dismissible">
+					<p><strong>Saved — but nothing changed.</strong>
+					Reordering slots that hold the same setting has no effect: two auto-fill
+					slots drawing from the same section are interchangeable. Pin a story, or
+					point a slot at a different category, and the order will hold.</p>
+				</div>
+			<?php endif; ?>
 		<?php endif; ?>
 
 		<p class="vwc__intro">
@@ -283,7 +312,6 @@ function vw_curation_admin_page(): void {
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="vw_curation_save">
 			<?php wp_nonce_field( 'vw_curation_save', 'vw_curation_nonce' ); ?>
-			<?php do_action( 'vw_curation_form_top' ); ?>
 
 			<h2 class="vwc__surface-head">Site settings</h2>
 			<?php vw_chrome_render_fields(); ?>
@@ -378,6 +406,52 @@ function vw_curation_render_templates(): void {
 	<?php
 }
 
+/**
+ * What each slot is CURRENTLY showing on the site, keyed "surface:context:zone".
+ *
+ * Resolved once per request, per surface, in the same order the templates
+ * resolve — home zones share one $used_ids chain exactly as homepage-v2.php
+ * does, and each section front starts a fresh chain exactly as its part does.
+ * Anything else would print a title the reader never sees.
+ *
+ * This is what makes an auto-fill slot legible. Without it every auto slot
+ * looked identical on screen, so reordering two of them appeared to do nothing
+ * — which is precisely the false bug report this screen produced.
+ */
+function vw_curation_admin_resolved(): array {
+	static $map = null;
+	if ( null !== $map ) {
+		return $map;
+	}
+
+	$map      = [];
+	$registry = vw_curation_registry();
+
+	$used = [];
+	foreach ( array_keys( $registry['home'] ) as $zone ) {
+		foreach ( vw_curation_resolve( 'home', $zone, $used ) as $slot ) {
+			$map[ 'home::' . $zone ][ $slot['slot'] ] = $slot;
+		}
+	}
+
+	foreach ( $registry['section'] as $slug => $zones ) {
+		$section_used = [];
+		foreach ( array_keys( $zones ) as $zone ) {
+			foreach ( vw_curation_resolve( 'section', $zone, $section_used, $slug ) as $slot ) {
+				$map[ 'section:' . $slug . ':' . $zone ][ $slot['slot'] ] = $slot;
+			}
+		}
+	}
+
+	return $map;
+}
+
+/** The resolved slot for one position, or null when the slot renders nothing. */
+function vw_curation_admin_now_showing( string $surface, string $zone, string $context, int $index ): ?array {
+	$key = $surface . ':' . ( 'section' === $surface ? $context : '' ) . ':' . $zone;
+	return vw_curation_admin_resolved()[ $key ][ $index ] ?? null;
+}
+
 function vw_curation_render_zone( string $surface, string $zone, array $def, string $context ): void {
 	$config = vw_curation_zone_config( $surface, $zone, $context );
 	$prefix = 'section' === $surface
@@ -406,7 +480,7 @@ function vw_curation_render_zone( string $surface, string $zone, array $def, str
 		<ul class="vwc-slots" data-vwc-sortable="1">
 			<?php
 			foreach ( $def['slots'] as $i => $slot_def ) {
-				vw_curation_render_slot( $prefix, $i, $slot_def, $def, $config['slots'][ $i ] ?? [] );
+				vw_curation_render_slot( $prefix, $i, $slot_def, $def, $config['slots'][ $i ] ?? [], $surface, $zone, $context );
 			}
 			?>
 		</ul>
@@ -414,7 +488,7 @@ function vw_curation_render_zone( string $surface, string $zone, array $def, str
 	<?php
 }
 
-function vw_curation_render_slot( string $prefix, int $index, array $slot_def, array $zone_def, array $slot ): void {
+function vw_curation_render_slot( string $prefix, int $index, array $slot_def, array $zone_def, array $slot, string $surface = 'home', string $zone = '', string $context = '' ): void {
 	$mode = $slot['mode'] ?? 'auto';
 	$post = (int) ( $slot['post'] ?? 0 );
 	$cat  = (int) ( $slot['cat'] ?? 0 );
@@ -436,13 +510,41 @@ function vw_curation_render_slot( string $prefix, int $index, array $slot_def, a
 	][ $slot_def['image'] ] ?? '';
 	?>
 	<li class="vwc-slot<?php echo $broken ? ' vwc-slot--broken' : ''; ?>" data-vwc-slot>
-		<span class="vwc-slot__handle" aria-hidden="true">⋮⋮</span>
+		<span class="vwc-slot__grip">
+			<span class="vwc-slot__handle" aria-hidden="true">⋮⋮</span>
+			<span class="vwc-slot__move">
+				<button type="button" class="vwc-move" data-vwc-move="up"
+					aria-label="<?php echo esc_attr( 'Move ' . $slot_def['label'] . ' up' ); ?>">&uarr;</button>
+				<button type="button" class="vwc-move" data-vwc-move="down"
+					aria-label="<?php echo esc_attr( 'Move ' . $slot_def['label'] . ' down' ); ?>">&darr;</button>
+			</span>
+		</span>
 
 		<div class="vwc-slot__body">
 			<p class="vwc-slot__role">
 				<strong><?php echo esc_html( $slot_def['label'] ); ?></strong>
 				<?php if ( $req_note ) : ?>
 					<span class="vwc-slot__req"><?php echo esc_html( $req_note ); ?></span>
+				<?php endif; ?>
+			</p>
+
+			<?php
+			/*
+			 * The live answer to "what is in this slot right now", shown for every
+			 * mode. On an auto-fill slot it is the only thing distinguishing one
+			 * slot from another on screen.
+			 */
+			$showing = vw_curation_admin_now_showing( $surface, $zone, $context, $index );
+			?>
+			<p class="vwc-showing">
+				<?php if ( $showing ) : ?>
+					<span class="vwc-showing__label">Now showing</span>
+					<span class="vwc-showing__title"><?php echo esc_html( html_entity_decode( wp_strip_all_tags( get_the_title( $showing['post'] ) ), ENT_QUOTES, 'UTF-8' ) ); ?></span>
+					<?php if ( 'auto' === $showing['mode'] ) : ?>
+						<span class="vwc-showing__how">auto-filled</span>
+					<?php endif; ?>
+				<?php else : ?>
+					<span class="vwc-showing__label vwc-showing__label--empty">Not rendering &mdash; this slot is hidden</span>
 				<?php endif; ?>
 			</p>
 

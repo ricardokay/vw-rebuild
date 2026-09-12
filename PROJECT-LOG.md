@@ -2988,3 +2988,85 @@ browser already wrong, the payload arriving truncated, or the sanitizer mis-read
 arrived intact.
 
 **STOPPED — awaiting console output.**
+
+---
+
+2026-09-11 — **DRAG REPORT CLOSED: no data bug. UX-observability gap fixed.**
+
+**CONFIRMED FROM RICARDO'S OWN TRACE.** His `vwc-debug.log` recorded four real saves from
+`wp-admin`. Across every save and **every one of the eight home zones**, `PHP RECEIVED` is identical
+to `PHP STORED — after sanitize`, and the music zone arrived as three interchangeable slots:
+
+```
+slot 0: mode=auto post=0 cat=0
+slot 1: mode=auto post=0 cat=0
+slot 2: mode=auto post=0 cat=0
+```
+
+Reordering three identical values is a genuine no-op — the stored option was byte-identical before
+and after — and the positional labels (Featured / Stack 1 / Stack 2) then re-rendered in registry
+order, which read as a silent revert. Ricardo's hypothesis was right. The envelope also cleared the
+last competing theory: `max_input_vars` 4000, `post_max_size` 1000M, `CONTENT_LENGTH` ~8.4 KB, 130
+POST leaf values received against 129 client entries — **no truncation**. Test 3 (pin + drag) was
+never run, which is why the real path was never exercised.
+
+**ROOT-CAUSE NARRATIVE, both reports.** One real defect and one observability gap:
+1. **Real:** the radio-group collision in `renumber()`, fixed in the previous round and confirmed by
+   measurement (pre-fix the payload was missing `[1][mode]`; post-fix all modes submit). Had Ricardo
+   dragged *pinned* slots, that bug would have eaten his pins for real.
+2. **Not a bug in the data, a bug in the screen:** interchangeable auto-fill slots are
+   indistinguishable, so a reorder of them is invisible *and* meaningless, and the interface said
+   "Curation saved." either way. Closed below.
+
+**(a) "Now showing" per slot.** Every slot now prints the story it is currently rendering, in grey,
+for every mode — with an `auto-filled` badge when it was not pinned. Resolved through
+`vw_curation_admin_resolved()`, which walks each surface **in the same order the templates do**,
+sharing one `$used_ids` chain for the homepage and a fresh chain per section, exactly as
+`homepage-v2.php` and the section parts do. Anything less would print a title the reader never sees.
+Verified slot-for-slot against a reproduction of the template chain: **all 20 home slots exact**,
+plus the section surface. The resolver now reports its slot index so admin and template can be
+compared at all.
+
+**(b) Up/down buttons.** A reorder path that needs no pointer — keyboard-reachable, `aria-label`led,
+disabled at the ends, focus following the moved slot. Routed deliberately through the **same**
+`renumber()` as the drag, so the two can never disagree about the field contract. Verified in the
+browser: two "up" clicks moved a slot from last to first, all three modes stayed `pin`, the disabled
+states refreshed, and the payload carried the new order.
+
+**(c) The save notice says what changed.** `vw_curation_describe_changes()` diffs the previous stored
+config against the new one per zone and distinguishes a **reorder** (same slots, new sequence →
+"Order updated in A La Music.") from a content change ("A La Music updated.") from a visibility
+change. When nothing changed it says so outright, with the reason: *"Saved — but nothing changed.
+Reordering slots that hold the same setting has no effect: two auto-fill slots drawing from the same
+section are interchangeable. Pin a story, or point a slot at a different category, and the order will
+hold."* That sentence is the actual fix for the report — the screen can no longer imply work happened
+when none did.
+
+**VERIFIED — real FormData through the real handler**, per the standing rule. Move-button order
+persisted `[65340, 567, 68692]` and the notice reported the reorder; re-saving an identical config
+produced an **empty** change list; **reordering three identical auto slots produced an empty change
+list** — the exact case Ricardo hit, now reported honestly; a real content change was reported;
+chrome settings and both template options survived the shared save path.
+
+**DIAGNOSTICS REMOVED** per the cleanup list: `inc/curation-debug.php` deleted, its require removed,
+the JS debug block and every `dbg()` call site stripped, and all four seams
+(`vw_curation_before_sanitize` / `after_sanitize` / `form_top` / `redirect_args`) removed. Grep for
+diagnostic residue across the theme: clean. The before/after-sanitize seam was replaced by a direct
+`vw_curation_config()` read in the handler, which the change summary needs anyway.
+
+**Ten suites green** — session A, REST, admin, partial-POST, section, hidden-radio,
+payload-regressions, scan-depth, and the two new ones (UX, now-showing). One check in the new UX
+suite was **removed rather than left red**: it compared the admin's chained resolution against an
+*isolated* `vw_curation_resolve()`, which is the wrong baseline for a `$used_ids`-threaded chain. It
+failed because the test was wrong, and a permanently-red check is one people learn to ignore.
+Correctness moved to `verify_nowshowing.php`, which reproduces the template chain properly.
+
+**LESSON, kept.** The previous round's process change stands and earned itself twice over: admin
+behaviour is verified by reading the real payload. This round adds a second: **an interface that
+cannot show the operator what a control did will generate bug reports whether or not it has bugs.**
+Two rounds were spent on a screen that was working correctly and could not say so.
+
+**CLEANUP.** All four options absent, harness and log deleted, `front-page.php` still absent,
+front-end sweep 200.
+
+**STOPPED for verdict.**

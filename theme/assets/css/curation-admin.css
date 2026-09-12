@@ -238,6 +238,80 @@
 
 .vwc-badge--warn { background: #f7dcdd; color: #8a1f21; }
 
+/* ── "Now showing" ─────────────────────────────────────────────
+   The live answer to what a slot currently renders. On an auto-fill slot it
+   is the only thing that distinguishes one slot from another, which is why
+   reordering interchangeable slots once read as a broken save. */
+
+.vwc-showing {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #50575e;
+}
+
+.vwc-showing__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #787c82;
+  margin-right: 6px;
+}
+
+.vwc-showing__label--empty { font-weight: 500; letter-spacing: 0; text-transform: none; font-style: italic; }
+
+.vwc-showing__title { overflow-wrap: anywhere; }
+
+.vwc-showing__how {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 9px;
+  background: #f0f0f1;
+  font-size: 10px;
+  color: #646970;
+  white-space: nowrap;
+}
+
+/* ── Grip: drag handle + keyboard reorder ──────────────────────── */
+
+.vwc-slot__grip {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.vwc-slot__move { display: flex; flex-direction: column; gap: 2px; }
+
+.vwc-move {
+  width: 22px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid #c3c4c7;
+  border-radius: 3px;
+  background: #f6f7f7;
+  color: #2c3338;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.vwc-move:hover:not(:disabled) { background: #f0f0f1; border-color: #8c8f94; }
+.vwc-move:focus-visible { outline: 2px solid #2271b1; outline-offset: 1px; }
+.vwc-move:disabled { opacity: 0.35; cursor: default; }
+
+/* ── Save summary ──────────────────────────────────────────────── */
+
+.vwc-changes {
+  margin: 0 0 8px 18px;
+  list-style: disc;
+  font-size: 13px;
+}
+.vwc-changes li { margin: 2px 0; }
+
 /* ── Wider viewports ───────────────────────────────────────────── */
 
 @media (min-width: 783px) {
