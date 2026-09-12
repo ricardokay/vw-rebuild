@@ -2846,3 +2846,84 @@ authors. (5) The slogan and founding year can drift apart once an operator overr
 by design, but worth saying in the operator tutorial.
 
 **STOPPED for verdict.**
+
+---
+
+2026-09-11 — **BUG FIX: post-`[present]` payload regressions.** Both reports traced to **one root
+cause**, found by reading the actual form payload rather than by reasoning about the code.
+
+**ROOT CAUSE — a radio-group name collision in `renumber()`.** Radio inputs are grouped by `name`.
+The one-pass rename walked slots in order rewriting `[slots][N]`, so while slot N was being renamed
+it briefly shared a name with an already-renamed slot; the browser merged the two into a single
+radio group and **unchecked the earlier member**. Measured directly in the browser after a drag:
+
+```
+slot 0  pin=65340  checked="pin"
+slot 1  pin=567    checked=*** NONE ***     <- mode radio silently unchecked
+slot 2  pin=68692  checked="pin"
+```
+
+An unchecked radio group submits nothing, so `[slots][1][mode]` was **absent from the payload
+entirely**. The sanitizer defaulted it to `auto`, and `if ( 'pin' !== $mode ) { $post = 0; }` then
+discarded the pin. No error anywhere.
+
+**Why this presented as two different bugs.** BUG 2 is the direct effect: a dragged slot loses its
+pin, so the reorder looks like it did not survive. BUG 1 is the same defect read from the other end
+— after a drag, an affected slot reverts to auto-fill on save and re-populates with a story, which
+looks exactly like "Clear didn't work." **`Clear` itself is correct**: verified client-side (hidden
+input emptied, block hidden, payload carries `post=`) and server-side through the real
+`vw_curation_handle_save()` (stored as 0, admin re-renders empty). It has no independent defect.
+
+**This was NOT caused by the `[present]` change.** It is a latent bug in `renumber()` shipped in
+session A. **Session B's drag test passed over it because every slot in that test used `mode=auto`**
+— the exact default the lost radio falls back to — and asserted on `cat` values, which are
+`<select>` elements and unaffected by radio grouping. The test passed for the wrong reason. Any
+future test of this function must use non-default modes; the new suite does.
+
+**FIX 1 — `renumber()`, three passes** (`assets/js/vw-curation-admin.js`): capture the checked mode
+per slot *before* any renaming; rename to a unique `__vwN__` placeholder and only then to the final
+index, so no two radio groups ever hold the same name even momentarily; restore the captured state
+and re-run `syncPanes`. That last step also fixes a second-order defect — a slot left with no
+checked radio kept showing its pin pane, an impossible UI state.
+
+**FIX 2 — defence in depth in the sanitizer** (`inc/curation.php`): a submitted slot with **no
+`mode` key** no longer silently becomes `auto`. A submitted post id is the one unambiguous signal of
+intent, because only `pin` uses one and the sanitizer zeroes the post field for every other mode, so
+absent-mode + non-zero post infers `pin`. Deliberately **not** read from the stored slot at the same
+index: under a reorder, index *i* refers to a different slot than when the option was written, so
+that lookup would restore the wrong mode. Inferring from the payload is order-independent. A mode
+that is present but unrecognised is still coerced to `auto`.
+
+**VERIFIED — real browser, faithful harness.** The harness now emits the exact script tags
+WordPress itself would (`wp_print_scripts` on the real dependency chain), not a hand-picked jQuery
+UI set. Before the fix the drag payload was missing `[1][mode]`; after it, all three modes submit
+and the order is correct. A combined **drag → clear → save** using the verbatim 8,266-byte browser
+payload through the real handler: reorder survived (slot 0 = 65340, slot 2 = 68692), the cleared
+slot is 0, **all three slots kept `mode=pin`**, the admin re-render shows the cleared slot empty,
+and chrome settings plus both template options came through the shared save path intact.
+
+**NEW SUITE** `verify_payload_regressions.php`, 11 checks covering the bug class: absent mode with a
+post id infers pin and keeps it; absent mode without one falls back to auto; an invalid mode is
+still coerced and drops its post; `mode=pin` with an empty post means cleared and does **not**
+resurrect the old pin; zone-level `[present]` still governs visibility.
+
+**All eight suites green** — session A, REST, admin, partial-POST, section, hidden-radio,
+payload-regressions, scan-depth. Two batch failures were **test-harness contamination, not code**:
+`verify_admin` and `verify_partial` assert the option is absent, and an earlier test in the same
+batch had left one behind. Re-run in isolation, both pass. One more stale fixture found and fixed —
+`verify_section` predated the `[present]` contract.
+
+**BUG CLASS, recorded for future rounds:** *post-`[present]` payload regressions*. A field ABSENT
+from a payload is not the same as a field set to its default, and treating the two alike silently
+discards an editor's work. Unchecked radios, unchecked checkboxes and disabled inputs all submit
+nothing.
+
+**PROCESS CHANGE, now mandatory:** **admin rounds must be verified in a real browser context**, by
+reading the actual `FormData` the form produces and running that verbatim payload through the real
+save handler. Every server-side unit test in this round passed while the feature was broken in the
+browser; only the payload told the truth.
+
+**CLEANUP.** Harness deleted, all four options absent, `front-page.php` still absent, front-end
+sweep 200 across `/` and the section fronts.
+
+**STOPPED for verdict.**

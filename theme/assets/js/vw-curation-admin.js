@@ -239,14 +239,56 @@
 
 	/* ── Ordering ───────────────────────────────────────────────── */
 
+	/**
+	 * Renumber slot field indices after a drag.
+	 *
+	 * The naive one-pass rename silently corrupted every reorder. Radios are
+	 * grouped by name, so while slot N was being renamed it briefly shared a
+	 * name with an already-renamed slot; the browser merged the two into one
+	 * group and unchecked the earlier member. The moved slot then submitted no
+	 * mode at all, the sanitizer defaulted it to auto, and its pin was dropped —
+	 * which is why a reorder appeared not to survive a save.
+	 *
+	 * Three passes, in this order, and all three are load-bearing:
+	 *   1. capture the checked mode per slot BEFORE any renaming
+	 *   2. rename to a unique placeholder, then to the final index, so no two
+	 *      radio groups ever hold the same name even for an instant
+	 *   3. restore the captured state and re-sync the panes
+	 *
+	 * Session B's drag test passed over this because every slot in it was set to
+	 * auto — the default the lost radio fell back to — so the corruption was
+	 * invisible. Any test of this function must use non-default modes.
+	 */
 	function renumber( listEl ) {
-		listEl.querySelectorAll( '[data-vwc-slot]' ).forEach( function ( slot, index ) {
+		var slots = [].slice.call( listEl.querySelectorAll( '[data-vwc-slot]' ) );
+
+		var checkedModes = slots.map( function ( slot ) {
+			var c = slot.querySelector( '[data-vwc-mode]:checked' );
+			return c ? c.value : null;
+		} );
+
+		slots.forEach( function ( slot, index ) {
 			slot.querySelectorAll( '[name]' ).forEach( function ( field ) {
-				field.name = field.name.replace(
-					/\[slots\]\[\d+\]/,
-					'[slots][' + index + ']'
-				);
+				field.name = field.name.replace( /\[slots\]\[\d+\]/, '[slots][__vw' + index + '__]' );
 			} );
+		} );
+
+		slots.forEach( function ( slot, index ) {
+			slot.querySelectorAll( '[name]' ).forEach( function ( field ) {
+				field.name = field.name.replace( /\[slots\]\[__vw\d+__\]/, '[slots][' + index + ']' );
+			} );
+		} );
+
+		slots.forEach( function ( slot, index ) {
+			if ( checkedModes[ index ] ) {
+				var radio = slot.querySelector(
+					'[data-vwc-mode][value="' + checkedModes[ index ] + '"]'
+				);
+				if ( radio ) {
+					radio.checked = true;
+				}
+			}
+			syncPanes( slot );
 		} );
 	}
 

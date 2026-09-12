@@ -453,7 +453,29 @@ function vw_curation_sanitize_zones( array $zone_defs, $raw, array $existing = [
 		foreach ( $def['slots'] as $i => $slot_def ) {
 			$s = is_array( $slots_in[ $i ] ?? null ) ? $slots_in[ $i ] : [];
 
-			$mode = in_array( $s['mode'] ?? '', VW_CURATION_MODES, true ) ? $s['mode'] : 'auto';
+			/*
+			 * Defence in depth for a missing mode.
+			 *
+			 * An unchecked radio group submits nothing, so one client-side slip —
+			 * the renumber collision fixed in vw-curation-admin.js — silently
+			 * turned pins into auto-fill with no error anywhere. When no mode
+			 * arrives, a submitted post id is the one unambiguous signal of
+			 * intent: only 'pin' uses one, and an auto or hidden slot always
+			 * renders its post field as 0 because this sanitizer zeroes it.
+			 *
+			 * Deliberately NOT read from the stored slot at this index: under a
+			 * reorder, index i refers to a different slot than it did when the
+			 * option was written, so that lookup would restore the wrong mode.
+			 * Inferring from the payload is order-independent.
+			 *
+			 * A mode that IS present but unrecognised is still coerced to 'auto'.
+			 */
+			if ( ! array_key_exists( 'mode', $s ) ) {
+				$mode = absint( $s['post'] ?? 0 ) ? 'pin' : 'auto';
+			} else {
+				$mode = in_array( $s['mode'], VW_CURATION_MODES, true ) ? $s['mode'] : 'auto';
+			}
+
 			if ( 'hidden' === $mode && empty( $def['can_hide'] ) && 0 === $i ) {
 				$mode = 'auto';
 			}
