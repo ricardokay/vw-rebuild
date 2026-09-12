@@ -1,19 +1,15 @@
 <?php
 /**
- * Sitewide masthead — PREVIEW ONLY.
+ * The sitewide masthead — dateline strip, wordmark, motto, section nav.
  *
- * Renders the homepage-v2 masthead (dateline strip, centred wordmark, motto,
- * six-section nav) on any page with ?vw_masthead=1, so chrome consistency can
- * be judged before rollout. Unflagged pages are untouched.
+ * Rolled out as the default header on 2026-09-12. header.php calls
+ * vw_masthead_render() directly; the homepage part renders the same markup
+ * inline because there the masthead is the first element of the composition
+ * rather than chrome above it.
  *
- * The markup mirrors section-parts/homepage-v2.php and reuses that stylesheet,
- * so the preview shows the real thing rather than a lookalike. Two differences,
- * both deliberate: the dateline shows the real current date instead of the
- * mockup's frozen "Saturday, July 25, 2026", and the nav links point at real
- * category archives via get_category_link() rather than "#".
- *
- * PREVIEW-GRADE: the existing .vw-nav header is hidden with CSS on flagged
- * views. A real rollout replaces header.php properly rather than hiding it.
+ * ?vw_masthead=1 is retained as a NO-OP so that preview links shared during the
+ * review rounds do not break — the flag used to switch this on, and now there
+ * is nothing to switch.
  */
 
 const VW_MASTHEAD_SECTIONS = [
@@ -25,16 +21,18 @@ const VW_MASTHEAD_SECTIONS = [
 	'book-reviews'        => 'Book Reviews',
 ];
 
+/**
+ * Retained as a no-op. The masthead is unconditional now; this only exists so
+ * that anything still calling it — an old link's query flag, a stale enqueue
+ * condition — gets a defined answer instead of a fatal.
+ */
 function vw_masthead_active(): bool {
-	if ( is_admin() || is_feed() ) return false;
-	return isset( $_GET['vw_masthead'] ) && '1' === $_GET['vw_masthead']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	return false;
 }
 
-add_action( 'wp_body_open', 'vw_masthead_render' );
 function vw_masthead_render(): void {
-	if ( ! vw_masthead_active() ) return;
 	?>
-	<div class="vwh2-page vw-masthead-preview__wrap">
+	<div class="vwh2-page vw-masthead">
 		<div class="vwh2-container">
 			<div class="vwh2-masthead">
 				<?php if ( vw_chrome_show_dateline() ) : ?>
@@ -79,8 +77,3 @@ function vw_masthead_render(): void {
 	<?php
 }
 
-add_filter( 'body_class', 'vw_masthead_body_class' );
-function vw_masthead_body_class( $classes ) {
-	if ( vw_masthead_active() ) $classes[] = 'vw-masthead-preview';
-	return $classes;
-}

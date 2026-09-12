@@ -16,10 +16,22 @@
  * carries a manual excerpt, and it holds a photo credit rather than a dek.)
  */
 
-const VW_AH_WIDE_MIN = 1140;
+/**
+ * The width at or above which a featured image may run full-bleed.
+ *
+ * 1200, raised from 1140 at rollout, and it is a pure no-upscale rule rather
+ * than a taste threshold: the content column tops out at 1200px, so an image
+ * narrower than that would be stretched to fill case A. Case B exists to render
+ * those at their natural size instead. Nothing is ever upscaled.
+ */
+const VW_AH_WIDE_MIN = 1200;
 
+/**
+ * The adaptive header is the default on articles as of the 2026-09-12 rollout.
+ * ?vw_header=1 is a retired no-op, kept so review links do not change meaning.
+ */
 function vw_ah_active(): bool {
-	return is_singular( 'post' ) && isset( $_GET['vw_header'] ) && '1' === $_GET['vw_header']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	return is_singular( 'post' );
 }
 
 /**
@@ -40,6 +52,38 @@ function vw_ah_byline_html( array $bylines, string $sep ): string {
 	return implode( $sep, $parts );
 }
 
+/**
+ * Is the featured image also the first image in the post's body?
+ *
+ * "Opening" is deliberate: only the first gallery or image block is examined,
+ * because a photograph reused far down a long article is not the duplication
+ * this guards against — two copies of the same frame within one screen is.
+ * WordPress writes the attachment id into the class list as wp-image-N, which
+ * is the only marker present on both classic and block galleries in this
+ * archive.
+ */
+function vw_ah_thumb_in_opening_gallery( WP_Post $post, int $thumb_id ): bool {
+	if ( ! $thumb_id ) {
+		return false;
+	}
+
+	$html = function_exists( 'vw_dead_media_filter' )
+		? vw_dead_media_filter( $post->post_content )
+		: $post->post_content;
+
+	// The opening run of markup: everything up to and including the first
+	// gallery, or the first ~3 images, whichever comes first.
+	if ( preg_match_all( '#wp-image-(\d+)#', $html, $m, PREG_OFFSET_CAPTURE ) ) {
+		foreach ( array_slice( $m[1], 0, 3 ) as $hit ) {
+			if ( (int) $hit[0] === $thumb_id ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 function vw_ah_render( WP_Post $post ): string {
 	list( $section, $mark ) = vw_ah_section( $post->ID );
 
@@ -48,6 +92,17 @@ function vw_ah_render( WP_Post $post ): string {
 	$path     = $thumb_id ? get_attached_file( $thumb_id ) : '';
 	$has_img  = $src && $path && file_exists( $path );
 	$width    = $has_img ? (int) $src[1] : 0;
+
+	// Photo-led dedup: a gallery post whose featured image is also the first
+	// picture in the body would otherwise show that photograph twice, once
+	// full-bleed and once as frame one of the gallery. Case C — the stacked
+	// text header — renders instead, and the gallery keeps the image. Only ever
+	// when the SAME attachment is in the opening gallery; a featured image that
+	// does not appear in the body is still the header's to show.
+	if ( $has_img && vw_ah_thumb_in_opening_gallery( $post, (int) $thumb_id ) ) {
+		$has_img = false;
+		$width   = 0;
+	}
 
 	$case = ! $has_img ? 'c' : ( $width >= VW_AH_WIDE_MIN ? 'a' : 'b' );
 
@@ -112,16 +167,17 @@ function vw_ah_render( WP_Post $post ): string {
 	return (string) ob_get_clean();
 }
 
-add_filter( 'the_content', 'vw_ah_prepend', 5 );
-function vw_ah_prepend( $html ) {
-	if ( ! vw_ah_active() || ! in_the_loop() || ! is_main_query() ) return $html;
-	$post = get_post();
-	if ( ! $post ) return $html;
-	return vw_ah_render( $post ) . $html;
-}
+/*
+ * The header used to be prepended to the_content, which was the only seam a
+ * preview flag could reach without touching templates. The rollout replaced it
+ * with a real template part (template-parts/header/entry-header.php), so the
+ * header now sits in the document where a header belongs rather than inside the
+ * article body — which also means it is no longer re-run by anything else that
+ * filters the_content.
+ */
 
 add_filter( 'body_class', 'vw_ah_body_class' );
 function vw_ah_body_class( $classes ) {
-	if ( vw_ah_active() ) $classes[] = 'vw-ah-preview';
+	if ( vw_ah_active() ) $classes[] = 'vw-ah-single';
 	return $classes;
 }

@@ -3402,3 +3402,110 @@ hardening are spec'd into the staging round. Remaining rollouts queued: masthead
 operator tutorial, staging deploy, cutover to production and 301s.
 
 **STOPPED for verdict.**
+
+---
+
+## Rollout round — masthead and article header become the sitewide defaults (2026-09-12)
+
+Both designs were approved in preview and both were reachable only behind a query flag. This round
+makes them the real chrome, by template override rather than by CSS suppression, and deletes the
+preview scaffolding. Scope: child theme + this log. **No DB writes.**
+
+### 1. Masthead
+
+`header.php` now calls `vw_masthead_render()` directly and the legacy `.vw-nav` markup is gone from
+the file. It is skipped on the front page only, because the homepage part renders its own masthead
+inline — the masthead is the first element of that composition rather than chrome sitting above it,
+and printing a second one here would stack two.
+
+`vw_masthead_active()` survives as `return false;` so an old `?vw_masthead=1` bookmark is a no-op
+instead of a fatal. The `wp_body_open` hook, the preview body class and `masthead-preview.css`
+(32 lines) are deleted, and ~3.3 KB of dead `.vw-nav` rules came out of `section-landing.css`.
+
+`class="vw-nav"` now appears on **zero** of the sixteen surfaces swept.
+
+### 2. Article header
+
+The preview prepended the header to `the_content` and hid Newspack's own header with CSS. The
+rollout instead overrides `template-parts/header/entry-header.php`, which is the part single.php and
+all four `large-featured-image.php` branches already ask for — so the replacement reaches every
+single-post layout without forking single.php. A sibling `entry-header-newspack.php` requires the
+parent file, because a child part cannot `get_template_part()` the file it shadows.
+
+The parent's duplicate hero is suppressed by filtering `newspack_featured_image_position` to
+`vw-header`, gated off in admin, AJAX and REST.
+
+Queued refinements, all applied:
+
+- **Threshold 1140 → 1200.** The content column tops out at 1200px, so this is now a pure
+  no-upscale rule: case A is chosen only when the source can fill the column without stretching.
+- **`hr` reset.** Eight `!important` declarations replaced after measuring that the `#content hr`
+  selector they were written against does not exist — the parent styles `hr` at element level only
+  (0,0,1 and 0,1,0), so a plain class rule wins outright.
+- **Photo-led dedup.** When the featured image's attachment id also appears among the first three
+  `wp-image-N` references in the post body, the header image is suppressed and the post falls to the
+  case-C stack rather than opening with a picture the reader meets again two lines later. Verified on
+  the Bob Seger gallery: featured #80248 is present in the body, header images 0, parent hero 0, and
+  the 20 body images are untouched.
+- **Desk-label bylines.** `vw_ah_credits()` now runs the author through `vw_is_junk_author()` and
+  **omits** the By line rather than printing "By Photography" on the 64 posts whose category landed
+  in the author column during the import. Omitted, not substituted: the meta line beneath already
+  carries the date, so there is no empty row to prop up. The duplicate copy of this rule inside
+  `vw_credits_inline()` was removed — header and cards now get the same answer from one place.
+- **Kicker on Uncategorized** survived the cutover: `kickers: 0` on the Tiger King post.
+
+### Two real bugs, both found only by rendering
+
+The server-side sweep in the previous session asserted that the header markup was *present*. It was.
+Neither of these would have been caught without measuring the painted page.
+
+**Active nav was never red.** `.vwh2-masthead__nav-item--active` lived in `section-landing.css` and
+the base `.vwh2-masthead__nav-item { color: var(--vw-ink) }` lives in `homepage-v2.css`. Both are
+specificity 0,1,0 and `homepage-v2.css` is enqueued last, so ink won every time. It was invisible
+during preview because the masthead only ever appeared on the homepage, where no item is active —
+rolling it out sitewide is what exposed it. The rule moved to sit with the base rule it competes
+with, which is the only place it can win without an `!important`.
+
+**The article header was rendering at zero height — on desktop as well as mobile.**
+`.vw-ah-single .entry-header { display: none }` was preview-era scaffolding: it existed to hide
+Newspack's header while ours was prepended to the content. After the template override our header
+renders *inside* `.entry-header`, so the rule was hiding our own output. The page went from masthead
+straight into body copy with no kicker, headline, rule, image or byline. `.entry-header` came out of
+the suppression list; the `.featured-image*` selectors stay as a second line of defence behind the
+meta filter.
+
+### Sweep
+
+Sixteen surfaces at **1440 and 390**: `/`, six section fronts, must-see-films, `/archive/`, a
+subcategory archive, an author archive, search, 404, and six single posts. Every surface: v2 masthead
+present, `.vw-nav` absent, SVG wordmark, **zero horizontal overflow at either width** (document
+width 1425/1440 and 390/390), red `rgb(196, 18, 48)` on the active nav wherever one applies.
+
+The six cases resolve **A / B / C / C (dedup) / B / B** at both widths — at 1440 case A is a 1200px
+full-bleed image, case B a 540px split, case C text-only; at 390 all three stack to the 351px column.
+Exactly one `.vw-ah` per page, parent hero zero everywhere. Static pages and the homepage keep their
+own headers untouched.
+
+### Checklist items closed by measurement
+
+- Nothing else keys off `is_archive()` — one call, `functions.php:183`, already extended with
+  `vw_is_all_archive()`.
+- The elementor body-class filter is correctly front-page-scoped: **no surface carries elementor
+  body classes**, checked across eight URLs including `/about/`.
+- No dead breadcrumb JSON-LD condition remains; only a historical comment in `inc/context.php`.
+
+### Suites
+
+**All twelve green.** `verify_drag_persist` failed first on a stale fixture, not a regression: the
+payload is a verbatim browser capture from before Session C introduced the `[present]` marker, so the
+sanitizer correctly read the zone as one the form never rendered and returned registry defaults
+(`auto/0/0` across the board — the same `[0,0,0]` signature as the original drag bug, which is worth
+remembering). Adding the marker the live form now always sends turns it green: `[20,9,8]` submitted,
+sanitized, saved, reloaded and resolved.
+
+### Carried forward
+
+Page 9 and preview page 86013 deletion (gated with the 43-page institutional cull); `must-see-films`
+is still an uncurated `.html` front; 92 filename-glued photo credits; slogan/founding-year drift
+after override; `default_comment_status` (a DB write the filter already makes moot);
+`assets/images/logo_VW.png` is now unreferenced and can be deleted.

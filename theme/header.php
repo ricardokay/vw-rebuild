@@ -1,3 +1,20 @@
+<?php
+/**
+ * Site header — the v2 masthead, sitewide.
+ *
+ * Rolled out 2026-09-12. This REPLACES the old .vw-nav header rather than
+ * hiding it: the preview did the latter, which meant the legacy header and its
+ * old-lockup raster logo were still shipped to every reader and only painted
+ * over. Nothing renders .vw-nav any more, and assets/images/logo_VW.png — the
+ * different, tagline-carrying lockup it used — is no longer referenced.
+ *
+ * The masthead markup lives in inc/masthead.php so that this template, the
+ * homepage part and any future surface all render the same thing from one
+ * source. ?vw_masthead=1 survives in old links as a harmless no-op.
+ */
+
+defined( 'ABSPATH' ) || exit;
+?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -10,48 +27,15 @@
 
 <div id="page" class="site">
 
-  <header class="vw-nav" role="banner">
-    <div class="vw-nav__inner">
-
-      <a href="<?php echo esc_url( home_url( '/' ) ); ?>"
-         class="vw-nav__logo-link"
-         aria-label="Vancouver Weekly — Home">
-        <img
-          src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW.png' ); ?>"
-          alt="Vancouver Weekly"
-          class="vw-nav__logo"
-          height="80"
-          width="auto"
-        >
-      </a>
-
-      <nav class="vw-nav__links" aria-label="Main navigation">
-        <?php
-        // Six sections, matching the homepage-v2 masthead. Links resolve through
-        // get_category_link() — the previous hand-built "/a-la-music/" style URLs
-        // omitted the /category/ base and every one of them 404'd.
-        $vw_nav_sections = [
-          'a-la-music'          => 'A La Music',
-          'photography'         => 'Photography',
-          'food-drink'          => 'Food &amp; Drink',
-          'out-n-about'         => 'Out N About',
-          'political-megaphone' => 'Political Megaphone',
-          'book-reviews'        => 'Book Reviews',
-        ];
-        foreach ( $vw_nav_sections as $vw_slug => $vw_label ) :
-          $vw_term = get_category_by_slug( $vw_slug );
-          if ( ! $vw_term ) continue;
-          $vw_active = ( vw_nav_active_slug() === $vw_slug ) ? ' vw-nav__link--active' : '';
-        ?>
-          <a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>"
-             class="vw-nav__link<?php echo esc_attr( $vw_active ); ?>"
-             <?php echo $vw_active ? 'aria-current="page"' : ''; ?>>
-            <?php echo wp_kses( $vw_label, [] ); ?>
-          </a>
-        <?php endforeach; ?>
-      </nav>
-
-    </div>
-  </header>
+  <?php
+  /*
+   * The homepage part renders its own masthead inline, because the masthead is
+   * the first element of that composition rather than chrome sitting above it.
+   * Printing a second one here would stack two.
+   */
+  if ( ! is_front_page() ) {
+    vw_masthead_render();
+  }
+  ?>
 
   <div id="content" class="site-content">

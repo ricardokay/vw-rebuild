@@ -12,18 +12,12 @@
   overflow-x: hidden;
 }
 
-.vw-home-v2 .vw-nav {
-  display: none;
-}
+/* Newspack's default #content margin-top (measured 80px) has no purpose here —
+   the masthead itself is the first visual element.
 
-/* Newspack's default #content margin-top (measured 80px) has no purpose on
-   this template — the masthead itself is the first visual element.
-
-   Scoped to .vw-home-v2, a body class added by vw_homepage_v2_body_class() on
-   both the preview page and the real front page. These three rules were scoped
-   to the preview template's own body class, which does not exist on the front
-   page — at cutover all three would have silently stopped applying, un-hiding
-   the old nav and Newspack's footer. Fixed in Round 1 session C. */
+   Scoped to .vw-home-v2, a body class added by vw_homepage_v2_body_class().
+   The hide-.vw-nav rule that used to sit alongside these went with the header
+   rollout — there is no old nav left to hide. */
 .vw-home-v2 #content {
   margin-top: 0;
 }
@@ -196,6 +190,15 @@
   color: var(--vw-ink);
 }
 .vwh2-masthead__nav-item:hover { color: var(--vw-red); }
+
+/* The only thing on a section front or an article that says which section you
+   are in, since the section-header block was removed.
+
+   It lives here rather than in section-landing.css because it has the same
+   specificity as the base rule two declarations up (both 0,1,0) and
+   homepage-v2.css is enqueued last — so from any other file the ink colour
+   simply wins and the active item renders identical to its neighbours. */
+.vwh2-masthead__nav-item--active { color: var(--vw-red); }
 
 @media (max-width: 900px) {
   .vwh2-masthead__dateline { flex-direction: column; gap: 4px; text-align: center; }

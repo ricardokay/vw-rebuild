@@ -10,74 +10,6 @@
    - No section-color variables, no duotone, no thick structural lines
    ================================================================ */
 
-
-/* ── Site navigation ─────────────────────────────────────────── */
-
-.vw-nav {
-  background: var(--vw-bg-subtle);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  width: 100%;     /* explicit: span full width of the #page flex column */
-  flex-shrink: 0;  /* don't compress inside Newspack's flex #page wrapper */
-  /* No border-bottom — nav and body are one continuous surface */
-}
-
-.vw-nav__inner {
-  /* No max-width — nav contents span nearly full viewport width */
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0 40px;
-  height: 100px;
-  display: flex;
-  align-items: center;
-}
-
-.vw-nav__logo-link {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  text-decoration: none;
-}
-
-.vw-nav__logo {
-  height: 80px;
-  width: auto;
-  display: block;
-}
-
-.vw-nav__links {
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-}
-
-.vw-nav__link {
-  display: block;
-  padding: 0 22px;
-  height: 100px;
-  line-height: 100px;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--vw-ink-muted);
-  text-decoration: none;
-  transition: color 0.12s;
-  white-space: nowrap;
-}
-
-.vw-nav__link:hover  { color: var(--vw-ink); }
-.vw-nav__link--active { color: var(--vw-red); }
-
-@media (max-width: 600px) {
-  .vw-nav__inner { padding: 0 20px; height: 88px; }
-  .vw-nav__logo  { height: 64px; }
-  .vw-nav__link  { padding: 0 14px; font-size: 11px; height: 88px; line-height: 88px; }
-}
-
-
 /* ── Page ground ─────────────────────────────────────────────── */
 /*
    Override Newspack's body background (#fff) to our off-white.
@@ -94,7 +26,6 @@
   min-height: 100vh;
   color: var(--vw-ink);
 }
-
 
 /* ── Section geometric marks — Direction A: Paired Bars ──────── */
 /*
@@ -211,7 +142,6 @@
   background: #2E6B4A;
 }
 
-
 /* ── Feature story ───────────────────────────────────────────── */
 
 .vw-feature {
@@ -273,7 +203,6 @@
   color: var(--vw-byline-ink);
 }
 
-
 /* ── Article grid ────────────────────────────────────────────── */
 
 .vw-grid-wrap {
@@ -288,7 +217,6 @@
   column-gap: 24px;
   row-gap: 48px;
 }
-
 
 /* ── Card ────────────────────────────────────────────────────── */
 
@@ -349,7 +277,6 @@
   margin-top: auto;
 }
 
-
 /* ── Type-forward card (no usable image) ─────────────────────── */
 
 .vw-card--text {
@@ -370,7 +297,6 @@
 .vw-card--text .vw-card__byline {
   margin-top: 8px; /* sit directly under headline, not bottom-pinned */
 }
-
 
 /* ── Article page ────────────────────────────────────────────── */
 
@@ -540,11 +466,9 @@
   text-underline-offset: 2px;
 }
 
-
 /* ── Responsive ──────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
-  .vw-nav__inner,
   .vw-feature,
   .vw-grid-wrap { padding-left: 24px; padding-right: 24px; }
   .vw-feature { grid-template-columns: 1fr; gap: 24px; }
@@ -562,12 +486,10 @@
   .vw-review-card__inner { flex-direction: column; gap: 20px; }
 }
 
-
 /* ================================================================
    Section module system — zone wrappers, hero, feat-list, hl-list
    Used by section-parts/*.php templates.
    ================================================================ */
-
 
 /* ── Module wrapper ──────────────────────────────────────────── */
 
@@ -593,7 +515,6 @@
   margin: 0 auto;
   padding: 0 40px;
 }
-
 
 /* ── Shared tokens ───────────────────────────────────────────── */
 
@@ -624,7 +545,6 @@
 
 .vw-byline strong,
 .vw-card__byline strong { font-weight: 600; color: var(--vw-ink); }
-
 
 /* ── Zone A: Hero ────────────────────────────────────────────── */
 
@@ -666,7 +586,6 @@
   max-width: 700px;
   margin: 0 0 12px;
 }
-
 
 /* ── Zone A: Lead block (3-col symmetric) ───────────────────── */
 
@@ -789,7 +708,6 @@
 
 .vw-lead-block__list-hed:hover { color: var(--vw-red); }
 
-
 /* ── Zone B: Featured + list ─────────────────────────────────── */
 
 .vw-feat-list {
@@ -854,7 +772,6 @@
 
 .vw-feat-list__item-hed:hover { color: var(--vw-red); }
 
-
 /* ── Zone C: Headline list ───────────────────────────────────── */
 
 .vw-hl-list {
@@ -898,7 +815,6 @@
     border-bottom: none;
   }
 }
-
 
 /* ── Module responsive ───────────────────────────────────────── */
 
@@ -1025,7 +941,6 @@
 	.vw-section-more__link { column-gap: 32px; }
 }
 
-
 /* ── Author links ───────────────────────────────────────────────
    Real people link to their archive; desk labels render as plain text and are
    never linked — see vw_author_html(). The byline keeps its own colour so a
@@ -1040,8 +955,6 @@
 	color: var(--vw-red);
 	border-bottom-color: currentColor;
 }
-
-
 
 /* ── Section front: no header block ─────────────────────────────
    The mark + title + description block was removed in Round 1 session C —
@@ -1072,71 +985,4 @@
   }
 }
 
-/* ── Active section in the nav ──────────────────────────────────
-   .vw-nav__link--active already carried the accent; the masthead nav had no
-   active state at all, so the sitewide-masthead rollout would have shipped
-   without one. Both now use the same token (#C41230). */
 
-.vwh2-masthead__nav-item--active,
-.vw-nav__link--active {
-  color: var(--vw-red);
-}
-
-/* ── Nav on narrow viewports ─────────────────────────────────────
-   Six fixed-height, nowrap links in a flex row measured 752px wide, so at
-   390px the row ran to a 1051px document and five of the six sections —
-   including the active one — sat off-screen.
-
-   That was survivable while the section-header block named the section. It
-   is not now: removing that block in this round made the red active nav item
-   the only thing on the page that says which section you are in, so it has
-   to be reachable on a phone.
-
-   Mobile-first: the base is a wrapping two-row nav under the logo; the
-   single-row desktop layout is restored at 768px. Heights become auto
-   because the fixed 88/100px line-height is what forced the single row. */
-
-.vw-nav__inner {
-  flex-wrap: wrap;
-  height: auto;
-  padding-block: 14px;
-  gap: 4px 0;
-}
-
-.vw-nav__links {
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  margin-left: 0;
-  width: 100%;
-  gap: 0 4px;
-}
-
-.vw-nav__link {
-  height: auto;
-  line-height: 1;
-  padding: 8px 10px 8px 0;
-}
-
-/* 1100, not 768. The six links measure 901px on their own, so at 768 the
-   single-row layout overflowed the document to 1269px — found by the
-   pre-cutover breakpoint sweep, and introduced when this rule was first
-   written against the phone width alone. The breakpoint is now the width at
-   which the row actually fits beside the logo. */
-@media (min-width: 1100px) {
-  .vw-nav__inner {
-    flex-wrap: nowrap;
-    height: 100px;
-    padding-block: 0;
-  }
-  .vw-nav__links {
-    flex-wrap: nowrap;
-    margin-left: auto;
-    width: auto;
-    gap: 0;
-  }
-  .vw-nav__link {
-    height: 100px;
-    line-height: 100px;
-    padding: 0 22px;
-  }
-}

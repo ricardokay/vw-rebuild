@@ -46,6 +46,38 @@ require_once get_stylesheet_directory() . '/inc/curation-admin.php';
  * value, 1,158 set to "default"). Nothing is written; the database is
  * untouched. Revert by deleting this filter and its function.
  */
+/**
+ * Stop Newspack rendering the featured image on single posts.
+ *
+ * The adaptive header renders the image itself, in the shape the image's own
+ * dimensions call for. Newspack's single.php branches on
+ * newspack_featured_image_position() and, for the 'large'/'behind'/'beside'/
+ * 'above' values, loads template-parts/post/large-featured-image.php — which
+ * would paint the same photograph above our header, twice on the page.
+ *
+ * That function has no filter of its own, but it reads a per-post meta value
+ * first and returns anything it finds. Short-circuiting the meta READ with a
+ * value outside its known set leaves the position unrecognised, so single.php
+ * takes its plain branch and the 'small' injection never fires either. Same
+ * technique, and the same reasoning, as the single-wide template filter below:
+ * nothing is written, and the admin is excluded so the editor still shows and
+ * saves the real value.
+ */
+add_filter( 'get_post_metadata', 'vw_ah_suppress_newspack_featured_image', 10, 4 );
+function vw_ah_suppress_newspack_featured_image( $value, $object_id, $meta_key, $single ) {
+	if ( 'newspack_featured_image_position' !== $meta_key ) {
+		return $value;
+	}
+	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return $value;
+	}
+	if ( ! is_singular( 'post' ) || (int) $object_id !== get_queried_object_id() ) {
+		return $value;
+	}
+
+	return $single ? 'vw-header' : [ 'vw-header' ];
+}
+
 add_filter( 'get_post_metadata', 'vw_force_single_column_template', 10, 4 );
 function vw_force_single_column_template( $value, $object_id, $meta_key, $single ) {
 	if ( '_wp_page_template' !== $meta_key ) return $value;
@@ -137,9 +169,12 @@ function vw_enqueue_styles() {
 	// front-page.php lands in session C the front page is still Elementor page 9,
 	// so this enqueue is currently loading styles for markup that page does not
 	// have; harmless, and correct the moment the cutover happens.
-	if ( is_front_page() ) {
-		vw_enqueue_homepage_v2( $dir, $uri );
-	}
+	/*
+	 * homepage-v2.css is sitewide chrome now, not homepage-only: it carries the
+	 * masthead, which header.php renders on every surface. The homepage zone
+	 * rules inside it are inert anywhere the zone markup is absent.
+	 */
+	vw_enqueue_homepage_v2( $dir, $uri );
 
 	// Archive inheritance: the Browse-all destination and every non-curated
 	// category adopt the design system instead of Newspack's blue defaults.
@@ -154,23 +189,6 @@ function vw_enqueue_styles() {
 		);
 	}
 
-	// Sitewide-masthead preview: reuses homepage-v2.css so the preview shows the
-	// real masthead styling rather than a lookalike.
-	if ( function_exists( 'vw_masthead_active' ) && vw_masthead_active() ) {
-		wp_enqueue_style(
-			'vw-homepage-v2',
-			$uri . '/assets/css/homepage-v2.css',
-			[ 'vw-palette', 'vw-fonts' ],
-			filemtime( $dir . '/assets/css/homepage-v2.css' )
-		);
-		wp_enqueue_style(
-			'vw-masthead-preview',
-			$uri . '/assets/css/masthead-preview.css',
-			[ 'vw-homepage-v2' ],
-			filemtime( $dir . '/assets/css/masthead-preview.css' )
-		);
-	}
-
 	// Article-header preview: only when the flag is set, so live singles are clean.
 	if ( function_exists( 'vw_ah_active' ) && vw_ah_active() ) {
 		wp_enqueue_style(
@@ -181,9 +199,6 @@ function vw_enqueue_styles() {
 		);
 	}
 
-	if ( is_page_template( 'page-templates/vw-homepage-preview.php' ) ) {
-		vw_enqueue_homepage_v2( $dir, $uri );
-	}
 }
 
 /**

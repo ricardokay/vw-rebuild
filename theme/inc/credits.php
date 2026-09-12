@@ -123,7 +123,24 @@ function vw_ah_credits( WP_Post $post ): array {
 	$shooter   = vw_ah_photographer( $post );
 	$photo_led = vw_ah_is_photo_led( $post );
 
-	if ( $author )  $bylines[] = [ 'By', $author ];
+	/*
+	 * Desk labels are not people. 64 posts are filed under "Photography",
+	 * "Contests" and "News Feed" — categories that landed in the author column
+	 * during the import — and the header printed "By Photography" on every one
+	 * of them.
+	 *
+	 * The By line is OMITTED rather than replaced: the meta line directly beneath
+	 * already carries the date, which is what vw_byline_inner() substitutes on a
+	 * card that would otherwise have an empty meta row. Here there is nothing to
+	 * keep from collapsing, so the honest move is to say nothing.
+	 *
+	 * This was deliberately left alone while the header was a preview, so the
+	 * approved design stayed byte-identical; the rollout is the right moment to
+	 * apply the rule the rest of the site has always used.
+	 */
+	if ( $author && ! ( function_exists( 'vw_is_junk_author' ) && vw_is_junk_author( $author ) ) ) {
+		$bylines[] = [ 'By', $author ];
+	}
 	if ( $shooter ) $bylines[] = [ 'Photos', $shooter ];
 
 	$meta = get_the_date( 'F j, Y', $post ) . ' · ' . ( $photo_led
@@ -137,21 +154,15 @@ function vw_ah_credits( WP_Post $post ): array {
  * Credits as one inline string: "By Name · Photos Shooter · Jan 1, 2020 · 6 min read".
  * Used by homepage cards, which have no room for the header's stacked treatment.
  *
- * The junk-author suppression that every card already applies is filtered in
- * HERE rather than inside vw_ah_credits(), deliberately: vw_ah_credits() is
- * hoisted verbatim so the approved article-header preview stays byte-identical.
- * The header does still print "By Photography" on the 64 desk-label posts —
- * that is a pre-existing inconsistency, logged for the Round 8 rollout, not
- * something to fix silently inside an approved design.
+ * Junk-author suppression now lives in vw_ah_credits() itself, applied at the
+ * rollout — so this no longer needs its own copy of the rule and both the
+ * header and the cards get the same answer from one place.
  */
 function vw_credits_inline( WP_Post $post ): string {
 	$credits = vw_ah_credits( $post );
 
 	$parts = [];
 	foreach ( $credits['bylines'] as list( $label, $value ) ) {
-		if ( 'By' === $label && function_exists( 'vw_is_junk_author' ) && vw_is_junk_author( $value ) ) {
-			continue;
-		}
 		$parts[] = esc_html( $label ) . ' <strong>'
 			. ( 'By' === $label ? vw_author_html( $post ) : esc_html( $value ) )
 			. '</strong>';

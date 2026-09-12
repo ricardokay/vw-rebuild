@@ -8,14 +8,20 @@
    No dek anywhere; the headline is the anchor.
    ================================================================ */
 
-/* The parent theme's own header and featured image are suppressed here; this
-   block replaces them. Scoped to the preview body class only. */
-.vw-ah-preview .entry-header,
-.vw-ah-preview .featured-image,
-.vw-ah-preview .featured-image-above,
-.vw-ah-preview .featured-image-behind,
-.vw-ah-preview .featured-image-beside,
-.vw-ah-preview .post-thumbnail {
+/* The parent theme's featured image is suppressed here.
+
+   .entry-header is deliberately NOT in this list. During the preview the header
+   was prepended to the_content and the parent's header had to be hidden; the
+   rollout replaces template-parts/header/entry-header.php instead, so .vw-ah now
+   renders INSIDE .entry-header and hiding it hides this block's own output.
+
+   The featured-image selectors stay as a second line of defence behind the
+   newspack_featured_image_position filter, which already answers 'vw-header'. */
+.vw-ah-single .featured-image,
+.vw-ah-single .featured-image-above,
+.vw-ah-single .featured-image-behind,
+.vw-ah-single .featured-image-beside,
+.vw-ah-single .post-thumbnail {
 	display: none;
 }
 
@@ -46,20 +52,32 @@
 	margin: 0 0 16px;
 }
 
-/* The header's single accent-colour moment. Centred in case A, left in B and C.
-   !important is needed only to beat Newspack's ID-scoped hr default (#content hr),
-   the same conflict documented on the homepage rules. */
-.vw-ah__rule {
-	display: block !important;
-	width: 88px !important;
-	max-width: 88px !important;
-	height: 0 !important;
-	margin: 0 0 18px !important;
-	border: none !important;
-	border-top: 3px solid var(--vw-red) !important;
+/* ── The accent rule ────────────────────────────────────────────
+   The header's single accent-colour moment. Centred in case A, left in B and C.
+
+   Eight !important declarations used to live here, justified by a comment
+   claiming they beat "Newspack's ID-scoped hr default (#content hr)". Measured
+   at rollout: that selector does not exist. The parent styles hr at element
+   level only — `hr{…}` and `.wp-block-separator,hr{…}`, specificity 0,0,1 and
+   0,1,0 — which a single class already ties or beats, and source order settles
+   the tie in this stylesheet's favour because it loads after the parent's.
+
+   The reset is therefore a plain one-class-deeper selector (0,2,0), which wins
+   outright and does not depend on load order. It is one rule, and overriding it
+   later needs nothing more exotic than another class. */
+.vw-ah .vw-ah__rule {
+	display: block;
+	width: 88px;
+	max-width: 88px;
+	height: 0;
+	margin: 0 0 18px;
+	padding: 0;
+	border: none;
+	border-top: 3px solid var(--vw-red);
+	background: none;
 }
 
-.vw-ah--a .vw-ah__rule { margin-left: auto !important; margin-right: auto !important; }
+.vw-ah--a .vw-ah__rule { margin-left: auto; margin-right: auto; }
 
 /* Images never upscale: width:auto, capped at the container. */
 .vw-ah__img {
