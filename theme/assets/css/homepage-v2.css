@@ -154,6 +154,11 @@
   min-width: 320px;
   margin: 10px auto 0;
 }
+/* SVG GUARD: logo_VW_wordmark.svg holds tagline glyphs OUTSIDE its viewBox
+   (y 62.9–74.7 against a viewBox height of 59.4). The viewBox clip is the only
+   thing hiding them. Never set overflow on this element or its wrapper, and
+   never inline the file — either exposes the tagline and turns the masthead
+   into the wrong lockup. */
 .vwh2-masthead__logo { width: 100%; height: auto; display: block; }
 
 /* The motto owns only the space ABOVE it. The gap beneath — the masthead's
@@ -688,6 +693,7 @@
   align-items: center;
   gap: 24px;
 }
+/* SVG GUARD — same file, same rule: no overflow, never inlined. */
 .vwh2-footer__logo { height: 28px; width: auto; display: block; }
 .vwh2-footer__nav { display: flex; gap: 20px; margin: 0 auto; flex-wrap: wrap; }
 .vwh2-footer__nav a {

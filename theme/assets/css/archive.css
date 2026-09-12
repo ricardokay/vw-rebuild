@@ -312,24 +312,3 @@
 		padding: 24px 0;
 	}
 }
-
-
-/* ══ Breadcrumb on sub-category archives ═════════════════════════ */
-
-.vw-archive-crumbs {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 6px;
-	margin-bottom: 10px;
-	font-family: 'Inter', sans-serif;
-	font-size: 11px;
-	font-weight: 600;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-}
-
-.vw-archive-crumbs .vw-crumbs__link { color: var(--vw-ink-muted); text-decoration: none; }
-.vw-archive-crumbs .vw-crumbs__link:hover { color: var(--vw-red); }
-.vw-archive-crumbs .vw-crumbs__link[aria-current] { color: var(--vw-ink); }
-.vw-archive-crumbs .vw-crumbs__sep { color: var(--vw-border); }

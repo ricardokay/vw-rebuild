@@ -10,12 +10,15 @@ require_once get_stylesheet_directory() . '/inc/credits.php';
 require_once get_stylesheet_directory() . '/inc/article-header.php';
 require_once get_stylesheet_directory() . '/inc/masthead.php';
 
-// Primary-category derivation shared by the active nav and the breadcrumbs,
-// plus author-link rendering. Loads after masthead.php: it reads VW_MASTHEAD_SECTIONS.
+// Primary-category derivation (the active nav's section highlight) plus
+// author-link rendering. Loads after masthead.php: it reads VW_MASTHEAD_SECTIONS.
 require_once get_stylesheet_directory() . '/inc/context.php';
 
 // Comments off sitewide, display layer only — see inc/comments.php.
 require_once get_stylesheet_directory() . '/inc/comments.php';
+
+// /archive/ — the all-posts listing the archive closer points at.
+require_once get_stylesheet_directory() . '/inc/all-archive.php';
 
 /**
  * Curation: storage, capability, resolver, and the admin screen.
@@ -140,7 +143,9 @@ function vw_enqueue_styles() {
 
 	// Archive inheritance: the Browse-all destination and every non-curated
 	// category adopt the design system instead of Newspack's blue defaults.
-	if ( is_archive() || is_search() ) {
+	// vw_is_all_archive() is the /archive/ route, which borrows the .archive body
+	// class and therefore needs the stylesheet that styles it.
+	if ( is_archive() || is_search() || ( function_exists( 'vw_is_all_archive' ) && vw_is_all_archive() ) ) {
 		wp_enqueue_style(
 			'vw-archive',
 			$uri . '/assets/css/archive.css',
@@ -190,6 +195,33 @@ function vw_enqueue_styles() {
  * body class, so they would have silently stopped applying the moment
  * front-page.php took over. One class, both surfaces.
  */
+/**
+ * Drop the dead Elementor page-template class from the front page.
+ *
+ * Page 9 still carries _wp_page_template = elementor_header_footer from the old
+ * build, and it is still the queried object for the front page even though
+ * front-page.php renders instead of it — so WordPress prints
+ * page-template-elementor_header_footer in the body class. Elementor is
+ * deactivated and none of its assets load; this is a leftover label with
+ * nothing behind it, and it would otherwise be the last visible trace of the
+ * old front page in the markup.
+ *
+ * Display layer only, no database write — the meta is untouched and goes with
+ * page 9 whenever that cleanup is gated.
+ */
+add_filter( 'body_class', 'vw_drop_dead_elementor_class', 20 );
+function vw_drop_dead_elementor_class( $classes ) {
+	if ( ! is_front_page() ) {
+		return $classes;
+	}
+	return array_values( array_filter(
+		$classes,
+		static function ( $c ) {
+			return false === strpos( $c, 'elementor' );
+		}
+	) );
+}
+
 add_filter( 'body_class', 'vw_homepage_v2_body_class' );
 function vw_homepage_v2_body_class( $classes ) {
 	if ( is_front_page() || is_page_template( 'page-templates/vw-homepage-preview.php' ) ) {
@@ -351,7 +383,7 @@ function vw_is_junk_author( string $name ): bool {
  * or desk label, so a card never renders an empty meta line. Suppressing the
  * name is deliberate; suppressing the whole line was not.
  */
-function vw_byline_inner( $post ): string {
+function vw_byline_inner( $post, bool $link_author = true ): string {
 	$post = get_post( $post );
 	if ( ! $post ) return '';
 
@@ -360,7 +392,22 @@ function vw_byline_inner( $post ): string {
 		return '<time datetime="' . esc_attr( get_the_date( 'c', $post ) ) . '">'
 			. esc_html( get_the_date( 'M j, Y', $post ) ) . '</time>';
 	}
-	// Real people link to their archive; desk labels never do — see vw_author_html().
+
+	/*
+	 * $link_author = false for any byline rendered INSIDE a wrapping <a>.
+	 *
+	 * HTML forbids nested anchors, and browsers do not merely ignore them: the
+	 * parser closes the outer <a> where the inner one opens. Measured on the
+	 * live archive-closer card, which is itself a link — the byline's <strong>
+	 * was hoisted out of the card entirely and re-parented as a sibling after
+	 * it, leaving a bare "By" inside the card and the author's name floating
+	 * between the zone and the footer. Real people still link to their archive
+	 * everywhere the byline is not already inside a link.
+	 */
+	if ( ! $link_author ) {
+		return 'By <strong>' . esc_html( $name ) . '</strong>';
+	}
+
 	return 'By <strong>' . vw_author_html( $post ) . '</strong>';
 }
 
@@ -403,8 +450,36 @@ function vw_strip_scrape_chrome( string $text ): string {
 	 * which is exactly how the first two attempts at this silently matched
 	 * nothing.
 	 */
-	$credit = 'Photos?\s+(?:by|:)\s*[\p{Lu}][\p{L}\'’.-]+(?:\s+(?!Photos?\b)[\p{Lu}][\p{L}\'’.-]+){0,3}';
-	$text   = preg_replace( '/(' . $credit . ')(?:[\s\x{00A0}·|,–—-]*\1\b)+/u', '$1', (string) $text );
+	$credit = 'Photos?\s*(?:by|:)+\s*:?\s*[\p{Lu}][\p{L}\'’.-]+(?:\s+(?!Photos?\b)[\p{Lu}][\p{L}\'’.-]+){0,3}';
+	$text   = preg_replace( '/(' . $credit . ')(?:[\s\x{00A0}·|,–—-]*\1\b)+/ui', '$1', (string) $text );
+
+	/*
+	 * A credit glued to the FRONT of real prose — "Photo By: Regina Ip Coffee is
+	 * irresistible…" — which the collapse rule above never saw, because it is
+	 * neither a repeat nor a credit-only body. Found on the live front page in
+	 * the archive-closer card.
+	 *
+	 * Only ever stripped from the START: a credit that IS the whole body is
+	 * handled by the credit-only rule below, and a credit mid-sentence is
+	 * somebody's actual sentence.
+	 *
+	 * The name here is capped at TWO words, unlike the collapse rule above which
+	 * allows four. There is no separator between the credit and the prose that
+	 * follows it, so the only thing bounding the name is the word count — and a
+	 * wider cap eats real copy. Measured: at four words this rule turned
+	 * "Photo By: Regina Ip Coffee is irresistible…" into "irresistible…",
+	 * swallowing "Coffee is" because "Coffee" is capitalised. Two words covers
+	 * the archive's actual credits ("Regina Ip", "Ryan Johnson", "Jennifer
+	 * McInnis"); a three-word name leaves one stray word, which is a far cheaper
+	 * failure than deleting a sentence's subject. Repetition disambiguates in
+	 * the collapse rule, which is why it can afford to be greedier.
+	 *
+	 * Case insensitive: the archive carries "Photo by", "Photo By:" and "PHOTO:".
+	 * Display layer only — post_content is not touched, same as the 92
+	 * filename-glued credits still on the backlog.
+	 */
+	$lead_name = 'Photos?\s*(?:by|:)+\s*:?\s*[\p{Lu}][\p{L}\'’.-]+(?:\s+[\p{Lu}][\p{L}\'’.-]+)?';
+	$text      = preg_replace( '/^\s*' . $lead_name . '\s*[:.·|,–—-]*\s*/ui', '', (string) $text );
 
 	$text = preg_replace( '/^[\s\x{00A0}·|,–—-]+/u', '', (string) $text );
 	$text = trim( preg_replace( '/[\s\x{00A0}]+/u', ' ', (string) $text ) );

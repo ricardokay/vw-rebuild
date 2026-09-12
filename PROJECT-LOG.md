@@ -3303,3 +3303,102 @@ was. A vector of *that* lockup would close it; not in scope here and not swapped
 different artwork.
 
 Test state cleared: `vw_chrome` absent, preview page `private`, front-end sweep 200.
+
+---
+
+2026-09-12 — **CUTOVER. homepage-v2 is the live front page.** Plus breadcrumb removal, an
+all-posts archive route, and three bugs found on the live front page and fixed in-round.
+
+**0. SVG GUARD.** Comments at all three wordmark `<img>` references and on both SVG-adjacent CSS
+rules: `logo_VW_wordmark.svg` carries the tagline glyphs at y 62.9–74.7, **outside** its viewBox
+(height 59.4), and 366 of its 516 path coordinates are those glyphs. The viewBox clip is the only
+thing hiding them — inline the file, or open `overflow` on it or its wrapper, and the masthead
+silently becomes the wrong lockup.
+
+**1. BREADCRUMBS REMOVED** (Ricardo, option 2). The visible trail is gone from sub-category
+archives and the article header, and the `BreadcrumbList` JSON-LD with it. The article-header kicker
+is back to a single section name. **The derivation stays** — `vw_primary_term()`,
+`vw_term_trail()`, `vw_nav_active_slug()` — because the red active-nav is its remaining consumer:
+verified after removal that a live-music-reviews post still resolves to nav root `a-la-music`.
+Sub-category archive keeps its styled title, no trail. Zero `.vw-crumbs` / JSON-LD nodes anywhere.
+
+**2. CUTOVER EXECUTED.** `front-page.php` — a thin wrapper that asks the template registry which
+part file to include and nothing else. **Its existence is the cutover**: WordPress resolves
+front-page.php ahead of page.php for a static front page, so no option changed and deleting the
+file reverts the site to page 9 exactly as it was.
+
+Verified on `/` before declaring done: masthead, lead, music, photography band, all three tri
+columns and the archive closer render; the SVG wordmark serves; the live story count reads **3,373**
+and the dateline is today's; `.vw-home-v2` body class present and both homepage stylesheets
+enqueued; **zero** `elementor-widget` markers. A pin placed in the curation admin changed the live
+lead and unpinning reverted it — **the front page is curation-driven**.
+
+One leftover found and fixed: page 9 still carries `_wp_page_template = elementor_header_footer`,
+and because it is still the *queried object* for the front page WordPress printed
+`page-template-elementor_header_footer` in the body class. A display-layer `body_class` filter drops
+it. `elementor` now appears **0 times** on `/`. `page-id-9` remains and is correct — page 9 is
+genuinely the queried object; only its content is bypassed.
+
+**3. PREVIEW SURFACE RETIRED.** `vw-homepage-preview.php` now issues a **301 to `/`** from inside
+the template — no redirect plugin between a reader and a content URL, and no database change.
+Measured: `/vw-homepage-preview/` → 301 → `/` while published, 404 now that the page is private
+again.
+
+**Page 9 report, as asked.** `show_on_front=page`, `page_on_front=9`, page 9 still `publish` with
+its **3,868 bytes** of Elementor CSS intact in `post_content`. Its permalink *is* `/`, and `/home/`
+301s there by WordPress's own canonical redirect. Its Elementor CSS renders **nowhere** — 0
+occurrences on `/`. Nothing deleted. **Proposed retirement**, for a later gated cleanup round
+alongside the 43-page institutional cull: empty page 9's content, or delete the page and set
+`show_on_front=posts`, at which point the `body_class` filter above and the preview page can go too.
+
+**4. SWEEP.** `/`, a section front, an article and an archive page at **1440 and 390**: zero
+horizontal overflow and zero overrunning elements on all eight combinations. Archive title edges
+constant (113 px at 1440, 20 px at 390). Nothing regressed from front-page.php entering template
+resolution. Twelve-URL sweep: ten 200s, one 301, one correct 404.
+
+**BUG 1 — the archive-closer card, three symptoms, one cause.** Diagnosed from the rendered DOM
+rather than the source, which is what made it obvious: the card is an `<a>`, and the byline inside
+it now contained the author link added in the previous round. **HTML forbids nested anchors, and
+browsers do not ignore them — the parser closes the outer `<a>` where the inner one opens.** The
+DOM showed `bylineText: "By"`, `authorLinkInsideCard: false`, and a `<strong>` re-parented as a
+**sibling after the card** — which is the "orphaned Regina Ip text node below the zone". One cause,
+symptoms (b) and (c) both. `vw_byline_inner()` takes a `$link_author` flag; the archive closer
+passes `false`. A scan of every wrapping anchor in every section part found this was the only one.
+
+**Symptom (a), separately:** the dek began "Photo By: Regina Ip Coffee is irresistible…". The
+existing rules missed it because it is neither a repeat nor a credit-only body, and because
+`(?:by|:)` without the `i` flag never matched "By". A leading-credit stripper now runs before dek
+derivation. **The first attempt over-stripped** — at a four-word name cap it produced
+"irresistible…", swallowing "Coffee is" because "Coffee" is capitalised and there is no separator
+between credit and prose. The cap is now **two words**: it covers the archive's real credits
+("Regina Ip", "Ryan Johnson", "Jennifer McInnis"), and a three-word name leaves one stray word
+rather than deleting a sentence's subject. Result: **3 of 3,373** deks still open with a credit,
+down from the whole affected set. Display layer only — `post_content` untouched, same class as the
+92 filename-glued credits still on the editorial backlog.
+
+**BUG 2 — "Browse the Archive" pointed at `/category/a-la-music/`**, one section out of six, on a
+card claiming 3,373 stories. There is no all-posts route on this site: `show_on_front` is a page and
+`page_for_posts` is 0, so WordPress provides no blog index, and the only multi-section archives are
+per-year date archives.
+
+New `inc/all-archive.php` serves **`/archive/`** and `/archive/page/N/`. Implemented on
+`parse_request` rather than a rewrite rule **specifically to honour this round's no-DB-writes
+scope** — a rewrite rule does nothing until the `rewrite_rules` option is flushed, whereas path
+matching in PHP works the moment the file exists and disappears when it is removed. It reuses the
+parent's `archive.php` and borrows the `.archive` body class, so the restructured row grid, the
+restyled pagination and the palette all apply with no new template and no new CSS. It refuses to
+claim the path if a real page ever takes that slug.
+
+Verified: CTA href is `/archive/`; the destination renders **12 posts spanning A La Music, Book
+Reviews, Fiction & Essays, album reviews, food drink and hungry social**; the title reads "The
+Archive" with "Every published story, newest first — 3,373 in all"; `archive.css` loads; pagination
+works and emits pretty `/archive/page/2/` links across **282 pages**. The designed browse experience
+remains post-launch; this is the honest functional version.
+
+**All ten suites green.** Tier census unchanged (497 / 697 / 111 / 2,068).
+
+**ROUND STATUS.** Hosting decided: **Cloudways, DigitalOcean 2 GB, Toronto**. 2FA/TOTP and login
+hardening are spec'd into the staging round. Remaining rollouts queued: masthead, article header,
+operator tutorial, staging deploy, cutover to production and 301s.
+
+**STOPPED for verdict.**

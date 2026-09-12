@@ -44,6 +44,20 @@ function vw_masthead_render(): void {
 					</div>
 				<?php endif; ?>
 				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
+<?php
+					/*
+					 * SVG GUARD — do not inline this file, and do not give it or its
+					 * wrapper overflow:visible.
+					 *
+					 * logo_VW_wordmark.svg carries the "VANCOUVER'S WEEKLY NEWS SOURCE"
+					 * tagline glyphs at y 62.9–74.7, outside its viewBox (height 59.4).
+					 * 366 of its 516 path coordinates are those glyphs. The viewBox clip
+					 * is the ONLY thing hiding them: referenced as <img> they never
+					 * render, but inlined into the document — or with overflow opened on
+					 * the <svg> — the tagline appears and the masthead becomes the wrong
+					 * lockup.
+					 */
+					?>
 					<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.svg' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
 				</a>
 				<?php if ( vw_chrome_motto() ) : ?>

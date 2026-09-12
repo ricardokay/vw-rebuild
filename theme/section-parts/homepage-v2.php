@@ -101,6 +101,20 @@ $vw_nav = VW_MASTHEAD_SECTIONS;
 			</div>
 		<?php endif; ?>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
+<?php
+			/*
+			 * SVG GUARD — do not inline this file, and do not give it or its
+			 * wrapper overflow:visible.
+			 *
+			 * logo_VW_wordmark.svg carries the "VANCOUVER'S WEEKLY NEWS SOURCE"
+			 * tagline glyphs at y 62.9–74.7, outside its viewBox (height 59.4).
+			 * 366 of its 516 path coordinates are those glyphs. The viewBox clip
+			 * is the ONLY thing hiding them: referenced as <img> they never
+			 * render, but inlined into the document — or with overflow opened on
+			 * the <svg> — the tagline appears and the masthead becomes the wrong
+			 * lockup.
+			 */
+			?>
 			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.svg' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
 		</a>
 		<?php if ( vw_chrome_motto() ) : ?>
@@ -398,7 +412,8 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 					);
 					?>
 				</p>
-				<a href="<?php echo esc_url( $vw_cat_url( 7 ) ); ?>" class="vwh2-archive__cta">Browse the Archive →</a>
+				<?php // Every section, not one of them — see inc/all-archive.php. ?>
+				<a href="<?php echo esc_url( vw_all_archive_url() ); ?>" class="vwh2-archive__cta">Browse the Archive →</a>
 			</div>
 
 			<?php
@@ -415,7 +430,8 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 				<?php if ( $ip_dek ) : ?>
 					<span class="vwh2-archive__issue-quote"><?php echo esc_html( $ip_dek ); ?></span>
 				<?php endif; ?>
-				<span class="vwh2-archive__issue-byline"><?php echo vw_byline_inner( $ip ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+				<?php // The whole card is an <a>; a linked author here would nest anchors and the parser would hoist it out. ?>
+				<span class="vwh2-archive__issue-byline"><?php echo vw_byline_inner( $ip, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 			</a>
 			<?php endif; ?>
 		</div>
@@ -427,6 +443,20 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 <div class="vwh2-container">
 	<div class="vwh2-footer">
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>">
+<?php
+			/*
+			 * SVG GUARD — do not inline this file, and do not give it or its
+			 * wrapper overflow:visible.
+			 *
+			 * logo_VW_wordmark.svg carries the "VANCOUVER'S WEEKLY NEWS SOURCE"
+			 * tagline glyphs at y 62.9–74.7, outside its viewBox (height 59.4).
+			 * 366 of its 516 path coordinates are those glyphs. The viewBox clip
+			 * is the ONLY thing hiding them: referenced as <img> they never
+			 * render, but inlined into the document — or with overflow opened on
+			 * the <svg> — the tagline appears and the masthead becomes the wrong
+			 * lockup.
+			 */
+			?>
 			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.svg' ); ?>" alt="Vancouver Weekly" class="vwh2-footer__logo">
 		</a>
 		<nav class="vwh2-footer__nav" aria-label="Sections">
