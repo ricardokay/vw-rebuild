@@ -1,0 +1,234 @@
+<?php
+/**
+ * Book Reviews section front — four-zone custom render.
+ * Included by category.php inside .vw-section-blocks.
+ *
+ * Zone A — Lead block: 3-col symmetric (text list | image anchor | text list).
+ * Zone B — Featured + list: 1 image lead + 5 compact text items.
+ * Depth-capped at Zones A+B (18 stories), then a Browse-all handoff.
+ */
+
+$cats     = [ 30 ]; // book-reviews
+// Seed with the older half of each duplicate-title pair so no zone can
+// surface both copies. Display-layer only; nothing is deleted.
+$used_ids = vw_older_duplicate_ids( $cats );
+
+$vw_get_excerpt = static function ( WP_Post $post ): string {
+	$manual = trim( wp_strip_all_tags( $post->post_excerpt ) );
+	if ( $manual ) return $manual;
+	$content = vw_strip_scrape_chrome( strip_shortcodes( wp_strip_all_tags( $post->post_content ) ) );
+	return wp_trim_words( $content, 25, '…' );
+};
+
+
+/* ── Zone A: Lead block ─────────────────────────────────────────
+   The anchor and the story stacked beneath it now come from the curation
+   option: Vancouver Weekly → Homepage & Sections → this section → Lead block.
+   Nothing has to be curated — both slots fall back to auto-fill, which is the
+   same newest-post-with-a-real-image rule this block used before.
+
+   The old sticky-post lever is gone with this change. It was the only curation
+   mechanism the fronts had and it was never used (sticky_posts has been empty
+   throughout), so it selected nothing while implying it did. */
+
+$vw_lead_slots = vw_curation_resolve( 'section', 'lead', $used_ids, 'book-reviews' );
+$anchor  = ( vw_curation_slot_by_role( $vw_lead_slots, 'feat' )['post'] ?? null );
+$anchor2 = ( vw_curation_slot_by_role( $vw_lead_slots, 'compact' )['post'] ?? null );
+
+$left_posts = [];
+$q = new WP_Query( [
+	'category__in'   => $cats,
+	'post__not_in'   => $used_ids,
+	'posts_per_page' => 5,
+	'orderby'        => 'date',
+	'order'          => 'DESC',
+	'no_found_rows'  => true,
+] );
+while ( $q->have_posts() ) {
+	$q->the_post();
+	$left_posts[] = get_post();
+}
+wp_reset_postdata();
+foreach ( $left_posts as $p ) $used_ids[] = $p->ID;
+
+$right_posts = [];
+$q = new WP_Query( [
+	'category__in'   => $cats,
+	'post__not_in'   => $used_ids,
+	'posts_per_page' => 5,
+	'orderby'        => 'date',
+	'order'          => 'DESC',
+	'no_found_rows'  => true,
+] );
+while ( $q->have_posts() ) {
+	$q->the_post();
+	$right_posts[] = get_post();
+}
+wp_reset_postdata();
+foreach ( $right_posts as $p ) $used_ids[] = $p->ID;
+
+if ( $anchor ) :
+	$anchor_img = wp_get_attachment_image_src( get_post_thumbnail_id( $anchor->ID ), 'large' );
+	$anchor_cat = vw_primary_cat_name( $anchor->ID, $cats );
+	$anchor_dek = $vw_get_excerpt( $anchor );
+	?>
+	<div class="vw-module vw-module--lead">
+		<div class="vw-module__inner">
+			<div class="vw-lead-block">
+
+				<div class="vw-lead-block__col vw-lead-block__col--center">
+					<a href="<?php echo esc_url( get_permalink( $anchor ) ); ?>">
+						<img
+							src="<?php echo esc_url( $anchor_img[0] ); ?>"
+							alt="<?php echo esc_attr( get_the_title( $anchor ) ); ?>"
+							class="vw-lead-block__main-img"
+							width="<?php echo (int) $anchor_img[1]; ?>"
+							height="<?php echo (int) $anchor_img[2]; ?>"
+							loading="eager"
+						>
+					</a>
+					<?php if ( $anchor_cat ) : ?>
+						<span class="vw-kicker"><?php echo esc_html( $anchor_cat ); ?></span>
+					<?php endif; ?>
+					<a class="vw-lead-block__main-hed" href="<?php echo esc_url( get_permalink( $anchor ) ); ?>"><?php echo esc_html( get_the_title( $anchor ) ); ?></a>
+					<?php if ( $anchor_dek ) : ?>
+						<p class="vw-lead-block__main-dek"><?php echo esc_html( $anchor_dek ); ?></p>
+					<?php endif; ?>
+					<span class="vw-byline">
+						<?php echo vw_meta_line( $anchor ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</span>
+
+					<?php if ( $anchor2 ) :
+						$a2_cat = vw_primary_cat_name( $anchor2->ID, $cats );
+					?>
+					<hr class="vw-lead-block__divider">
+					<?php if ( $a2_cat ) : ?>
+						<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $a2_cat ); ?></span>
+					<?php endif; ?>
+					<a class="vw-lead-block__sub-hed" href="<?php echo esc_url( get_permalink( $anchor2 ) ); ?>"><?php echo esc_html( get_the_title( $anchor2 ) ); ?></a>
+					<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( $anchor2 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+					<?php endif; ?>
+				</div>
+
+				<div class="vw-lead-block__col vw-lead-block__col--left">
+					<?php if ( $left_posts ) : ?>
+					<ul class="vw-lead-block__list">
+						<?php foreach ( $left_posts as $p ) :
+							$lcat = vw_primary_cat_name( $p->ID, $cats );
+						?>
+							<li>
+								<?php if ( $lcat ) : ?>
+									<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $lcat ); ?></span>
+								<?php endif; ?>
+								<a class="vw-lead-block__list-hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
+								<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( $p ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+					<?php endif; ?>
+				</div>
+
+				<div class="vw-lead-block__col vw-lead-block__col--right">
+					<?php if ( $right_posts ) : ?>
+					<ul class="vw-lead-block__list">
+						<?php foreach ( $right_posts as $p ) :
+							$rcat = vw_primary_cat_name( $p->ID, $cats );
+						?>
+							<li>
+								<?php if ( $rcat ) : ?>
+									<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $rcat ); ?></span>
+								<?php endif; ?>
+								<a class="vw-lead-block__list-hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
+								<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( $p ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+					<?php endif; ?>
+				</div>
+
+			</div><!-- .vw-lead-block -->
+		</div>
+	</div>
+	<?php
+endif;
+
+
+/* ── Zone B: Featured + list ──────────────────────────────────── */
+
+$q = new WP_Query( [
+	'category__in'   => $cats,
+	'post__not_in'   => $used_ids,
+	'posts_per_page' => 6,
+	'orderby'        => 'date',
+	'order'          => 'DESC',
+	'no_found_rows'  => true,
+] );
+
+$feat_posts = [];
+while ( $q->have_posts() ) {
+	$q->the_post();
+	$feat_posts[] = get_post();
+}
+wp_reset_postdata();
+
+if ( $feat_posts ) {
+	foreach ( $feat_posts as $p ) $used_ids[] = $p->ID;
+	$lead      = array_shift( $feat_posts );
+	$lead_tier = vw_image_tier( $lead->ID );
+	$lead_cat  = vw_primary_cat_name( $lead->ID, $cats );
+	?>
+	<div class="vw-module">
+		<div class="vw-module__inner">
+			<div class="vw-feat-list">
+
+				<div class="vw-feat-list__lead">
+					<?php if ( $lead_tier >= 1 ) :
+						$lead_img = wp_get_attachment_image_src( get_post_thumbnail_id( $lead->ID ), 'large' );
+						if ( $lead_img ) :
+					?>
+						<a href="<?php echo esc_url( get_permalink( $lead ) ); ?>" class="vw-feat-list__lead-img-wrap">
+							<img
+								src="<?php echo esc_url( $lead_img[0] ); ?>"
+								alt="<?php echo esc_attr( get_the_title( $lead ) ); ?>"
+								class="vw-feat-list__lead-img"
+							>
+						</a>
+					<?php endif; endif; ?>
+					<?php if ( $lead_cat ) : ?>
+						<span class="vw-kicker"><?php echo esc_html( $lead_cat ); ?></span>
+					<?php endif; ?>
+					<h3 class="vw-feat-list__hed">
+						<a href="<?php echo esc_url( get_permalink( $lead ) ); ?>"><?php echo esc_html( get_the_title( $lead ) ); ?></a>
+					</h3>
+					<span class="vw-byline"><?php echo vw_byline_inner( $lead ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+				</div>
+
+				<ul class="vw-feat-list__items">
+					<?php foreach ( $feat_posts as $p ) :
+						$item_cat = vw_primary_cat_name( $p->ID, $cats );
+					?>
+						<li class="vw-feat-list__item">
+							<?php if ( $item_cat ) : ?>
+								<span class="vw-kicker vw-kicker--sm"><?php echo esc_html( $item_cat ); ?></span>
+							<?php endif; ?>
+							<a class="vw-feat-list__item-hed" href="<?php echo esc_url( get_permalink( $p ) ); ?>"><?php echo esc_html( get_the_title( $p ) ); ?></a>
+							<span class="vw-byline vw-byline--sm"><?php echo vw_byline_inner( $p ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+
+			</div>
+		</div>
+	</div>
+	<?php
+}
+
+
+/* ── Depth cap ────────────────────────────────────────────────
+   Zones C and D (a 10-item headline list and a 6-card grid) were removed:
+   the front ran ~34 stories, which read as a dump rather than an edit. The
+   front now ends at Zone A (12) + Zone B (6) = 18, and hands off to the real
+   archive. Sections holding 18 or fewer simply show what they have and the
+   link does not print. */
+
+vw_section_browse_all( $cats, 'Book Reviews', count( $used_ids ) );

@@ -27,7 +27,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - **B1:** retire the **230 JIG/noscript posts** to draft pre-launch (their galleries are inside `<noscript>` and never render).
 - **THIS WEEK strip hidden at launch.**
 - **Rights transfer does not gate launch.**
-- **Hosting PENDING.** Domains at **GoDaddy** (incl. the sister-city set); **Namecheap Stellar Plus cPanel alive**; shortlist **Cloudways / Kinsta**. Payload: 388 MB DB, 4.4 GB originals (12 GB regenerable thumbnails), 263k files — needs 20 GB+.
+- **Hosting DECIDED AND PROVISIONED: Cloudways, server `bmm-server-1`, DigitalOcean 2 GB Basic, Toronto, app `vancouverweekly`.** Domains at **GoDaddy** (incl. the sister-city set); **Namecheap Stellar Plus cPanel alive**. Payload: 388 MB DB, 4.4 GB originals (12 GB regenerable thumbnails), 263k files — needs 20 GB+.
 - **Entity wording "Vancouver Weekly" everywhere**, pending legal advice (Privacy + Terms currently say "Vancouver Weekly Corp.").
 - **Jobs page = simple email-us** (currently a FreshGigs affiliate iframe).
 - **Newsletter = re-consent** (19 legacy subscribers, signup dates lost).

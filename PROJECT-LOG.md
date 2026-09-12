@@ -3666,3 +3666,52 @@ colours, Dark Reader being the usual one. Diagnostic handed over rather than gue
 
 Closed. No CSS change made: adding an `!important` to win an argument the rule already wins
 would have left a permanent workaround behind a transient client-side condition.
+
+---
+
+## Political Megaphone + Book Reviews aligned to the section-front format (2026-09-12)
+
+The two categories rendered the plain Newspack archive while the other five nav sections
+rendered curated fronts. Not drift and not a regression — they were **excluded from the
+Session C standardization round**, which wrote `_vw_tpl` for a-la-music, photography,
+food-drink, out-n-about and must-see-films. Five slugs, not seven.
+
+**Three gaps, not one.** Ricardo's brief preferred a term-meta-only fix; that could not have
+worked, and saying so before writing anything was the point of the read-only phase.
+`vw_tpl_section_part()` returns `null` unless `section-parts/{slug}.php` (or `.html`) exists,
+so meta alone changes nothing rendered. Missing for both: the term meta, the section-part
+file, and an entry in the curation registry's `section` surface.
+
+**What was done.** Both parts were copied from `out-n-about.php` — the single-category
+variant, which differs from `a-la-music.php` only in the category array and the curation
+slug — with exactly four lines changed each: the docblock title, `$cats`, the
+`vw_curation_resolve()` context slug, and the `vw_section_browse_all()` label. `diff` against
+the source confirms nothing else moved. Registry gained two `$section_zones()` entries;
+`_vw_tpl = lead-3col` was written on terms 18 and 30 after a dry run, through the same
+whitelist the admin dropdown uses.
+
+**Duplicate-title seed:** checked before writing, as flagged. `vw_older_duplicate_ids()`
+returns **0 for both categories**. The call is kept in both files anyway — it costs one query,
+returns an empty array today, and covers any duplicate that appears later.
+
+**Verified by rendered measurement.** Both fronts: zero Newspack `.post-N` entries (was 12),
+zero pagination (was 7), lead block resolving, Browse-all closer present ("55 Political
+Megaphone stories in the archive", "90 Book Reviews stories in the archive"), 18 distinct
+story links, `h1` no longer carrying the "Category:" prefix, red active nav, and **zero
+horizontal overflow at 375** (doc 375 = viewport 375). The four pre-existing fronts are
+**byte-identical** to their pre-change capture — same md5 on a-la-music, photography,
+food-drink and out-n-about — so nothing else moved.
+
+Political Megaphone's image supply looked thin in the census (1 tier-1, 2 tier-2 in the
+newest 55) but the relaxation ladder found usable images deeper in the category, and both
+zones render with pictures. No text-variant fallback was needed.
+
+**Revert path:** `delete_term_meta( 18, '_vw_tpl' )` and `delete_term_meta( 30, '_vw_tpl' )`
+— neither term had a row before this round, so the revert deletes rather than restores.
+Removing the two files and the two registry lines completes it.
+
+**Doc fix, same round:** CURRENT STATE said hosting was pending with a Cloudways/Kinsta
+shortlist. Corrected to decided and provisioned — Cloudways, server `bmm-server-1`,
+DigitalOcean 2 GB Basic, Toronto, app `vancouverweekly`.
+
+Screenshots for the design verdict: `~/Desktop/vw-section-fronts-2026-09-12/`.
