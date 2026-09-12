@@ -2927,3 +2927,64 @@ browser; only the payload told the truth.
 sweep 200 across `/` and the section fronts.
 
 **STOPPED for verdict.**
+
+---
+
+2026-09-11 — **DIAGNOSTICS ROUND: drag reorder still fails in real wp-admin.** No fix attempted.
+Ricardo reports Test 2 still failing in **Chrome**: the drop holds visually until Save, and the
+order reverts after save+reload. The previous round's fix was verified only in a harness, and the
+harness passed while the real page failed — **so the harness-vs-real gap is now the bug**, and this
+round instruments the real page instead of simulating it.
+
+**What the last round did and did not establish.** The radio-group collision in `renumber()` was
+real and is fixed — measured directly, pre-fix the payload was missing `[1][mode]`, post-fix all
+three modes submit. That fix stands. What it did **not** establish is that the collision was the
+*only* cause, because every test ran against a hand-built harness page rather than
+`wp-admin/admin.php?page=vw-curation`. Ricardo's report proves something else is also wrong, and
+guessing at it from here has already cost a round.
+
+**BUILT — temporary, debug-gated diagnostics.** `inc/curation-debug.php` plus instrumentation in
+`assets/js/vw-curation-admin.js`. Everything is off unless the screen is opened with
+`?vwc_debug=1`, and the flag is `vw_curate`-gated (verified: a subscriber passing the flag gets
+`false`). Verified off by default — no hidden field, no console output, no log file.
+
+*Client side*, printed to the console:
+- sortable `start` / `update` / `stop`, each with the full slot state for the zone
+- `renumber` passes 0–3: state on entry, the captured checked modes, state after the rename, and
+  state after restore + `syncPanes`
+- at submit: the complete serialized `FormData`, its entry count and byte length, any duplicate
+  field names, and **any radio group with nothing checked** — the signature of the class of bug
+- the trace is stashed in `sessionStorage` and re-printed after the redirect, because a normal form
+  POST wipes the console before the result is visible. One copy/paste therefore carries both the
+  payload that was sent and the state that came back.
+
+*Server side*, appended to `wp-content/uploads/vwc-debug.log` and to the PHP error log, fired from
+two new no-op action hooks (`vw_curation_before_sanitize` / `vw_curation_after_sanitize`):
+- the request envelope: `CONTENT_LENGTH`, the recursive count of POST leaf values,
+  **`max_input_vars`**, `post_max_size`, whether suhosin is loaded, and the top-level POST keys.
+  PHP truncates a POST that exceeds `max_input_vars` **silently**, which would drop trailing fields
+  with no error and would look exactly like "the order reverted" — so the numbers are logged on both
+  sides specifically to be compared.
+- the verbatim `home` zones as PHP received them, including whether each zone's `[present]` marker
+  arrived
+- the zones again after the sanitizer, so intent and outcome sit side by side
+
+The post-save redirect now carries `vwc_debug=1` so one page load, one drag and one save produce a
+complete two-sided trace.
+
+**Instrument verified end to end** before hand-off: the server trace fires and records a
+deliberately mode-less slot correctly (`[1]` arriving with `post` but no `mode`); the redirect
+carries the flag; and in a browser the full chain prints — `sortable UPDATE → STOP → renumber PASS
+0/1/2/3 → STOP returned`, with 13 sortable lists found and jQuery 3.7.1 detected. The point of this
+check was the instrument, not the bug.
+
+**All seven suites still green** — the diagnostic seams are `do_action`/`apply_filters` calls that
+no-op when the flag is off.
+
+**NEXT STEP IS RICARDO'S, NOT MINE.** No further fix attempts until his console output identifies
+the failing step. The divergence between his browser's serialized payload and the `PHP RECEIVED`
+block in the log is the bug, and it is one of a small number of things: the payload leaving the
+browser already wrong, the payload arriving truncated, or the sanitizer mis-reading a payload that
+arrived intact.
+
+**STOPPED — awaiting console output.**

@@ -73,6 +73,7 @@ function vw_curation_admin_assets( string $hook ): void {
 	wp_localize_script( 'vw-curation-admin', 'vwCuration', [
 		'searchUrl' => esc_url_raw( rest_url( 'vw/v1/post-search' ) ),
 		'nonce'     => wp_create_nonce( 'wp_rest' ),
+		'debug'     => function_exists( 'vw_curation_debug' ) && vw_curation_debug(),
 		'strings'   => [
 			'searching' => 'Searching…',
 			'none'      => 'No matching stories.',
@@ -213,7 +214,15 @@ function vw_curation_handle_save(): void {
 
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by vw_curation_sanitize() against the registry.
 	$raw = isset( $_POST['vw_curation'] ) ? wp_unslash( $_POST['vw_curation'] ) : [];
-	update_option( VW_CURATION_OPTION, vw_curation_sanitize( $raw ), true );
+
+	/** Diagnostics only — see inc/curation-debug.php. No-ops unless ?vwc_debug=1. */
+	do_action( 'vw_curation_before_sanitize', $raw );
+
+	$clean = vw_curation_sanitize( $raw );
+
+	do_action( 'vw_curation_after_sanitize', $clean );
+
+	update_option( VW_CURATION_OPTION, $clean, true );
 
 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by vw_chrome_sanitize().
 	$chrome = isset( $_POST['vw_chrome'] ) ? wp_unslash( $_POST['vw_chrome'] ) : [];
@@ -236,7 +245,7 @@ function vw_curation_handle_save(): void {
 	vw_chrome_flush_cache();
 
 	wp_safe_redirect( add_query_arg(
-		[ 'page' => 'vw-curation', 'vw_saved' => '1' ],
+		apply_filters( 'vw_curation_redirect_args', [ 'page' => 'vw-curation', 'vw_saved' => '1' ] ),
 		admin_url( 'admin.php' )
 	) );
 	exit;
@@ -274,6 +283,7 @@ function vw_curation_admin_page(): void {
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="vw_curation_save">
 			<?php wp_nonce_field( 'vw_curation_save', 'vw_curation_nonce' ); ?>
+			<?php do_action( 'vw_curation_form_top' ); ?>
 
 			<h2 class="vwc__surface-head">Site settings</h2>
 			<?php vw_chrome_render_fields(); ?>
