@@ -102,3 +102,6 @@ VancouverWeekly_Logos/
 *.log
 screencapture-*.png
 uncategorized-review.csv
+
+# Machine-local Claude Code permissions (absolute paths, not portable)
+.claude/settings.local.json
