@@ -19,11 +19,9 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - **Archive pages** inherit the design system (serif headlines, palette, byline treatment, no "Category:" label) and paginate properly — `category.php` now falls through to the archive when `is_paged()`.
 - **Timezone FIXED:** `America/Vancouver` (gmt_offset −7). WP clock matches local time.
 - **Contributor Kit source captured** (2026-09-11): five JPGs + full verbatim transcription in gitignored `source-material/contributor-kit/`, mirrored to iCloud. DB page 68 is empty, so this is the only surviving copy.
+- **Sitewide v2 masthead LIVE (2026-09-12, commit `d417a70`):** dateline, centred SVG wordmark, motto, six-section nav, red `#C41230` active item. `header.php` calls `vw_masthead_render()` directly; the front page is skipped because the homepage part renders its own inline. The legacy `.vw-nav` header renders **nowhere** — 0 occurrences across 16 swept surfaces. `?vw_masthead=1` is a retained no-op.
+- **Adaptive article header LIVE on single posts (2026-09-12, commit `d417a70`):** case A full-width ≥1200px / B split / C stacked, accent rule, sentence-case bylines. Shipped as a child override of `template-parts/header/entry-header.php` — the part `single.php` and all four `large-featured-image.php` branches already request — so no fork of `single.php`. Newspack's duplicate hero is suppressed by filtering `newspack_featured_image_position`. Photo-led dedup drops the header image to case C when the featured attachment also opens the body gallery; desk-label authors omit the By line. `?vw_header=1` is retired.
 - Rollback assets valid: `pre-publish` + `pre-chrome-cleanup` dumps + reversal manifests, local + iCloud.
-
-**Approved in PREVIEW, NOT live — rollout rounds pending:**
-- **Adaptive article header** (`?vw_header=1`, iteration 5, Ricardo approved): case A full-width / B split / C stacked, accent rule, sentence-case bylines. Rollout needs: real template override (not CSS-hiding), threshold revisit at 1200, `hr` reset, mobile pass, full sweep.
-- **Sitewide v2 masthead** (`?vw_masthead=1`): dateline, centred wordmark, motto, six-section nav. Rollout needs a proper `header.php` replacement.
 
 **Launch decisions (Ricardo):**
 - **B1:** retire the **230 JIG/noscript posts** to draft pre-launch (their galleries are inside `<noscript>` and never render).
@@ -50,7 +48,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 6. Credits panel
 7. Metadata / SEO round
 8. Mobile round
-9. Rollouts (article header, masthead)
+9. ~~Rollouts (article header, masthead)~~ — **DONE 2026-09-12, `d417a70`**
 10. Operator tutorial + walkthrough
 11. Staging deploy + sweep
 12. Cutover + 301s
