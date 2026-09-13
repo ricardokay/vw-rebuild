@@ -3902,3 +3902,156 @@ own posts** — WordPress enforces email uniqueness only through its user API, s
 import bypassed it entirely. Two further pairs share addresses. **Duplicate contributor
 accounts are widespread** (many names exist twice), the user-table twin of the ~104
 duplicate-title pairs already listed.
+
+---
+
+## v1 dark footer, behind ?vw_footer=1 (2026-09-13)
+
+Display-layer only; no cutover. The default site is unchanged by construction: a gated child
+`footer.php` requires the parent file verbatim when the flag is off, so the four surfaces
+checked are byte-identical to their pre-round capture on the whole page, not merely the footer.
+
+### Addendum — reviewer handoff (verbatim)
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Build the v1 dark footer behind a preview flag, display-layer only, no cutover.
+Architecture as approved: gated child footer.php with byte-identical passthrough when off,
+?vw_footer=1 query param only, four palette keys added to vw_chrome with the sanitizer
+extended and no schema bump. Decisions: Jobs unlinked and listed dead; red for
+hover/active/accent only; wordmark inverted via CSS filter.
+
+PREVIEW URL: http://vancouverweekly-local.local/?vw_footer=1
+             (any front-end URL with ?vw_footer=1 appended)
+
+WHAT I DID:
+- captured pre-round full-page baselines for /, /category/a-la-music/, an article and
+  /about/, plus the vw_chrome before-value (ABSENT — never saved)
+- read the parent footer.php tail before replicating it:
+  footer-3 sidebar, before_footer, close #content, #colophon, close #page, wp_footer(),
+  </body></html>
+- NEW footer.php (child): flag off -> require the parent footer.php; flag on ->
+  before_footer, close #content, vw_footer_render(), close #page, wp_footer()
+- NEW inc/footer.php: vw_footer_preview_active() (query param only, never in admin),
+  institutional link registry BY PAGE ID with a published-status check, footer.css
+  enqueued ONLY under the flag, vw_footer_render()
+- NEW assets/css/footer.css: mobile-first, colours only via var(--vwf-*)
+- inc/chrome-settings.php: VW_CHROME_FOOTER_DEFAULTS, vw_chrome_footer_palette()
+  accessor that re-validates on read, sanitizer extended (valid AND non-default only), a
+  "Footer palette" block of four colour inputs in the existing panel
+- section-parts/homepage-v2.php: the inline vwh2-footer skipped under the flag only
+- functions.php: require inc/footer.php
+- tools/screenshot.sh: optional validated [height] argument (100-20000), default 4000
+  unchanged, with a comment explaining why height matters
+- fixed one real bug found during visual verification (the hairline, below)
+- ran the sanitizer round-trip as two single writes on their own approvals
+
+STRUCTURE (rendered): red 3px top rule · inverted SVG nameplate · motto from
+vw_chrome_motto() · "Independent since {vw_chrome_founded()}" · Sections column from
+VW_MASTHEAD_SECTIONS (the real nav) · About column (7) · full-width hairline · utility row
+"© 2026 Vancouver Weekly" (plain name, no corporate ending, wp_date year) with Privacy +
+Terms repeated. id="colophon" kept for skip links; Newspack's site-footer class
+deliberately omitted so none of its 15 .site-footer rules apply.
+
+EVIDENCE:
+- flag OFF, full page vs pre-round baseline, ?ver= normalised, re-checked AFTER every edit
+  AND after the option round-trip:
+    home BYTE-IDENTICAL · section BYTE-IDENTICAL · article BYTE-IDENTICAL · about BYTE-IDENTICAL
+- flag ON, all four surfaces: #colophon=1, .vw-footer=1, Newspack .site-info=0,
+  footer.css linked once, </body> and </html> once each
+- HOMEPAGE UNDER FLAG: #colophon=1, inline vwh2-footer=0 — exactly ONE footer
+- served HTML carries all four custom properties:
+    --vwf-bg:#1a161e --vwf-text:#f7f6f4 --vwf-accent:#c41230 --vwf-rule:#3a3540
+- computed (in-app browser): background rgb(26,22,30), color rgb(247,246,244). The ONLY
+  rule setting either on the footer is footer.css `.vw-footer`, uncontested.
+- 1440: identity/columns grid 357 | 715; nameplate 240px with filter invert(1); red top
+  rule 3px rgb(196,18,48); hairline rgb(58,53,64); resting link colour rgb(247,246,244),
+  no underline; Jobs opacity 0.55
+- 375: document width 375 = viewport; single identity column 335px; link columns
+  151.5 | 151.5; utility row stacks (column); zero overflow inside the footer
+- colour literals: 0 in live footer.css (two occurrences were in comments and were
+  reworded so a grep audit is unambiguous), 0 in inc/footer.php, 0 in footer.php. The four
+  defaults live only in inc/chrome-settings.php.
+- every footer link HTTP-checked: all six sections 200; Advertise, Contributor Kit,
+  Newsletters, Privacy Policy, Terms, Resources 200; utility Privacy + Terms 200; Jobs
+  rendered unlinked
+
+REAL BUG FOUND AND FIXED DURING VISUAL VERIFICATION:
+The hairline rendered 100px wide against 1,136px available. The parent style.css sets
+`hr { max-width: 5rem; margin-left: auto }` and .vw-footer__rule reset the margin but not
+the width. Added width:100% and max-width:none. After: 1440 rule 1136 = top row 1136;
+375 rule 335 = top row 335. The same trap the article header hit earlier.
+
+SANITIZER ROUND-TRIP (standing rules followed: script printed in chat before running, dry
+run as a separate invocation, each write on its own approval, return values checked,
+fresh-process re-read):
+  dry run (test, in-memory): form renders all four colour fields; non-default test values
+    survive sanitize; masthead keys preserved alongside; invalid 'javascript:alert(1)' NOT
+    stored; a default-valued colour NOT stored; exact payload printed; before-value ABSENT
+  write 1 (save, the admin handler's exact update_option call): returned true
+  verify (fresh process): all four read back through the accessor; all four survive an
+    unmodified re-save of the re-rendered form; the saved values reached the rendered
+    style attribute (--vwf-bg:#0b0b0f;...)
+  write 2 (revert, delete_option): returned true; fresh re-read = '__ABSENT__'
+  Note: a real panel save freezes the slogan as a literal string, so it stops tracking the
+  founding year. That is why the test was reverted rather than left in place.
+
+SCREENSHOTS: ~/vw-screenshots/
+  footer-v1-1440.png   1440x1300, 404 page under the flag — full footer in frame
+  footer-v1-375.png    375x1700,  404 page under the flag — see the caveat below
+  Both are of the 404 page ON PURPOSE (below).
+
+FINAL LINK LIST:
+  DEAD (rendered unlinked):
+    Jobs            — #60 /jobs/ and #13407 /jobs-2/ both 0 chars
+  THIN (linked, HTTP 200, little content):
+    Advertise With Us — #66 /advertise/, 85 chars (#15893 /advertise-2/ is an identical stub)
+    Contributor Kit   — #1955 /contributor-kit-2/, 99 chars; the canonical #68
+                        /contributor-kit/ is EMPTY
+    Newsletters       — #78 /newsletter/, 349 chars
+  SUBSTANTIVE (linked, HTTP 200):
+    Privacy Policy #56 /privacy-policy-2/ 3,265 · Terms #52 /terms-and-conditions/ 21,502
+    · Resources #49 /resources/ 2,648
+  Two live footer links sit on -2 slugs (/privacy-policy-2/, /contributor-kit-2/). Linking
+  by page ID means the 43-page cull can fix the slugs without touching the footer.
+
+FILES CHANGED:
+- theme/footer.php — NEW (gated passthrough)
+- theme/inc/footer.php — NEW
+- theme/assets/css/footer.css — NEW
+- theme/inc/chrome-settings.php — palette defaults, accessor, sanitizer, panel fields
+- theme/functions.php — one require
+- theme/section-parts/homepage-v2.php — inline footer gated on the flag
+- tools/screenshot.sh — optional [height] argument
+- PROJECT-LOG.md — this entry
+- DB: two writes, both reverted; net database change NONE (vw_chrome absent before and after)
+
+VERIFIED: flag-off identity by whole-page byte comparison against captures taken BEFORE the
+first edit, repeated after the last edit and after the round-trip; flag-on structure by
+parsing the served HTML; paint by computed styles in the browser; sanitizer by an actual
+save through the handler's own call, re-read in a separate process, then reverted.
+
+OUTSTANDING / RISKS:
+- SCREENSHOT LIMITATION, not a footer defect, and it cost this round a long detour: on the
+  tall section fronts, headless Chrome's --screenshot can never frame the footer. Measured
+  via the DevTools protocol: #content spans exactly one viewport there (308..2705 with
+  innerHeight 2397), putting the footer at 2769..3221, always one viewport below the capture
+  at any window size. The short 404 page lacks that minimum height, which is why the
+  screenshots use it. A true full-page capture needs DevTools-protocol element clipping; the
+  new [height] argument does not solve this case.
+- CONSEQUENCE FOR PAST EVIDENCE: every full-page screenshot taken with tools/screenshot.sh
+  on a section front this session was missing its footer. Newspack's light footer blended
+  into the off-white page, so it went unnoticed.
+- The 375 screenshot is NOT a faithful 375 layout. Headless lays out wider than the
+  requested window: the masthead is clipped at the right edge there, yet in a real 375
+  viewport it measures 375 wide with zero overflow. The 375 claims above rest on
+  in-browser measurement, not on that image.
+- The in-app browser's screenshot returned blank frames under viewport emulation, so none
+  of its screenshots were used as evidence.
+- Touch targets: utility-row links are 27px tall and list links about 31px, under the
+  common 44px guidance. Flagged, not changed.
+- The homepage still renders two footers flag-off (inline vwh2-footer + Newspack
+  #colophon). Pre-existing; the v1 footer resolves it at cutover.
+- NOT PUSHED. Pushes happen only from Ricardo's Terminal.
+=== END HANDOFF ===
+```

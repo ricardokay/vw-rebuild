@@ -30,6 +30,7 @@ require_once get_stylesheet_directory() . '/inc/all-archive.php';
  * admin_enqueue_scripts and admin_post_* never fire on the front end.
  */
 require_once get_stylesheet_directory() . '/inc/chrome-settings.php';
+require_once get_stylesheet_directory() . '/inc/footer.php';
 require_once get_stylesheet_directory() . '/inc/templates.php';
 require_once get_stylesheet_directory() . '/inc/curation.php';
 require_once get_stylesheet_directory() . '/inc/curation-admin.php';

@@ -439,6 +439,14 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 
 </div>
 
+<?php
+/*
+ * Under ?vw_footer=1 the v1 footer replaces #colophon, and this inline footer
+ * would stack above it. Skipped only under the flag; the default homepage still
+ * renders both footers exactly as before.
+ */
+if ( ! vw_footer_preview_active() ) :
+?>
 <!-- Footer -->
 <div class="vwh2-container">
 	<div class="vwh2-footer">
@@ -470,3 +478,4 @@ if ( $photo_essay && ! $photo_essay['text_variant'] ) :
 		<span class="vwh2-footer__tag">Independent Since <?php echo esc_html( (string) vw_chrome_founded() ); ?></span>
 	</div>
 </div>
+<?php endif; ?>

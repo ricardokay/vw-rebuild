@@ -28,6 +28,22 @@ const VW_CHROME_FOUNDED  = 2012;  // Corrected from 2006 by Ricardo, 2026-09-11.
 const VW_CHROME_MOTTO    = 'The Record of the City’s Culture';
 const VW_CHROME_PLACE    = 'Vancouver, BC';
 
+/*
+ * Footer palette defaults — the design tokens, dark-first. Lowercase because
+ * <input type="color"> submits lowercase, and a submitted value equal to its
+ * default is deliberately not stored (see the sanitizer).
+ *
+ * Adding these keys needed no schema bump: vw_chrome_config() only discards a
+ * stored option whose _schema differs, and a missing key already falls back to
+ * its default here.
+ */
+const VW_CHROME_FOOTER_DEFAULTS = [
+	'footer_bg'     => '#1a161e',  // --ink
+	'footer_text'   => '#f7f6f4',  // --bg
+	'footer_accent' => '#c41230',  // --red
+	'footer_rule'   => '#3a3540',
+];
+
 /** Raw stored settings, schema-checked. */
 function vw_chrome_config( bool $refresh = false ): array {
 	static $config = null;
@@ -50,6 +66,20 @@ function vw_chrome_config( bool $refresh = false ): array {
 function vw_chrome_flush_cache(): void {
 	wp_cache_delete( VW_CHROME_OPTION, 'options' );
 	vw_chrome_config( true );
+}
+
+/**
+ * Footer palette, always complete. A stored value is re-validated on read, so a
+ * hand-edited option can never put an arbitrary string into a style attribute.
+ */
+function vw_chrome_footer_palette(): array {
+	$c   = vw_chrome_config();
+	$out = [];
+	foreach ( VW_CHROME_FOOTER_DEFAULTS as $key => $default ) {
+		$hex         = isset( $c[ $key ] ) ? sanitize_hex_color( (string) $c[ $key ] ) : null;
+		$out[ $key ] = $hex ?: $default;
+	}
+	return $out;
 }
 
 /** Founding year. */
@@ -124,6 +154,19 @@ function vw_chrome_sanitize( $raw ): array {
 
 	$out['dateline'] = ! empty( $raw['dateline'] );
 
+	// This branch rebuilds $out from scratch, so every key it does not list here
+	// is dropped on save. The footer keys must be carried explicitly or the
+	// next masthead save would silently erase the palette.
+	//
+	// Stored only when valid AND different from the default: an invalid colour
+	// is a typo, and a default-valued one should keep tracking the default.
+	foreach ( VW_CHROME_FOOTER_DEFAULTS as $key => $default ) {
+		$hex = sanitize_hex_color( strtolower( trim( (string) ( $raw[ $key ] ?? '' ) ) ) );
+		if ( $hex && $hex !== $default ) {
+			$out[ $key ] = $hex;
+		}
+	}
+
 	return $out;
 }
 
@@ -178,6 +221,37 @@ function vw_chrome_render_fields(): void {
 				</label>
 				<span class="vwc-field__help">The thin line above the wordmark carrying the date and the top-right line.</span>
 			</p>
+		</div>
+	</section>
+
+	<?php
+	$palette = vw_chrome_footer_palette();
+	$labels  = [
+		'footer_bg'     => [ 'Background', 'The footer ground.' ],
+		'footer_text'   => [ 'Text', 'Headings, links at rest, and the copyright line.' ],
+		'footer_accent' => [ 'Accent', 'Top rule and link hover only. Too low-contrast on dark for resting text.' ],
+		'footer_rule'   => [ 'Hairline', 'The rule between the columns and the copyright row.' ],
+	];
+	?>
+	<section class="vwc-zone vwc-settings">
+		<header class="vwc-zone__head">
+			<h4 class="vwc-zone__title">Footer palette</h4>
+			<span class="vwc-zone__locked">Preview only for now — <code>?vw_footer=1</code></span>
+		</header>
+
+		<div class="vwc-fields">
+			<?php foreach ( $labels as $key => [ $label, $help ] ) : ?>
+				<p class="vwc-field">
+					<label for="vwc-<?php echo esc_attr( $key ); ?>"><strong><?php echo esc_html( $label ); ?></strong></label>
+					<input type="color" id="vwc-<?php echo esc_attr( $key ); ?>"
+						name="vw_chrome[<?php echo esc_attr( $key ); ?>]"
+						value="<?php echo esc_attr( $palette[ $key ] ); ?>">
+					<span class="vwc-field__help">
+						<?php echo esc_html( $help ); ?>
+						Default <code><?php echo esc_html( VW_CHROME_FOOTER_DEFAULTS[ $key ] ); ?></code>.
+					</span>
+				</p>
+			<?php endforeach; ?>
 		</div>
 	</section>
 	<?php

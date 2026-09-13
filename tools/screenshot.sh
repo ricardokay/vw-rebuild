@@ -9,22 +9,30 @@
 # tools/screenshot.sh grants exactly one writable directory rather than the
 # whole filesystem.
 #
-#   tools/screenshot.sh <url> <width> <leaf.png>
+#   tools/screenshot.sh <url> <width> <leaf.png> [height]
+#
+# HEIGHT MATTERS, and the default is a trap for full pages. Newspack's #page
+# has min-height:100vh with #content set to flex-grow, so a window taller than
+# the document stretches the page to fill it and pushes the footer BELOW the
+# captured area. A 4000px window put a 452px footer at 4371-4823: entirely out
+# of frame, while the page looked finished. To capture a whole page including
+# its footer, pass the document's natural height as measured at a normal
+# viewport.
 #
 set -euo pipefail
 
 readonly OUT_DIR="$HOME/vw-screenshots"
 readonly CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-readonly HEIGHT=4000
 
-if [ "$#" -ne 3 ]; then
-	echo "usage: tools/screenshot.sh <url> <width> <leaf.png>" >&2
+if [ "$#" -lt 3 ] || [ "$#" -gt 4 ]; then
+	echo "usage: tools/screenshot.sh <url> <width> <leaf.png> [height]" >&2
 	exit 64
 fi
 
 url=$1
 width=$2
 leaf=$3
+height=${4:-4000}
 
 case $url in
 	http://*|https://*) ;;
@@ -36,6 +44,14 @@ case $width in
 esac
 if [ "$width" -lt 100 ] || [ "$width" -gt 5000 ]; then
 	echo "refusing: width must be 100-5000 — got '$width'" >&2
+	exit 65
+fi
+
+case $height in
+	''|*[!0-9]*) echo "refusing: height must be a positive integer — got '$height'" >&2; exit 65 ;;
+esac
+if [ "$height" -lt 100 ] || [ "$height" -gt 20000 ]; then
+	echo "refusing: height must be 100-20000 — got '$height'" >&2
 	exit 65
 fi
 
@@ -59,7 +75,7 @@ dest="$OUT_DIR/$leaf"
 
 "$CHROME" --headless --disable-gpu --hide-scrollbars \
 	--virtual-time-budget=6000 \
-	--window-size="${width},${HEIGHT}" \
+	--window-size="${width},${height}" \
 	--screenshot="$dest" \
 	"$url" >/dev/null 2>&1
 
