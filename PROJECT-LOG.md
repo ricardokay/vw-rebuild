@@ -3879,3 +3879,26 @@ OUTSTANDING / RISKS:
 - new_admin_email before-value unrecoverable.
 === END HANDOFF ===
 ```
+
+**2026-09-13 — user-1 email resolved; three identity questions deferred.** The site owner
+account's junk address is replaced with a plus-alias of the operator's real mailbox, which
+sidesteps the uniqueness collision with the dormant spare-admin account without touching that
+account. Single write, dry run as its own invocation, return value checked, re-read from a
+fresh process — the corrective for the swallowed `WP_Error` two rounds back. Note the
+`admin_email` option and the owner account's address now differ by alias; both deliver to the
+same inbox, and reconciling them waits on the spare account.
+
+Deferred by decision, not forgotten: the spare admin's demotion goes to the **staging
+hardening round** (role `author`, zero posts, one session from one minute after its 2024-07-15
+creation and never used since, so nothing renders and nothing orphans). The **"Ricardo
+Khayatte" three-way display-name collision** goes to the **credits round** — ID 2 is an
+`author` with 29 published and a live author archive carrying every rendered byline; ID 304 is
+a `subscriber` with a single published post on its own `-2` archive; ID 200 is the
+administrator with zero published. The collision was created in this project's own rename and
+is recorded as such.
+
+Added to known dirt: **148 accounts share one `@vancouverweekly.com` address and 113 of them
+own posts** — WordPress enforces email uniqueness only through its user API, so the direct
+import bypassed it entirely. Two further pairs share addresses. **Duplicate contributor
+accounts are widespread** (many names exist twice), the user-table twin of the ~104
+duplicate-title pairs already listed.
