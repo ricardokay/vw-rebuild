@@ -236,7 +236,7 @@ function vw_chrome_render_fields(): void {
 	<section class="vwc-zone vwc-settings">
 		<header class="vwc-zone__head">
 			<h4 class="vwc-zone__title">Footer palette</h4>
-			<span class="vwc-zone__locked">Preview only for now — <code>?vw_footer=1</code></span>
+			<span class="vwc-zone__locked">Shown on every page</span>
 		</header>
 
 		<div class="vwc-fields">

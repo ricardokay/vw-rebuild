@@ -1,7 +1,6 @@
 /* ================================================================
-   v1 footer — preview only (?vw_footer=1)
-
-   Loaded solely under the flag, so the default site's <head> is untouched.
+   Sitewide footer (v1, dark). Cut over from the ?vw_footer=1 preview on
+   2026-09-13; loaded on every page.
    Mobile-first. Every colour comes from the four custom properties the
    template sets from the chrome settings; this file holds no colour literal.
 

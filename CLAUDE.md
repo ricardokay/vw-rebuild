@@ -21,6 +21,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - **Contributor Kit source captured** (2026-09-11): five JPGs + full verbatim transcription in gitignored `source-material/contributor-kit/`, mirrored to iCloud. DB page 68 is empty, so this is the only surviving copy.
 - **Sitewide v2 masthead LIVE (2026-09-12, commit `d417a70`):** dateline, centred SVG wordmark, motto, six-section nav, red `#C41230` active item. `header.php` calls `vw_masthead_render()` directly; the front page is skipped because the homepage part renders its own inline. The legacy `.vw-nav` header renders **nowhere** — 0 occurrences across 16 swept surfaces. `?vw_masthead=1` is a retained no-op.
 - **Adaptive article header LIVE on single posts (2026-09-12, commit `d417a70`):** case A full-width ≥1200px / B split / C stacked, accent rule, sentence-case bylines. Shipped as a child override of `template-parts/header/entry-header.php` — the part `single.php` and all four `large-featured-image.php` branches already request — so no fork of `single.php`. Newspack's duplicate hero is suppressed by filtering `newspack_featured_image_position`. Photo-led dedup drops the header image to case C when the featured attachment also opens the body gallery; desk-label authors omit the By line. `?vw_header=1` is retired.
+- **Sitewide v1 dark footer LIVE (2026-09-13):** nameplate + motto + founding year, Sections column from the real nav, About column (institutional pages by page ID), full-width hairline, "© {year} Vancouver Weekly" + Privacy/Terms. Child `footer.php` replaces the parent outright and calls `vw_footer_render()`. Palette is four keys in `vw_chrome` (defaults = design tokens), editable in the chrome panel. **The homepage double footer is resolved**: the inline `vwh2-footer` is gone, and with it the `.vw-home-v2 #colophon` hide rule. `?vw_footer=1` is a retained no-op (`vw_footer_preview_active()` returns false). Jobs renders unlinked (both pages empty).
 - Rollback assets valid: `pre-publish` + `pre-chrome-cleanup` dumps + reversal manifests, local + iCloud.
 
 **Launch decisions (Ricardo):**
@@ -42,7 +43,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 **REMAINING LAUNCH MAP (in order):**
 1. Architecture investigation
 2. **Curation system — HARD GATE: the homepage does not cut over without admin curation** + template switcher
-3. Settings panel + footer (light/dark)
+3. Settings panel + footer — **footer LIVE, dark (2026-09-13)**; palette settings live; a light variant is not built
 4. Institutional pages
 5. Discovery + card system (incl. missing-image variants)
 6. Credits panel

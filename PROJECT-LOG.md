@@ -4163,3 +4163,130 @@ OUTSTANDING / RISKS:
 - NOT PUSHED. 2f15107 untouched. Pushes happen only from Ricardo's Terminal.
 === END HANDOFF ===
 ```
+
+---
+
+## Footer cutover — v1 dark footer live sitewide; preview flag retired (2026-09-13)
+
+### Addendum — reviewer handoff (verbatim)
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Footer CUTOVER. The approved v1 dark footer (29b9a5a) becomes the real footer sitewide
+and the ?vw_footer=1 preview flag retires, following the masthead rollout pattern. Capture
+fresh pre-cutover baselines first; verify by computed display AND height on every surface at
+1440 and 375; confirm everything above the footer is untouched and the flag is inert;
+update CLAUDE.md CURRENT STATE.
+
+WHAT I DID:
+- read PROJECT-LOG and CLAUDE.md for the retirement precedent: vw_masthead_active() was kept
+  as a documented `return false;` with every call site removed (PROJECT-LOG 3421, 3526)
+- captured fresh flag-off baselines BEFORE any edit: /, /category/a-la-music/,
+  /category/book-reviews/, an article, /about/, /archive/ (dateline Sunday, September 13, 2026;
+  each page carries exactly one `</div><!-- #content -->` marker, the "above the footer" anchor)
+- footer.php: v1 renders unconditionally; the parent-footer passthrough is removed. The
+  parent's tail is still replicated: before_footer, close #content, #colophon, close #page,
+  wp_footer(), </body></html>
+- inc/footer.php: vw_footer_preview_active() retired to a documented `return false;` per
+  the masthead precedent; footer.css enqueue ungated; header comment rewritten; the SVG-guard
+  pointer repointed to inc/masthead.php, because the copy of the full guard explanation it
+  used to reference lived inside the inline footer being deleted
+- section-parts/homepage-v2.php: removed the inline vwh2-footer and its flag gate (40 lines).
+  $vw_nav kept: it still drives the masthead nav at line 124
+- homepage-v2.css: REMOVED the .vw-home-v2 #colophon:not(.vw-footer) hide rule (reasoning
+  below) and the dead .vwh2-footer block (997 bytes)
+- homepage-v2-data.css: removed the dead `.vwh2-footer > a` selector and its flex rule
+- inc/chrome-settings.php: the Footer palette panel header read "Preview only for now —
+  ?vw_footer=1"; now "Shown on every page"
+- assets/css/footer.css: header comment claimed "preview only" and "loaded solely under the
+  flag", both now false; corrected. No rule changed.
+- CLAUDE.md CURRENT STATE: footer LIVE sitewide, flag retired, double footer resolved; launch
+  map item 3 updated
+
+WHY THE #colophon HIDE RULE WAS REMOVED, NOT KEPT:
+Its only target was Newspack's parent footer on the homepage. After cutover footer.php no
+longer requires the parent file, so that element does not exist on any page and the rule
+matches nothing. Keeping dead CSS invites the exact failure 29b9a5a fixed: a future footer
+that dropped the vw-footer class would silently vanish on the homepage only. The masthead
+rollout deleted its dead .vw-nav CSS; this follows that precedent, and the same reasoning
+removed the dead .vwh2-footer rules in both homepage stylesheets.
+
+EVIDENCE — COMPUTED display + rendered height, EVERY surface, both widths:
+  1440  /                        visible [#colophon.vw-footer]  block  449px  bg rgb(26,22,30)  border-top 0
+  1440  /category/a-la-music/    visible [#colophon.vw-footer]  block  449px  bg rgb(26,22,30)  border-top 0
+  1440  /category/book-reviews/  visible [#colophon.vw-footer]  block  449px  bg rgb(26,22,30)  border-top 0
+  1440  /sigur-ros-.../          visible [#colophon.vw-footer]  block  449px  bg rgb(26,22,30)  (.vw-ah present: 1)
+  1440  /about/                  visible [#colophon.vw-footer]  block  449px  bg rgb(26,22,30)  border-top 0
+  1440  /archive/                visible [#colophon.vw-footer]  block  449px  bg rgb(26,22,30)  border-top 0
+   375  all six surfaces         visible [#colophon.vw-footer]  block  585px  bg rgb(26,22,30)
+                                 document width 375, zero elements overflowing inside the footer
+  Every surface, both widths: .vwh2-footer = 0, .site-info = 0.
+  "Visible" = footer/#colophon/.vwh2-footer/.site-info/.site-footer elements with computed
+  display != none AND rendered height > 0, top-level only.
+
+EVIDENCE — EVERYTHING ABOVE THE FOOTER vs pre-cutover baselines (all six pages):
+  home 47,636 bytes IDENTICAL · a-la-music 35,951 IDENTICAL · book-reviews 35,452 IDENTICAL
+  · article 31,145 IDENTICAL · about 26,409 IDENTICAL · archive 60,700 IDENTICAL
+  Compared = HTML from the start of the document to `</div><!-- #content -->`, covering <head>,
+  masthead, content and article header. Normalisations, each deliberate and stated:
+    (a) ?ver= cache-busters stripped;
+    (b) the one intended <head> addition removed from the new render: the now-unconditional
+        footer.css <link id="vw-footer-css">;
+    (c) on the homepage only, the deleted inline footer block removed from the baseline
+        (regex asserted to match exactly once);
+    (d) trailing whitespace at the #content-close boundary stripped.
+  WHY (d): the first pass showed every page differing by exactly one line, a whitespace-only
+  "\t\n" immediately before `</div><!-- #content -->`. It is the output of the parent
+  footer.php's inactive `if ( is_active_sidebar( 'footer-3' ) ) … endif;` block, which the new
+  footer.php deliberately does not reproduce. Bytes confirmed at that exact position; it is the
+  footer template's own preamble, not masthead, content or article header.
+  Re-run after the final two comment/admin-text edits: still IDENTICAL on all six.
+
+EVIDENCE — FLAG INERT:
+  full page with vs without ?vw_footer=1: home, a-la-music, book-reviews, article, about all
+  byte-IDENTICAL.
+  /archive/ differs ONLY in pagination hrefs gaining "?vw_footer=1", because WordPress's
+  paginate_links() echoes the current request's query args. CONTROL: /archive/?foo=bar
+  produces the identical pattern. With the echoed param stripped, /archive/?vw_footer=1,
+  /archive/?foo=bar and /archive/ are the same md5 (2e6e9d57c7830c9f5a07d633963f92e0). The
+  flag has no effect beyond generic query-arg propagation that any unknown param gets.
+
+EVIDENCE — SERVED MARKUP (all six): #colophon=1, .vw-footer=1, vwh2-footer=0, site-info=0,
+footer.css linked once, </html> once.
+Remnant scan of live theme code: vwh2-footer 0; #colophon in homepage-v2.css 0; callers of
+vw_footer_preview_active() 0 (the retained function definition only).
+
+FILES CHANGED:
+- theme/footer.php — unconditional v1; parent passthrough removed
+- theme/inc/footer.php — flag retired to a no-op; enqueue ungated; comments
+- theme/section-parts/homepage-v2.php — inline footer and its gate removed
+- theme/assets/css/homepage-v2.css — #colophon hide rule and dead .vwh2-footer block removed
+- theme/assets/css/homepage-v2-data.css — dead .vwh2-footer > a rules removed
+- theme/assets/css/footer.css — header comment corrected (no rule change)
+- theme/inc/chrome-settings.php — panel header no longer says "preview only"
+- CLAUDE.md — CURRENT STATE: footer LIVE, flag retired, double footer resolved
+- PROJECT-LOG.md — this entry
+- DB: no writes.
+
+VERIFIED: computed display and rendered height on all six surfaces at both widths — the check
+missed twice before; above-footer identity by byte comparison against baselines captured
+BEFORE the first edit, repeated after the last edit; flag inertness by full-page comparison
+plus a control parameter.
+
+OUTSTANDING / RISKS:
+- Two parent-footer features did not carry over and are not in the v1 design:
+  newspack_accessibility_page_link() and newspack_social_menu_footer(). VERIFIED against the
+  pre-cutover baseline: the parent footer rendered only "© 2026 Vancouverweekly" plus the
+  Newspack imprint anchor (text already suppressed) — accessibility link absent, social menu
+  absent, privacy-policy link absent. Nothing visible was lost. If either is configured later
+  it will not appear; worth a line in the operator tutorial.
+- The footer-3 "above footer" widget area is no longer rendered. It was empty at cutover.
+- Touch targets remain 27-31px (flagged in 2f15107, unchanged).
+- No screenshot this round: the brief asked for rendered measurement, and headless
+  --screenshot cannot frame the footer on these tall pages. The 404-page capture from
+  29b9a5a (~/vw-screenshots/footer-v2-1440.png) shows the same unchanged footer markup.
+- CLAUDE.md's new footer bullet carries a date rather than a SHA, since the SHA does not exist
+  until this commit.
+- NOT PUSHED. Pushes happen only from Ricardo's Terminal.
+=== END HANDOFF ===
+```

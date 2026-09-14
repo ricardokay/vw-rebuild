@@ -1,23 +1,25 @@
 <?php
 /**
- * v1 footer — dark-first, behind ?vw_footer=1.
+ * Sitewide footer — dark-first.
  *
  * The parent footer.php hardcodes <footer id="colophon"> and its copyright
  * block and offers no filter to replace them; its template parts render INSIDE
  * that element, so overriding them would keep Newspack's wrapper. The child
- * footer.php therefore branches on the flag: off, it requires the parent file
- * unchanged; on, it renders this.
+ * footer.php therefore replaces the parent file and calls vw_footer_render().
  *
- * Query param only, deliberately no cookie. A sticky preview can leak into
- * normal browsing, and a reviewer then reports the preview as the live site —
- * the same failure class as the active-nav colour investigation.
+ * Previewed behind ?vw_footer=1 (2f15107, 29b9a5a) and cut over 2026-09-13.
  */
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Retained as a no-op, as vw_masthead_active() was at the masthead rollout.
+ * The footer is unconditional now; this only exists so that anything still
+ * calling it — an old link's query flag, a stale condition — gets a defined
+ * answer instead of a fatal.
+ */
 function vw_footer_preview_active(): bool {
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display toggle.
-	return ! is_admin() && isset( $_GET['vw_footer'] ) && '1' === $_GET['vw_footer'];
+	return false;
 }
 
 /*
@@ -65,10 +67,6 @@ function vw_footer_link_item( array $item ): string {
 
 add_action( 'wp_enqueue_scripts', 'vw_footer_enqueue', 20 );
 function vw_footer_enqueue(): void {
-	// Enqueued only under the flag, so the default site's <head> is unchanged.
-	if ( ! vw_footer_preview_active() ) {
-		return;
-	}
 	$path = get_stylesheet_directory() . '/assets/css/footer.css';
 	wp_enqueue_style(
 		'vw-footer',
@@ -97,7 +95,7 @@ function vw_footer_render(): void {
 
 			<div class="vw-footer__top">
 				<div class="vw-footer__identity">
-					<?php // SVG GUARD: referenced as <img>, never inlined — see homepage-v2.php. ?>
+					<?php // SVG GUARD: referenced as <img>, never inlined — see inc/masthead.php. ?>
 					<a class="vw-footer__nameplate-link" href="<?php echo esc_url( home_url( '/' ) ); ?>">
 						<img class="vw-footer__nameplate"
 							src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.svg' ); ?>"

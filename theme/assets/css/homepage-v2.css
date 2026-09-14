@@ -22,18 +22,6 @@
   margin-top: 0;
 }
 
-/* Newspack's own site-wide footer (#colophon, from the parent theme's
-   footer.php) renders after this template's own footer via get_footer() —
-   get_footer() must still run (it closes #content/#page and fires
-   wp_footer()), so the parent's visible footer markup is hidden here
-   rather than skipped, which would break the HTML document structure.
-
-   :not(.vw-footer) because the v1 footer (?vw_footer=1) keeps id="colophon"
-   for skip links. An unqualified #colophon hid it too, on the homepage only. */
-.vw-home-v2 #colophon:not(.vw-footer) {
-  display: none;
-}
-
 .vwh2-container {
   max-width: 1440px;
   margin-inline: auto;
@@ -687,39 +675,4 @@
 
 @media (max-width: 1023px) {
   .vwh2-archive__inner { grid-template-columns: 1fr; gap: 28px; }
-}
-
-
-/* ── Footer ────────────────────────────────────────────────────── */
-
-.vwh2-footer {
-  border-top: 1px solid var(--vw-border);
-  padding: 20px 0;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-/* SVG GUARD — same file, same rule: no overflow, never inlined. */
-.vwh2-footer__logo { height: 28px; width: auto; display: block; }
-.vwh2-footer__nav { display: flex; gap: 20px; margin: 0 auto; flex-wrap: wrap; }
-.vwh2-footer__nav a {
-  font-family: 'Inter', sans-serif;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--vw-ink-muted);
-  text-decoration: none;
-}
-.vwh2-footer__nav a:hover { color: var(--vw-red); }
-.vwh2-footer__tag {
-  font-family: 'Inter', sans-serif;
-  font-size: 10.5px;
-  color: var(--vw-ink-muted);
-  white-space: nowrap;
-}
-
-@media (max-width: 900px) {
-  .vwh2-footer { flex-wrap: wrap; justify-content: center; text-align: center; }
-  .vwh2-footer__nav { order: 3; width: 100%; justify-content: center; }
 }
