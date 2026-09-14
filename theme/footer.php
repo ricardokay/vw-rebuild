@@ -23,6 +23,12 @@
 
 </div><!-- #page -->
 
+<?php
+// Outside #page on purpose: the open panel marks #page inert, and the bar and
+// panel must stay usable while it is.
+vw_mobile_nav_render();
+?>
+
 <?php wp_footer(); ?>
 
 </body>

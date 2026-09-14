@@ -737,3 +737,14 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Verified by measurement, so no change made: nothing else keys off `is_archive()`; the elementor body-class filter is correctly front-page-scoped (no surface carries elementor body classes); no dead breadcrumb JSON-LD condition remains.
 - Note for future test runs: `verify_drag_persist` failed on a **stale fixture**, not a regression — a verbatim browser capture predating the `[present]` marker, so the sanitizer correctly returned registry defaults. Its failure signature (`[0,0,0]`) is identical to the original drag bug's, which is exactly how it could be misread.
 - Open: bylines and kickers in the article header are **plain text, not links**, while the section-front cards link bylines via `vw_author_html()`/`.vw-author-link`. Not a regression and not in the approved design, but the two surfaces now disagree. Flagged for the discovery/credits round.
+
+**September 14, 2026 — mobile round part 1: mobile nav LIVE**
+- **Status change: mobile round is under way.** Part 1 (nav, search minimal, 44px targets) shipped; part 2 (article and section mobile polish) is next.
+- Decision (Ricardo, from rendered mockups): **option B — a fixed bottom bar plus a panel**, over a panel-only hamburger. It matches the plan's original mobile vision ("Bottom navigation bar"). The bar holds **modes, not topics** — Home / Sections / Search / Archive — so it never grows with the section list. That is the lesson from the Crack Magazine reference: its tabs work because they are Read/Watch/Listen, not one tab per section.
+- Decision: the inline nav collapses **below 960px**, because seven sections need about 840px on one row. Tablets get the bar.
+- Decision: **Must See Films joins the nav as the seventh and last section**, desktop and mobile. Its uncurated `.html` front is accepted for this round; the film section mark is deferred.
+- Decision: **the active nav item is underlined at every width.** Red stays, but no longer carries the state alone. Below 960px a "you are here" line under the masthead rule carries it, because the inline nav is gone there.
+- Decision: **44px tap targets** on nav, bar, panel and every footer link. Desktop nav reaches 44px through a hit area that takes no layout space, so the masthead is exactly as tall as before.
+- Decision: the **search results page gets a minimal pass only**, because the bar now sends readers there. Its look is pending a design verdict; a designed search belongs to the discovery round.
+- Consolidation: the homepage's duplicate inline nav is gone — header and homepage both call `vw_masthead_nav_render()`.
+- Open: the `must-see-films` front's story list has **zero side padding** at every width (pre-existing, now more visible from the nav). Real-device iOS behaviour (safe-area inset, Safari toolbar) is handled in CSS but untested on hardware.

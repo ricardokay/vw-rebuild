@@ -6,7 +6,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 
 ## CURRENT STATE *(overwrite this section each session — do not append)*
 
-**Archive:** 3,373 published posts. **85536 (getty-rights-hold) is the only held draft** — never publish without license confirmation; flagged via `_vw_publish_exclude` + `db-backups/publish-exclusions.json`.
+**Archive:** 3,371 published posts (3,373 until 2026-09-12, when review posts 6435 and 7489 were retired to draft with `_vw_retired_review = 1`). **85536 (getty-rights-hold) is the only held draft** — never publish without license confirmation; flagged via `_vw_publish_exclude` + `db-backups/publish-exclusions.json`.
 
 **Done and verified:**
 - Phases 1–3: 2,789 posts imported, 3,585 images, child theme + 4 section fronts. Spam cleanup, photographer account consolidation, album classification (563 albums).
@@ -19,9 +19,10 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - **Archive pages** inherit the design system (serif headlines, palette, byline treatment, no "Category:" label) and paginate properly — `category.php` now falls through to the archive when `is_paged()`.
 - **Timezone FIXED:** `America/Vancouver` (gmt_offset −7). WP clock matches local time.
 - **Contributor Kit source captured** (2026-09-11): five JPGs + full verbatim transcription in gitignored `source-material/contributor-kit/`, mirrored to iCloud. DB page 68 is empty, so this is the only surviving copy.
-- **Sitewide v2 masthead LIVE (2026-09-12, commit `d417a70`):** dateline, centred SVG wordmark, motto, six-section nav, red `#C41230` active item. `header.php` calls `vw_masthead_render()` directly; the front page is skipped because the homepage part renders its own inline. The legacy `.vw-nav` header renders **nowhere** — 0 occurrences across 16 swept surfaces. `?vw_masthead=1` is a retained no-op.
+- **Sitewide v2 masthead LIVE (2026-09-12, commit `d417a70`):** dateline, centred SVG wordmark, motto, section nav (seven sections since 2026-09-14), red `#C41230` active item. `header.php` calls `vw_masthead_render()` directly; the front page is skipped because the homepage part renders its own masthead inline — both print the nav through the one `vw_masthead_nav_render()`. The legacy `.vw-nav` header renders **nowhere** — 0 occurrences across 16 swept surfaces. `?vw_masthead=1` is a retained no-op.
 - **Adaptive article header LIVE on single posts (2026-09-12, commit `d417a70`):** case A full-width ≥1200px / B split / C stacked, accent rule, sentence-case bylines. Shipped as a child override of `template-parts/header/entry-header.php` — the part `single.php` and all four `large-featured-image.php` branches already request — so no fork of `single.php`. Newspack's duplicate hero is suppressed by filtering `newspack_featured_image_position`. Photo-led dedup drops the header image to case C when the featured attachment also opens the body gallery; desk-label authors omit the By line. `?vw_header=1` is retired.
 - **Sitewide v1 dark footer LIVE (2026-09-13):** nameplate + motto + founding year, Sections column from the real nav, About column (institutional pages by page ID), full-width hairline, "© {year} Vancouver Weekly" + Privacy/Terms. Child `footer.php` replaces the parent outright and calls `vw_footer_render()`. Palette is four keys in `vw_chrome` (defaults = design tokens), editable in the chrome panel. **The homepage double footer is resolved**: the inline `vwh2-footer` is gone, and with it the `.vw-home-v2 #colophon` hide rule. `?vw_footer=1` is a retained no-op (`vw_footer_preview_active()` returns false). Jobs is omitted from the About column until a real page exists (both copies empty).
+- **Mobile nav LIVE (2026-09-14, mobile round part 1, option B):** below 960px the inline nav collapses into a fixed dark bottom bar of MODES — Home / Sections / Search / Archive — with a full-height dark panel (seven sections, search field in Search mode, Newsletters/Advertise/Contributor Kit). Bar + panel use the footer palette (`vw_footer_palette_vars()`), body gets bar-height + `env(safe-area-inset-bottom)` padding, `viewport-fit=cover` is set in `header.php`. **Must See Films is the seventh nav item** (desktop + mobile, uncurated `.html` front accepted). **Active item underlined at every width** (2px, red stays but no longer carries the state alone); below 960px a centred **"you are here"** line under the heavy rule carries it. **44px tap targets** on nav, bar, panel and every footer link (desktop nav via zero-layout hit-area padding — masthead height unchanged). No-JS fallback: `html.vw-js` gates the collapse, so without JavaScript the wrapped inline nav stays. **Search results page: minimal pass only** (serif title, 16px field, kicker labels, 3-line excerpts, single no-results form) — look pending a design verdict. Files: `inc/masthead.php`, `assets/css/masthead-nav.css`, `assets/js/masthead-nav.js`.
 - Rollback assets valid: `pre-publish` + `pre-chrome-cleanup` dumps + reversal manifests, local + iCloud.
 
 **Launch decisions (Ricardo):**
@@ -36,7 +37,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 **Known dirt, not blocking:**
 - **~104 duplicate-title pairs** archive-wide (14 in Photography) — distinct post IDs, display-deduped on fronts, **pending editorial review**; two pairs have conflicting dates.
 - **48 posts carry scraped comment chrome** in `post_content` (deks cleaned display-layer only).
-- `must-see-films` front is inconsistent — `.html` template, so no depth cap or dedupe.
+- `must-see-films` front is inconsistent — `.html` template, so no curation, depth cap or dedupe; its story list also runs **edge to edge with zero side padding** at every width (pre-existing, measured 2026-09-14). Now in the nav, so more visible. Film section mark deferred.
 - Archive page layout is consistent but **undesigned**.
 - Wrapper-div shells parked (cosmetic). `uncategorized` holds 1,637 posts; 391 empty spam categories.
 
@@ -48,7 +49,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 5. Discovery + card system (incl. missing-image variants)
 6. Credits panel
 7. Metadata / SEO round
-8. Mobile round
+8. Mobile round — **part 1 (mobile nav + search minimal + 44px targets) DONE 2026-09-14**; part 2 (article/section mobile polish) next
 9. ~~Rollouts (article header, masthead)~~ — **DONE 2026-09-12, `d417a70`**
 10. Operator tutorial + walkthrough
 11. Staging deploy + sweep
@@ -73,7 +74,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - Section fronts live at `/category/{slug}/` — these are native WordPress core URLs
 - NO redirect plugins sitting between a reader and any content URL
 - NO "Page + redirect" pattern for section fronts (breaks if plugin deactivates)
-- Section fronts render via `category.php` routing → `section-parts/{slug}.html` block templates
+- Section fronts render via `category.php` routing → the term's `_vw_tpl` template → `section-parts/{slug}.php` (see Section fronts below)
 
 **Multisite: SUBDOMAIN or separate-domain ONLY**
 - Never use subdirectory multisite (prefixes Vancouver's URLs permanently once set)
@@ -106,7 +107,7 @@ These contain credentials or PII (user emails, hashed passwords). The SQL dump i
 - Block tool: Newspack Homepage Posts block (`newspack-blocks` plugin — **installed**, free/open source, from GitHub not wordpress.org)
 - NO page builders (Elementor, Beaver Builder, Bricks) — high lock-in, fragile on multisite
 - NO bloated custom PHP card grids — Newspack blocks handle layout/query
-- Custom PHP only as a thin routing layer (~25 lines `category.php`) delegating to `.html` block templates
+- Custom PHP as a thin routing layer (`category.php`) delegating to per-section `section-parts/{slug}.php` fronts
 - `archive-section.php` (old draft, never activated in template hierarchy) — **removed**
 
 ### Two-layer content model
@@ -115,10 +116,10 @@ These contain credentials or PII (user emails, hashed passwords). The SQL dump i
 
 ### Section fronts
 - Real category archive URLs render curated layouts directly (Option B — no redirect)
-- Implemented: minimal `category.php` (~25 lines) routes curated slugs → `section-parts/{slug}.html` via `do_blocks()`; all other categories fall through to Newspack default archive
-- Phase 1 curated sections: `a-la-music` (umbrella, queries 6 music category IDs: 7,9,8,11,20,10), `out-n-about` (17), `must-see-films` (15)
-- To add a section: add slug to `$curated` array in `category.php` AND create `section-parts/{slug}.html`
-- Lead story: WordPress sticky post → auto-rises to lead slot. Fallback: most recent post with `_thumbnail_id`.
+- Implemented: `category.php` asks `vw_tpl_section_part()` (`inc/templates.php`) for the term. A front renders only when the term has a template assigned (term meta `_vw_tpl`, set from the Edit Category dropdown) AND `section-parts/{slug}.php` exists — included directly. Legacy `section-parts/{slug}.html` (rendered via `do_blocks()`) is still honoured; **`must-see-films` is the only one left**. Everything else — no template, no part, or `is_paged()` — falls through to the Newspack archive.
+- Fronts with templates (`_vw_tpl = lead-3col`): `a-la-music` (umbrella, queries 6 music category IDs: 7,9,8,11,20,10), `photography` (6), `food-drink` (13 + 14 hungry-social), `out-n-about` (17), `political-megaphone` (18), `book-reviews` (30), `must-see-films` (15, `.html`). Page-1 queries use explicit `category__in` lists (direct assignments only); page 2+ is the native archive and includes child categories.
+- To add a section: set its template in the Edit Category dropdown, create `section-parts/{slug}.php`, add a `$section_zones()` entry in `inc/curation-registry.php`, and — if it belongs in the nav — add it to `VW_MASTHEAD_SECTIONS` in `inc/masthead.php`.
+- Lead story: the curation option (Vancouver Weekly → Homepage & Sections → section → Lead block), auto-filling with the newest post carrying a real image when nothing is pinned. The sticky-post lever is gone.
 - **Photography section deferred (P3)**: real gallery content is 90% in Uncategorized, not the Photography category (30 posts). Next pass: P1-additive — ADD photography category to photographer-authored posts, never remove existing categories.
 
 ### Image quality tiers (automatic, never manual)

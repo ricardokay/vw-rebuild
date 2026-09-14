@@ -4300,3 +4300,127 @@ unlinked entries, and nothing above the footer changed. Jobs returns as a regist
 real page exists. **The "Jobs = simple email-us" decision stays open** in CURRENT STATE.
 
 **2026-09-14 — Allow-list widened.** `.claude/settings.local.json`: added `cd`/`jq`/`mdls`/`cut`/`column`/`shasum`, removed `find`; deny list unchanged; gate proof completed with a fired-and-denied write prompt (`touch /tmp/gate-test`).
+
+---
+
+## Mobile round part 1 — mobile nav, search minimal, 44px targets (2026-09-14)
+
+**Decision (Ricardo, chosen from rendered 375px mockups): option B.** Below 960px the inline
+nav collapses into a fixed dark bottom bar of modes — Home / Sections / Search / Archive — and
+a full-height dark panel. Sections mode lists the seven sections (PT Serif 24px, 52px rows) plus
+Newsletters / Advertise / Contributor Kit; Search mode adds a 16px field that focuses on open.
+The bar holds modes rather than one tab per section: Crack Magazine's bar was the reference, and
+its tabs work because they are Read/Watch/Listen, not topics.
+
+**Measured before (375px, identical on /, a-la-music, must-see-films, an article):** two-line
+dateline, nav wrapped into 3 rows (3/2/1), 96px tall, each item 17px tall at 10.5px text, content
+starting at y=252. Active item shown by colour alone. Footer links 27/31/37px.
+
+**What landed.**
+- `VW_MASTHEAD_SECTIONS` gains `must-see-films` as the seventh and last section, which also
+  gives the footer Sections column a seventh link. It resolves through the existing `.html`
+  front; the film section mark is deferred.
+- The homepage's duplicate inline nav is gone: header and homepage both call
+  `vw_masthead_nav_render()`.
+- The active item is underlined at every width (2px, 6px offset, red text kept). Below 960px a
+  centred "you are here" line under the heavy rule carries it, 44px tall.
+- Bar and panel take the footer palette through a new `vw_footer_palette_vars()`, so the chrome
+  panel's footer colours drive them too. The accent is only ever a 2px mark on dark, never resting
+  text (about 3.1:1).
+- The body gets `calc(60px + env(safe-area-inset-bottom))` bottom padding below 960px, and
+  `header.php` now sets `viewport-fit=cover` so the safe-area insets are real on iOS.
+- `html.vw-js` is set inline in `<head>` before first paint and gates the collapse. Without
+  JavaScript the wrapped inline nav stays, at 44px per item.
+- Panel behaviour: `role=dialog` + `aria-modal`, `#page` made inert, body scroll locked, Tab and
+  Shift+Tab wrap inside, Escape closes and returns focus to the tab, and a `matchMedia` listener
+  closes the panel if the viewport widens past 960px. Sections mode focuses the dialog itself,
+  because a scripted `focus()` on the close button counts as `:focus-visible` and lit a ring on tap.
+- 44px tap targets on every footer link (real row height) and on the desktop nav (13.5px padding
+  cancelled by a negative margin, so the nav is still 31px and the rule still at y=224).
+- Below 600px the dateline drops its slogan span to one line, per the approved mockup; it
+  returns from 600px up.
+- The search results page gets a minimal pass in `archive.css`, scoped to `.search`: serif
+  title, 48px/16px field, section labels as red kickers (Uncategorized hidden), muted 3-line
+  excerpts, muted dates, and the duplicate no-results heading and form collapsed.
+
+**Defects found and fixed during verification.**
+- Bar icons rendered solid: Newspack's global `svg { fill: currentColor }` beats the `fill="none"`
+  attribute. Fixed with `.vw-mnav .vw-icon { fill: none; stroke: currentColor }`.
+- Search result dates rendered bold like author names. Fixed.
+- The no-results state stacked two titles and two forms. Fixed.
+- WebKit's blue clear button on the panel field. Hidden.
+
+**Docs.** CLAUDE.md CURRENT STATE: 3,371 published posts (verified — 6435 and 7489 retired
+with `_vw_retired_review` on 2026-09-12), mobile nav bullet, seven-section masthead, launch map
+item 8. The HARD CONSTRAINTS and ARCHITECTURE routing text was rewritten from the retired
+`$curated` array / `.html` description to the `_vw_tpl` + `section-parts/{slug}.php` reality,
+and the stale sticky-post lead line was replaced with the curation option. VW-MASTER-PLAN
+decision entry added.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Mobile round part 1 — implement approved option B (bottom bar of modes + sections/search panel), "you are here" line, Must See Films as 7th nav item, active underline at all widths, 44px nav + footer tap targets, safe-area/iOS handling, minimal search-results styling, consolidate homepage nav into vw_masthead_nav_render(), fix two CLAUDE.md drifts; verify at 375/768/1440; one scoped commit; no push.
+
+WHAT I DID:
+- inc/masthead.php → 7th section; vw_masthead_sections(), vw_masthead_nav_render(), vw_masthead_here_render(), vw_mobile_icon(), vw_mobile_nav_render() (bar + dialog panel)
+- section-parts/homepage-v2.php → inline nav loop replaced by vw_masthead_nav_render(); slogan span classed
+- footer.php → vw_mobile_nav_render() printed after #page (outside the element made inert)
+- inc/footer.php → palette sprintf extracted to vw_footer_palette_vars(), used by footer + bar/panel
+- functions.php → enqueue masthead-nav.css (dep vw-homepage-v2-data) + masthead-nav.js (footer); wp_head priority 1 inline html.vw-js
+- header.php → viewport-fit=cover
+- assets/css/masthead-nav.css (new) → mobile-first bar/panel/here-line/underline/safe-area/body padding; 960px restores inline nav with zero-layout 44px hit areas
+- assets/js/masthead-nav.js (new) → open/close, aria-expanded, inert #page, focus trap, Escape, matchMedia close at 960
+- assets/css/footer.css → list, legal and nameplate links min-height 44px
+- assets/css/archive.css → .search minimal pass
+- Each file copied repo theme/ → installed child theme, cmp verified; final diff -rq clean (only .DS_Store)
+- Fixed during verification: solid icons (parent svg fill), bold dates, duplicate no-results title+form, ring on tap-open, WebKit clear button
+- CLAUDE.md drifts fixed (3,371; routing text); master plan entry; this log entry
+
+EVIDENCE (verifiable):
+- php -l → no syntax errors on all 6 changed PHP files
+- curl 200 on /, /category/a-la-music/, /category/must-see-films/, /photos-wwe-friday-night-smackdown-rogers-arena-70133-2/, /?s=strokes, /?s=zzqxnothing, /archive/, /category/netflix-films/, /category/a-la-music/page/2/ → 1 .vw-mbar, 1 #vw-mnav-panel, 7 nav items each; here/active = A La Music, Must See Films, Photography, Must See Films (netflix-films child), A La Music (page 2); none on /, search, /archive/; 0 PHP warnings
+- DB claim check: 6435 + 7489 status=draft, _vw_retired_review=1, modified 2026-09-12 16:00 → 3,373 − 2 = 3,371
+- 375 (5 surfaces): overflow false (sw 375); bar fixed y=752 h=60, 4 cells 94x59; body padding-bottom 60px; at scroll bottom footerBottom 752 = barTop 752, last row bottom 724; tapMinH 44, under44 []; heavy rule y=130 (was 252); nav hidden; active nav computed underline 2px rgb(196,18,48); here-line shown 44px underline red on section/article; Home* on /, Search* on search; icon fill none
+- 768 (5 surfaces): overflow false; bar y=964, cells 188x59; footerBottom 964 = barTop; under44 []; rule y=204; here-line + Search* as above
+- 1440 (5 surfaces): bar hidden, body padding 0, here-line hidden; nav visible 1 row, 7 items, nav rect y=193 h=31, rule y=224 (identical to pre-change measurement); item hit height 44; active underline shown on A La Music, Must See Films (own front), Photography (article); under44 []; overflow false (sw 1425 = scrollbar)
+- Breakpoint: 960 → 1 row, no bar, no overflow; 959 → bar + here-line, nav hidden
+- No-JS (vw-js removed, 375): inline nav 3 rows, all 7 items 44px, bar/panel display none, body padding 0, here hidden, under44 []
+- Panel (375, article): open → panel 0,0,375x752 bg rgb(26,22,30), stops at bar; 7 rows × 52px; Photography active underline rgb(196,18,48) + 8px dot, text rgb(247,246,244); #page inert true; body overflow hidden; aria-expanded true; secondary links 44px; Escape → hidden, inert false, focus back on Sections tab
+- Search mode: search field display flex, focus #vw-mnav-s, 16px, 48px tall, submit 44px; typed "strokes" + tapped submit → /?s=strokes, 12 results, Search tab active
+- Focus: sections open focuses dialog, no :focus-visible inside; Shift+Tab → Contributor Kit (last); Tab from last → first; both stay in panel
+- Resize 375 → 1024 with panel open → panel hidden, inert false, html class cleared, body overflow visible
+- No-results (375): 1 visible form, titles "Search results" 30px / "Nothing Found" 22px, field 48px/16px, overflow false
+- Must See Films zero side padding is PRE-EXISTING: article x=0 with masthead-nav.css disabled in-page
+- Screenshots ~/vw-screenshots: mnav-home-1440.png, mnav-must-see-films-1440.png (7 items, underlined active), mnav-article-768.png, mnav-search-768.png, mnav-404-footer-768.png, mnav-404-footer-1440.png; before: mnav-before-home-375.png. Faithful 375 renders taken in the in-app browser (tools/screenshot.sh still lays out wider than 375)
+
+FILES CHANGED:
+- theme/inc/masthead.php — 7th section, shared nav/here/mobile renderers
+- theme/section-parts/homepage-v2.php — duplicate nav removed → shared renderer; slogan class
+- theme/footer.php — prints mobile nav outside #page
+- theme/inc/footer.php — vw_footer_palette_vars()
+- theme/functions.php — enqueue CSS/JS; html.vw-js inline
+- theme/header.php — viewport-fit=cover
+- theme/assets/css/masthead-nav.css — new
+- theme/assets/js/masthead-nav.js — new
+- theme/assets/css/footer.css — 44px targets
+- theme/assets/css/archive.css — search minimal pass
+- CLAUDE.md — CURRENT STATE (3,371, mobile nav, 7 sections, launch map) + routing text drift
+- VW-MASTER-PLAN.md — 2026-09-14 decision entry
+- PROJECT-LOG.md — this entry
+- DB: no writes. Installed child theme mirrored (outside git).
+
+VERIFIED: computed geometry and styles in a real viewport at 375, 768, 959/960 and 1440 on /, two section fronts (a-la-music, must-see-films), one article and search results; panel behaviour by real clicks and keys; no-JS by removing the gate class in-page.
+
+OUTSTANDING / RISKS:
+- DESIGN VERDICT NEEDED: search results page look (minimal pass only — serif title, boxed field, red kickers, 3-line excerpts; results still show duplicate-title pairs and raw gallery-caption excerpts)
+- NOT verified on a physical iPhone: safe-area inset, Safari floating toolbar, rubber-band overscroll. viewport-fit=cover plus body left/right env() padding is new sitewide (0 on non-notch devices)
+- Headless capture limit: #page min-height:100vh means a static screenshot ends one bar-height short, so mnav-404-footer-768.png shows the footer's copyright row just below the frame; clearance is proven by the scrolled measurement (last row 724 < bar top 752)
+- Must See Films front: zero side padding (pre-existing), uncurated, no film mark — now reachable from the nav
+- Below 600px the dateline slogan ("No ads · No clickbait · …") is hidden, per the approved mockup; operator-set text, mobile only
+- Panel secondary links are a fixed page-ID list (78, 66, 1955); no About page exists
+- Footer rows are now 44px at desktop too, so the desktop footer is taller (real row height chosen over overlapping hit areas)
+- Search tab on /?s= is marked active; the Sections tab is marked only while the panel is open, not on section pages (the here-line carries section context)
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```

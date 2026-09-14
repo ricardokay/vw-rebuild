@@ -86,8 +86,6 @@ $vw_food      = $vw_zone( 'food' );
 $vw_political = $vw_zone( 'political' );
 $vw_books     = $vw_zone( 'books' );
 $vw_archive   = $vw_zone( 'archive' );
-
-$vw_nav = VW_MASTHEAD_SECTIONS;
 ?>
 
 <div class="vwh2-container">
@@ -97,7 +95,7 @@ $vw_nav = VW_MASTHEAD_SECTIONS;
 		<?php if ( vw_chrome_show_dateline() ) : ?>
 			<div class="vwh2-masthead__dateline">
 				<span><?php echo esc_html( vw_chrome_dateline() ); ?></span>
-				<span><?php echo esc_html( vw_chrome_slogan() ); ?></span>
+				<span class="vwh2-masthead__slogan"><?php echo esc_html( vw_chrome_slogan() ); ?></span>
 			</div>
 		<?php endif; ?>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
@@ -120,14 +118,7 @@ $vw_nav = VW_MASTHEAD_SECTIONS;
 		<?php if ( vw_chrome_motto() ) : ?>
 				<p class="vwh2-masthead__motto"><?php echo esc_html( vw_chrome_motto() ); ?></p>
 			<?php endif; ?>
-		<nav class="vwh2-masthead__nav" aria-label="Sections">
-			<?php foreach ( $vw_nav as $vw_slug => $vw_label ) :
-				$vw_term = get_category_by_slug( $vw_slug );
-				if ( ! $vw_term ) continue;
-				?>
-				<a href="<?php echo esc_url( get_category_link( $vw_term->term_id ) ); ?>" class="vwh2-masthead__nav-item<?php echo ( vw_nav_active_slug() === $vw_slug ) ? ' vwh2-masthead__nav-item--active' : ''; ?>"<?php echo ( vw_nav_active_slug() === $vw_slug ) ? ' aria-current="page"' : ''; ?>><?php echo wp_kses( $vw_label, [] ); ?></a>
-			<?php endforeach; ?>
-		</nav>
+		<?php vw_masthead_nav_render(); ?>
 	</div>
 	<hr class="vwh2-rule vwh2-rule--heavy">
 

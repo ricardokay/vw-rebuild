@@ -76,21 +76,26 @@ function vw_footer_enqueue(): void {
 	);
 }
 
-function vw_footer_render(): void {
+/**
+ * The footer palette as custom properties. Colours reach the stylesheets only
+ * this way — footer.css and masthead-nav.css hold no colour literal — so the
+ * mobile bar and panel follow the chrome panel's footer settings too.
+ */
+function vw_footer_palette_vars(): string {
 	$palette = vw_chrome_footer_palette();
-	$motto   = vw_chrome_motto();
-
-	// Colours reach the stylesheet only as custom properties; footer.css holds
-	// no colour literal.
-	$style = sprintf(
+	return sprintf(
 		'--vwf-bg:%s;--vwf-text:%s;--vwf-accent:%s;--vwf-rule:%s;',
 		$palette['footer_bg'],
 		$palette['footer_text'],
 		$palette['footer_accent'],
 		$palette['footer_rule']
 	);
+}
+
+function vw_footer_render(): void {
+	$motto = vw_chrome_motto();
 	?>
-	<footer id="colophon" class="vw-footer" style="<?php echo esc_attr( $style ); ?>">
+	<footer id="colophon" class="vw-footer" style="<?php echo esc_attr( vw_footer_palette_vars() ); ?>">
 		<div class="vw-footer__inner">
 
 			<div class="vw-footer__top">

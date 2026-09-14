@@ -33,7 +33,9 @@
 /* ── Identity ──────────────────────────────────────────────────── */
 
 .vw-footer__nameplate-link {
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
 }
 
 /* The wordmark SVG is dark ink. Inverted for v1 rather than shipping a second
@@ -91,10 +93,14 @@
 	margin: 0;
 }
 
+/* 44px tap targets at every width: a real row height, not an overlapping hit
+   area, so adjacent links never compete for a tap. */
 .vw-footer__list a,
 .vw-footer__list .vw-footer__unlinked {
-	display: inline-block;
-	padding: 6px 0;
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	padding: 0;
 	font-size: 14px;
 	line-height: 1.35;
 }
@@ -155,8 +161,10 @@
 }
 
 .vw-footer__legal a {
-	display: inline-block;
-	padding: 4px 0;
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	padding: 0;
 }
 
 @media (min-width: 768px) {

@@ -177,6 +177,22 @@ function vw_enqueue_styles() {
 	 */
 	vw_enqueue_homepage_v2( $dir, $uri );
 
+	// Mobile bar/panel, "you are here", active underline. Depends on the
+	// homepage-v2 sheets because several of its rules win on source order.
+	wp_enqueue_style(
+		'vw-masthead-nav',
+		$uri . '/assets/css/masthead-nav.css',
+		[ 'vw-homepage-v2-data' ],
+		filemtime( $dir . '/assets/css/masthead-nav.css' )
+	);
+	wp_enqueue_script(
+		'vw-masthead-nav',
+		$uri . '/assets/js/masthead-nav.js',
+		[],
+		filemtime( $dir . '/assets/js/masthead-nav.js' ),
+		true
+	);
+
 	// Archive inheritance: the Browse-all destination and every non-curated
 	// category adopt the design system instead of Newspack's blue defaults.
 	// vw_is_all_archive() is the /archive/ route, which borrows the .archive body
@@ -200,6 +216,16 @@ function vw_enqueue_styles() {
 		);
 	}
 
+}
+
+/**
+ * html.vw-js, set before first paint. masthead-nav.css collapses the inline nav
+ * into the bottom bar only under this class, so a reader without JavaScript
+ * keeps a working nav and nobody sees the fallback flash on load.
+ */
+add_action( 'wp_head', 'vw_js_class', 1 );
+function vw_js_class(): void {
+	echo "<script>document.documentElement.classList.add('vw-js');</script>\n";
 }
 
 /**
