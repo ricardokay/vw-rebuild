@@ -4055,3 +4055,111 @@ OUTSTANDING / RISKS:
 - NOT PUSHED. Pushes happen only from Ricardo's Terminal.
 === END HANDOFF ===
 ```
+
+---
+
+## v1 footer: homepage visibility fix; red top rule removed (2026-09-13)
+
+### Addendum — reviewer handoff (verbatim)
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Two fixes to the v1 preview footer built in 2f15107, display-layer only.
+(1) The footer was missing on http://vancouverweekly-local.local/?vw_footer=1 while it showed
+on section fronts — reconcile the contradiction with the prior round's "exactly one footer"
+claim, report what the homepage actually served BEFORE changing anything, then apply the
+smallest fix. (2) Remove the red 3px top rule; keep the interior hairline.
+
+WHAT I DID:
+- re-rendered the exact URL: status, redirect behaviour, served HTML
+- read the computed display of the footer on the homepage and named the winning rule
+- reported findings before editing
+- fix 1: qualified the homepage's hide rule with :not(.vw-footer)
+- fix 2: removed border-top from .vw-footer; updated the CSS comment and the admin help
+  text that described the accent as "top rule"
+- verified by computed style on all four surfaces flag-on, plus flag-off regression and
+  byte identity
+- committed as one new commit; 2f15107 untouched
+
+FINDINGS (reported before any change):
+- NO redirect, NO dropped param: HTTP 200, 0 redirects, final URL still carries
+  ?vw_footer=1
+- the template path does NOT bypass the child footer.php: served homepage HTML contains
+  #colophon=1, .vw-footer=1, footer.css linked, inline vwh2-footer=0
+- the footer was PRESENT BUT HIDDEN: computed display:none, rendered height 0. The only
+  rule setting display on it was homepage-v2.css:30 `.vw-home-v2 #colophon { display:none }`
+  — written to hide Newspack's parent footer on the homepage. The v1 footer keeps
+  id="colophon" for skip links, so it inherited the rule at specificity (1,1,0).
+
+RECONCILING THE PRIOR CLAIM: "homepage under flag shows exactly one footer" was true of the
+HTML and false of the rendered page. The previous round counted elements on the homepage
+but measured computed styles only on the section front and the 404. The same
+presence-vs-rendering gap this project has hit before, and this time it reached Ricardo.
+
+FIX 1 (smallest): `.vw-home-v2 #colophon` -> `.vw-home-v2 #colophon:not(.vw-footer)`. The
+rule now does what its own comment says — hide Newspack's footer — and nothing else. The
+parent colophon carries class site-footer, not vw-footer, so flag-off behaviour is
+unchanged. Rejected: dropping id="colophon" (breaks skip links); a display override in
+footer.css (a specificity war against the real cause).
+
+FIX 2: `border-top: 3px solid var(--vwf-accent)` removed from .vw-footer. The accent is now
+hover/focus only; the admin help text and the CSS header comment were updated to match.
+The .vw-footer__rule hairline is untouched.
+
+EVIDENCE — FLAG ON, computed styles at 1440 (not element counts):
+  /?vw_footer=1              visible footers: [#colophon.vw-footer]  display block  h 449
+                             border-top 0px none  bg rgb(26,22,30)  hairline 1136px rgb(58,53,64)
+                             identity block begins 64px below the footer top (inner padding,
+                             no rule)
+  /category/a-la-music/      visible [#colophon.vw-footer]  block  h 449  border-top 0px  hairline 1136px
+  /sigur-ros-.../            visible [#colophon.vw-footer]  block  h 449  border-top 0px  hairline 1136px
+  /about/                    visible [#colophon.vw-footer]  block  h 449  border-top 0px  hairline 1136px
+  Height 452 -> 449 on every surface = the removed 3px rule.
+  "Visible footers" counts footer/#colophon/.vwh2-footer/.site-info elements with computed
+  display != none AND rendered height > 0 — exactly the check the previous round skipped.
+
+EVIDENCE — FLAG OFF REGRESSION (computed):
+  / : parent #colophon.site-footer display NONE (still hidden, as before); inline
+      vwh2-footer display flex, 69px (still shown)
+  /category/a-la-music/ : parent #colophon.site-footer display BLOCK, 73px (unchanged)
+
+EVIDENCE — FLAG OFF BYTE IDENTITY vs the pre-2f15107 baselines (?ver= normalised):
+  home BYTE-IDENTICAL · section BYTE-IDENTICAL · article BYTE-IDENTICAL · about BYTE-IDENTICAL
+  No fresh baselines were taken at the start of this round; the pre-2f15107 captures were
+  used, and 2f15107's own output was proven identical to them, so this covers both rounds.
+  Baseline and current datelines both read "Sunday, September 13, 2026", ruling out a
+  day-rollover false diff.
+
+EVIDENCE — CSS:
+  border-top declarations on .vw-footer: 0 · hairline still declares border-top: 1px: 1
+  · colour literals in live footer.css: 0
+
+SCREENSHOT: ~/vw-screenshots/footer-v2-1440.png — 1440x1300, 404 page under the flag. The
+footer opens directly on the dark ground and nameplate, no red rule; the hairline above
+the utility row is intact.
+  A homepage capture was attempted first (1440x3147). Its scan found a dark band at
+  y 1074..1994 — 921px tall, twice the footer's 449px and mid-page — which is the
+  homepage's dark photography module, NOT the footer. The tall-page framing limit applies
+  to the homepage too, so that image was deleted rather than kept as misleading evidence,
+  and the 404 workaround was used. The homepage is confirmed by the computed styles above.
+
+FILES CHANGED:
+- theme/assets/css/homepage-v2.css — #colophon hide rule qualified with :not(.vw-footer)
+- theme/assets/css/footer.css — border-top removed; header comment updated
+- theme/inc/chrome-settings.php — accent help text no longer mentions a top rule
+- PROJECT-LOG.md — this entry
+- DB: no writes this round.
+
+VERIFIED: rendered computed styles on every surface under the flag, including the homepage
+this time; flag-off regression by computed style on the homepage and a section front;
+flag-off identity by whole-page byte comparison.
+
+OUTSTANDING / RISKS:
+- Standing lesson, now twice-failed: an element count is never proof that something renders.
+  Future footer or chrome checks must read computed display and rendered height on EVERY
+  surface claimed, not just one.
+- Headless --screenshot still cannot frame the footer on tall pages (homepage, section
+  fronts); the 404 workaround remains the only capturable page.
+- NOT PUSHED. 2f15107 untouched. Pushes happen only from Ricardo's Terminal.
+=== END HANDOFF ===
+```

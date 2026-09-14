@@ -26,8 +26,11 @@
    footer.php) renders after this template's own footer via get_footer() —
    get_footer() must still run (it closes #content/#page and fires
    wp_footer()), so the parent's visible footer markup is hidden here
-   rather than skipped, which would break the HTML document structure. */
-.vw-home-v2 #colophon {
+   rather than skipped, which would break the HTML document structure.
+
+   :not(.vw-footer) because the v1 footer (?vw_footer=1) keeps id="colophon"
+   for skip links. An unqualified #colophon hid it too, on the homepage only. */
+.vw-home-v2 #colophon:not(.vw-footer) {
   display: none;
 }
 

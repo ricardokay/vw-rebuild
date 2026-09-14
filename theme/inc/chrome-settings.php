@@ -229,7 +229,7 @@ function vw_chrome_render_fields(): void {
 	$labels  = [
 		'footer_bg'     => [ 'Background', 'The footer ground.' ],
 		'footer_text'   => [ 'Text', 'Headings, links at rest, and the copyright line.' ],
-		'footer_accent' => [ 'Accent', 'Top rule and link hover only. Too low-contrast on dark for resting text.' ],
+		'footer_accent' => [ 'Accent', 'Link hover and focus only. Too low-contrast on dark for resting text.' ],
 		'footer_rule'   => [ 'Hairline', 'The rule between the columns and the copyright row.' ],
 	];
 	?>

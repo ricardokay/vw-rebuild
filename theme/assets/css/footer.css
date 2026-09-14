@@ -6,16 +6,16 @@
    template sets from the chrome settings; this file holds no colour literal.
 
    The default accent is the site red, about 3.1:1 against the dark ground:
-   enough for large text and UI, not for resting body text. So it is the top
-   rule and the hover/focus state only, and hover also underlines, so the state
-   never depends on colour alone.
+   enough for large text and UI, not for resting body text. So it is the
+   hover/focus state only, and hover also underlines, so the state never
+   depends on colour alone. (A 3px accent top rule was removed by design
+   decision; the footer opens directly on the nameplate.)
    ================================================================ */
 
 .vw-footer {
 	margin-top: 64px;
 	background: var(--vwf-bg);
 	color: var(--vwf-text);
-	border-top: 3px solid var(--vwf-accent);
 	font-family: 'Inter', sans-serif;
 }
 
