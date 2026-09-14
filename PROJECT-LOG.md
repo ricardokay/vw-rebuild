@@ -4290,3 +4290,11 @@ OUTSTANDING / RISKS:
 - NOT PUSHED. Pushes happen only from Ricardo's Terminal.
 === END HANDOFF ===
 ```
+
+**2026-09-13 — Jobs removed from the footer.** Ricardo's call: no page exists, so no entry. Its
+row is deleted from the institutional registry in `inc/footer.php`; the published-status
+degrade logic stays for the remaining links, so an entry whose page is later unpublished still
+falls back to plain text. The About column now renders six linked items on `/` and an article —
+Advertise With Us, Contributor Kit, Newsletters, Privacy Policy, Terms, Resources — with zero
+unlinked entries, and nothing above the footer changed. Jobs returns as a registry row once a
+real page exists. **The "Jobs = simple email-us" decision stays open** in CURRENT STATE.

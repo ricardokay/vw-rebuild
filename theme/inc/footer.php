@@ -35,14 +35,14 @@ function vw_footer_preview_active(): bool {
  *   52   /terms-and-conditions/ 21,502 chars
  *   49   /resources/         2,648 chars
  *
- * Jobs is 0: both copies (#60, #13407) are empty, and Ricardo decided it
- * renders unlinked until the "simple email-us" page exists.
+ * Jobs is deliberately absent. Both copies (#60, #13407) are empty, and an
+ * entry with nowhere to go is worse than no entry. It returns as a row here
+ * once a real page exists — the "simple email-us" page is still undecided.
  */
 const VW_FOOTER_ABOUT = [
 	[ 'label' => 'Advertise With Us', 'page' => 66 ],
 	[ 'label' => 'Contributor Kit',   'page' => 1955 ],
 	[ 'label' => 'Newsletters',       'page' => 78 ],
-	[ 'label' => 'Jobs',              'page' => 0 ],
 	[ 'label' => 'Privacy Policy',    'page' => 56 ],
 	[ 'label' => 'Terms',             'page' => 52 ],
 	[ 'label' => 'Resources',         'page' => 49 ],
