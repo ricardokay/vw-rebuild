@@ -4298,3 +4298,5 @@ falls back to plain text. The About column now renders six linked items on `/` a
 Advertise With Us, Contributor Kit, Newsletters, Privacy Policy, Terms, Resources — with zero
 unlinked entries, and nothing above the footer changed. Jobs returns as a registry row once a
 real page exists. **The "Jobs = simple email-us" decision stays open** in CURRENT STATE.
+
+**2026-09-14 — Allow-list widened.** `.claude/settings.local.json`: added `cd`/`jq`/`mdls`/`cut`/`column`/`shasum`, removed `find`; deny list unchanged; gate proof completed with a fired-and-denied write prompt (`touch /tmp/gate-test`).
