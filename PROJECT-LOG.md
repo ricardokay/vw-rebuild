@@ -5072,3 +5072,57 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## Whole photo opens the lightbox (2026-09-14)
+
+**Report (Ricardo, phone).** The corner expand button is hard to hit on mobile, and opening photos is the primary gesture on this site.
+
+**Finding.** Core already binds the tap to the whole `<img>`. On iPhone its hover reveal of the corner button makes Safari treat the first tap as a hover. The fix is CSS for touch screens only; there is no delegation, because core already binds the image and a delegate would double-fire.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Follow-up — make the WHOLE gallery image the lightbox trigger (Ricardo: the corner expand button is hard to hit on mobile; opening photos is the primary gesture). Least invasive delegation to core's existing open path (no fork of core JS), cursor zoom-in, keep or hide the button (state it); guards: scrolling past an image must not open it, caption links still work; verify at 375 and 1440 (tap anywhere opens, previous matrix still passes); one-line phone note; small scoped commit; handoff in PROJECT-LOG and chat; no push.
+
+WHAT I DID:
+- Start state: HEAD 5fea99a (previous iOS round, ahead 1, unpushed), status clean
+- READ-ONLY: core wp-includes/blocks/image.php lightbox render (directives on <figure>, <img> and the injected button.lightbox-trigger) and blocks/image/style.css (.wp-lightbox-container rules)
+- FINDING: core ALREADY makes the whole image a trigger — <img data-wp-on--click="actions.showLightbox"> plus .wp-lightbox-container img { cursor: zoom-in }; the button is a second path to the same action. Real CDP input confirmed it in Chrome before any change (touch tap at 375 and mouse click at 1440, dark and light photo: image is the top element at the centre, overlay opened)
+- DIAGNOSIS for iPhone: core's .wp-lightbox-container img:hover + button { opacity: 1 } (with a 0.2s transition) reveals the button on :hover. iOS Safari delivers a first tap that would reveal content via :hover as a hover, not a click — the button fades in and a second tap is needed, usually on the 20×20 button. Measured before the fix under touch emulation: (hover: none) matches; after a tap img:hover true and button opacity 1
+- DECISION: no JS delegation (core already binds the image; a delegate would dispatch showLightbox twice). Button kept in the DOM for keyboard users, hidden on touch screens (never revealed by hover), still visible on keyboard focus; desktop mouse hover reveal unchanged
+- theme/assets/css/gallery.css: @media (hover: none) { .wp-lightbox-container img:hover + button, .wp-lightbox-container button:hover, .wp-lightbox-container button:focus { opacity: 0 } .wp-lightbox-container button:focus-visible { opacity: 1 } }; cp + cmp into the installed theme
+- Harness: cdp_run.py gained scripted CDP Input steps (touch/mouse/key events and scroll gestures at JS-computed coordinates)
+- Verification: 24 tap/click jobs, desktop hover-only, drag and scroll-gesture guards, gesture-then-tap, caption-link (capture-only DOM injection), keyboard Tab+Enter at both widths, full previous lightbox matrix (10 opens + 10 closes)
+- READ-ONLY content check: 363 published posts carry lightbox images with figcaptions; 0 contain a link inside a figcaption (gallery captions are also display:none on the grid)
+- CLAUDE.md lightbox bullet, VW-MASTER-PLAN entry, this log
+
+EVIDENCE:
+- Tap anywhere (touch emulation + iPhone UA at 375; real mouse at 1440; Old Crow dark #10 and Burnaby Blues light #0; each a fresh load): points centre, top-left, top-right (below the button), bottom-left, bottom-right and the button itself → overlay active in 24/24; element under every image point = the <img>
+- Hover after a touch tap (after fix): img:hover true, button opacity 0 in all 12 touch jobs (before fix: 1). Desktop mouse hover without click at 1440: button opacity 1 (core reveal kept), overlay not opened
+- Scroll guard at 375 (touch): touch drag starting on the image, 8 moves up to 200px → page scrolled 867 → 1062, overlay NOT active; Input.synthesizeScrollGesture from the image centre (300px) → 867 → 1168, NOT active; the same gesture then a tap on the image → opened (body top −1168px)
+- Caption link (link injected into a visible figcaption, capture-only): touch at 375 and click at 1440 → element under the point is the <a>, location.hash "#vw-caption-link-test", overlay NOT active
+- Keyboard (375 touch device and 1440): Tab focuses button.lightbox-trigger, :focus-visible true, opacity 1; Enter (with key text) → overlay active. A first run without key text did not activate — test artefact, re-run passed
+- Previous matrix (8 opens dark/light × 375/1440 × motion/reduced + 2 touch/iPhone-UA opens; 8 + 2 closes): 20/20 PASS — scrim rgb(26,22,30) opacity 1, non-ink ground 0, 2 nav buttons, body fixed, image/close/caption/nav/overlay-height/body geometry identical to the previous round's run; closes: page movement 0px, scroll restored exactly (867/1026/125/354), body inline style removed, inert 0, focus returned
+- Screenshots (regression opens) in ~/vw-screenshots: m7-after-lb-{dark,light}-open-{375,1440}.png, m7-after-lb-{dark,light}-open-rm-{375,1440}.png, m7-after-lb-{dark,light}-open-touch-375.png
+
+PHONE NOTE (Ricardo): on http://vancouverweekly-local.local/old-crow-medicine-show-orpheum/, a single tap anywhere on a photo should open it at once (no corner button appearing first), and a swipe that starts on a photo should just scroll the page.
+
+FILES CHANGED:
+- theme/assets/css/gallery.css — touch screens: no hover reveal of the lightbox button (first tap = click); keyboard focus still shows it
+- CLAUDE.md — CURRENT STATE lightbox bullet
+- VW-MASTER-PLAN.md — decision entry
+- PROJECT-LOG.md — this entry
+- DB: no writes. Installed child theme mirrored (outside git).
+
+VERIFIED: real CDP touch, mouse, keyboard and scroll-gesture input in headless Chrome at exact 375×812 (touch + iPhone UA) and 1440×900 against the real core lightbox; the full previous lightbox matrix re-run. NOT verified on WebKit or a physical iPhone — the hover-tap behaviour being fixed is WebKit-specific and cannot be reproduced in Chrome.
+
+OUTSTANDING / RISKS:
+- The root cause is a WebKit behaviour inferred from core's CSS and the reported symptom; Chrome cannot show the double-tap. If the iPhone still needs two taps, the next step is a touchend-driven trigger on the image (JS), gated separately
+- On touch screens the corner button is never visible except on keyboard focus, so there is no visual cue that photos open. The image carries cursor: zoom-in for pointer devices only
+- No real caption links exist on lightbox images today (0 of 363 posts); the guard was proven on an injected link
+- The earlier iOS viewport / scroll-lock round (5fea99a) is still unverified on a phone and unpushed; this commit sits on top of it
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```

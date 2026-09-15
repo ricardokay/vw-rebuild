@@ -796,3 +796,9 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Cause, in core's lightbox: it sizes itself to `100vh`, which on iOS Safari is the tallest possible viewport, so with the toolbars showing the box overhangs the screen and its bottom-anchored arrows sit under Safari's toolbar. The page could also still scroll under the lightbox, moving the toolbars.
 - Decision: the lightbox follows the visible viewport (`100dvh`), keeps its controls clear of the home indicator (safe-area insets), and holds the page with the iOS-proof pattern (`body` fixed, exact position restored on close).
 - Status: verified in headless Chrome, including touch and iPhone-UA emulation. Real-device confirmation from Ricardo is pending; WebKit's toolbars cannot be reproduced headless.
+
+**September 14, 2026 — one tap on a photo opens it**
+- Fix (from Ricardo's phone note): opening photos is the primary gesture on this site, and on mobile it took a hard-to-hit corner button.
+- Finding: WordPress core already opens the lightbox from a tap anywhere on the image. On iPhone, core's hover effect (the corner button fading in) made Safari treat the first tap as a hover rather than a click.
+- Decision: on touch screens that hover effect is switched off, so the first tap on any part of the photo opens it. No extra script. The small button stays for keyboard users.
+- Status: verified in headless Chrome; the tap feel needs Ricardo's iPhone.

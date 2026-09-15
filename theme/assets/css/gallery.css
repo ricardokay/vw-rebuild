@@ -110,6 +110,29 @@
 	}
 }
 
+/* The whole photo opens the lightbox (2026-09-14). Core already binds the tap
+   to the <img> itself (data-wp-on--click="actions.showLightbox", cursor
+   zoom-in); the small corner button is a second path to the same action, so
+   nothing is delegated here — a delegate would open it twice.
+
+   What broke it on iPhone is core's hover reveal, img:hover + button
+   { opacity: 1 }. When a tap would reveal content through :hover, iOS Safari
+   delivers that first tap as a hover, not a click: the button fades in and a
+   second tap is needed, which lands on a 20px target. On touch screens nothing
+   changes on hover, so the first tap on a photo is a click. The button stays
+   in place for keyboard users and still shows on keyboard focus. */
+@media (hover: none) {
+	.wp-lightbox-container img:hover + button,
+	.wp-lightbox-container button:hover,
+	.wp-lightbox-container button:focus {
+		opacity: 0;
+	}
+
+	.wp-lightbox-container button:focus-visible {
+		opacity: 1;
+	}
+}
+
 /* Dead-media net: the JS marks an image that failed to load, and its whole
    enclosing element goes — no orphaned caption, no empty frame. */
 .vw-media-dead {
