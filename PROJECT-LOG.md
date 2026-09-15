@@ -4539,3 +4539,93 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## The "everything" drawer — sections + Archive + About in the mobile panel (2026-09-14)
+
+**Mockup-gated, P2 picked.** Two variants were rendered at 375px on the dark panel from the
+served Out N About page, with the About links cloned from the page's own rendered footer
+column so the mock showed real registry output.
+- **P1:** the seven sections, a hairline, then the About set as a quiet grid.
+- **P2:** P1 plus an Archive row grouped with the sections.
+
+Captures: `~/vw-screenshots/drawer-P1-panel-375.png` and `drawer-P2-panel-375.png`.
+
+**One registry, two renderers.** The published-status rule moved out of
+`vw_footer_link_item()` into `vw_footer_link_url()` (`inc/footer.php`): a page's permalink when
+it is published, otherwise `''`. The footer renderer (`vw_footer_link_item()`) and the new panel
+renderer (`vw_mnav_about_item()`, `inc/masthead.php`) both loop `VW_FOOTER_ABOUT` through it. An
+unpublished page renders as dimmed plain text in both: the footer's `.vw-footer__unlinked` at
+0.55, and the panel's `.vw-mnav-panel__unlinked` at 0.385 (0.55 on the grid's 0.7). Spans are not
+focusable, so the trap skips them. `VW_MOBILE_PANEL_LINKS` — a second page-ID list holding
+Newsletters, Advertise and Contributor Kit, all redundant with the About set — is deleted, with
+its `__secondary` markup and CSS. Labels follow the registry, so the drawer shows "Privacy Policy",
+not "Privacy".
+
+**The drawer.**
+- The sections list gains The Archive as its eighth row, same 52px PT Serif style, marked active
+  on `/archive/`.
+- The About set sits under the list's closing hairline as a two-column grid: Inter 13px, 70%
+  opacity, 44px rows, full opacity with an underline on hover or focus.
+- It fits 375×812 unscrolled in Sections mode. Search mode scrolls 10px, and a 375×667 phone
+  scrolls 88px inside the panel, with the focused row kept in view.
+
+**Found and fixed during verification.** The panel's own wordmark link was only 28px tall (a
+150px-wide wordmark in a block link) — present since part 1, and never covered because earlier
+tap checks did not measure the panel's top bar. It is now a 44px flex target.
+
+**Jobs, for the record.** It is absent from both the footer and the drawer because the registry
+omits it. Its pages (#60, #13407) are *published but empty*, so the degrade rule would NOT hide
+it: adding Jobs back to the registry would render a live link to an empty page.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Grow the mobile sections panel into the "everything" drawer — mockup P1 (sections + quiet About) vs P2 (P1 + Archive row), STOP for pick (P2), implement with one registry and two renderers (shared function, delete VW_MOBILE_PANEL_LINKS, 2-col About grid, registry labels), verify at 375 and 768, one commit, no push.
+
+WHAT I DID:
+- Session start: git log -1 → bfe33e6; status clean; CURRENT STATE matched; /category/food-drink/ at 375 rendered as documented
+- Mockups P1/P2 from the served section front (About cloned from the rendered footer column), captured at 375; STOPPED; pick P2
+- inc/footer.php → vw_footer_link_url() extracted (single published-status rule); vw_footer_link_item() now calls it
+- inc/masthead.php → VW_MOBILE_PANEL_LINKS deleted; vw_mnav_about_item() added (panel renderer of VW_FOOTER_ABOUT); The Archive appended to the sections list (active on /archive/); __secondary list replaced by <ul class="vw-mnav-panel__about" aria-label="About">
+- assets/css/masthead-nav.css → __secondary rules replaced by the 2-col About grid + unlinked style; panel wordmark link 28px → 44px flex target
+- Each file cp + cmp into the installed child theme; diff -rq clean
+- After-captures of the real drawer (served-page copies that click the real bar Sections tab on load, via temporary 127.0.0.1:8765, stopped after)
+- CLAUDE.md CURRENT STATE, VW-MASTER-PLAN, this log
+
+EVIDENCE (verifiable):
+- php -l clean: inc/footer.php, inc/masthead.php; grep VW_MOBILE_PANEL_LINKS|__secondary across theme → none
+- Served HTML on /, /category/out-n-about/, WWE article, /archive/: footer About column == panel About grid (6 items, identical labels + URLs), Jobs absent; panel list 8 rows ending "The Archive"; active row Out N About / Photography / The Archive (on /archive/) / none on /; no __secondary markup
+- wp eval (no DB write): vw_footer_link_url(draft page 69223) → ''; footer → <span class="vw-footer__unlinked">, panel → <span class="vw-mnav-panel__unlinked">; published item → identical <a href=…/advertise/> in both; page id 0 → ''; defined('VW_MOBILE_PANEL_LINKS') → false; Jobs pages 60 and 13407 status 'publish'
+- 375x812 (out-n-about): hamburger and bar Sections → identical {8 section rows × 52px, 6 About cells 164x44 at 13px / opacity 0.7 in a 2-col grid, focus order of 16 controls logo→Close→8 rows→6 About, panel 0,0,375x752, no scroll (About ends y=675)}; under44 [] after the logo-link fix; focus on dialog; 16× Tab → Resources, 17th → panel logo link, Shift+Tab → Resources; Escape → focus back on the trigger used (mast-sections / bar-sections), #page inert false
+- 375x812 Search mode: field focused, 18 focusables, scrollHeight 762 / client 752 (in-panel scroll), under44 []
+- 375x667: panel 607 tall, scrollHeight 695 (scrolls); 16× Tab → Resources in view (scrollTop 88, bottom 587 ≤ 607); Tab wraps to logo, scrollTop 0
+- 768x1024 (WWE article): hamburger and bar Sections → identical {8 rows × 52px, About cells 360x44 in 2 columns, panel 768x964, no scroll}; under44 []; 16× Tab → Resources; 17th → logo; Shift+Tab → Resources; Escape → focus back on trigger
+- No-JS (375, vw-js removed): panel display none + hidden; bar hidden; inline nav 7 items × 44px, 3 rows (no Archive row added); hamburger visibility hidden; search link shown; overflow false; under44 []
+- 1440: footer About 6 links × 44px via the shared resolver, Legal Privacy/Terms unchanged, panel display none, bar hidden, overflow false
+- Captures in ~/vw-screenshots:
+  mockups  drawer-P1-panel-375.png, drawer-P2-panel-375.png
+  after    drawer-after-panel-section-375.png (Out N About active), drawer-after-panel-article-768.png (Photography active), drawer-after-panel-section-375x667.png (short phone, top of panel at load; About grid continues below the fold, reached by in-panel scroll)
+
+FILES CHANGED:
+- theme/inc/footer.php — vw_footer_link_url() shared rule; vw_footer_link_item() uses it
+- theme/inc/masthead.php — VW_MOBILE_PANEL_LINKS deleted; vw_mnav_about_item(); Archive row; About grid markup
+- theme/assets/css/masthead-nav.css — About grid + unlinked style (replacing __secondary); panel logo link 44px
+- CLAUDE.md — CURRENT STATE mobile nav bullet (drawer contents, one registry)
+- VW-MASTER-PLAN.md — drawer decision entry
+- PROJECT-LOG.md — this entry
+- DB: no writes. Installed child theme mirrored (outside git).
+
+VERIFIED: served HTML parity on 4 surfaces; degrade by wp eval against a real draft page; rendered geometry, trigger parity, focus trap and Escape by real clicks and keys at 375x812, 375x667 and 768x1024; no-JS by removing the gate class in-page; desktop footer at 1440.
+
+OUTSTANDING / RISKS:
+- Jobs pages #60 / #13407 are published but empty: Jobs is absent only because the registry omits it; re-adding it would render a live link to an empty page
+- Unpublished-page degrade was proven by rendering both helpers against a draft page, not by unpublishing a registry page (no DB writes this round)
+- Labels follow the registry ("Privacy Policy", "Advertise With Us"); renaming there changes the footer too
+- Panel wordmark link was 28px since part 1; fixed here
+- Search mode at 375x812 now scrolls 10px inside the panel (search field + 8 rows + About)
+- Still NOT verified on a physical iPhone
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```

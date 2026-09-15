@@ -24,16 +24,6 @@ const VW_MASTHEAD_SECTIONS = [
 	'must-see-films'      => 'Must See Films',
 ];
 
-/*
- * Secondary links in the mobile panel. Page IDs, as in VW_FOOTER_ABOUT, so a
- * page that stops being published simply drops out.
- */
-const VW_MOBILE_PANEL_LINKS = [
-	[ 'label' => 'Newsletters',     'page' => 78 ],
-	[ 'label' => 'Advertise',       'page' => 66 ],
-	[ 'label' => 'Contributor Kit', 'page' => 1955 ],
-];
-
 /**
  * Retained as a no-op. The masthead is unconditional now; this only exists so
  * that anything still calling it — an old link's query flag, a stale enqueue
@@ -164,6 +154,22 @@ function vw_mobile_icon( string $name ): string {
 }
 
 /**
+ * One About item in the mobile panel — the second renderer of VW_FOOTER_ABOUT
+ * (inc/footer.php). There is no list here: the registry and its
+ * published-status rule live in one place, so the panel and the footer can
+ * never disagree about which pages exist.
+ */
+function vw_mnav_about_item( array $item ): string {
+	$url = vw_footer_link_url( $item );
+
+	$inner = $url
+		? '<a href="' . esc_url( $url ) . '">' . esc_html( $item['label'] ) . '</a>'
+		: '<span class="vw-mnav-panel__unlinked">' . esc_html( $item['label'] ) . '</span>';
+
+	return '<li>' . $inner . '</li>';
+}
+
+/**
  * Mobile bottom bar + sections/search panel. Printed once, from footer.php.
  *
  * The bar holds modes, not topics — Home, Sections, Search, Archive — so it
@@ -197,18 +203,16 @@ function vw_mobile_nav_render(): void {
 				<?php foreach ( vw_masthead_sections() as $slug => [ $label, $url ] ) : ?>
 					<li><a class="vw-mnav-panel__item<?php echo $active === $slug ? ' vw-mnav-panel__item--active' : ''; ?>" href="<?php echo esc_url( $url ); ?>"<?php echo $active === $slug ? ' aria-current="page"' : ''; ?>><?php echo wp_kses( $label, [] ); ?></a></li>
 				<?php endforeach; ?>
+				<?php // The Archive is a bar tab too; drawers get scanned, so it is listed here as well. ?>
+				<li><a class="vw-mnav-panel__item<?php echo $is_arch ? ' vw-mnav-panel__item--active' : ''; ?>" href="<?php echo esc_url( home_url( '/archive/' ) ); ?>"<?php echo $is_arch ? ' aria-current="page"' : ''; ?>>The Archive</a></li>
 			</ul>
 
-			<ul class="vw-mnav-panel__secondary">
+			<ul class="vw-mnav-panel__about" aria-label="About">
 				<?php
-				foreach ( VW_MOBILE_PANEL_LINKS as $item ) :
-					$id = (int) $item['page'];
-					if ( 'publish' !== get_post_status( $id ) ) {
-						continue;
-					}
-					?>
-					<li><a href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php echo esc_html( $item['label'] ); ?></a></li>
-				<?php endforeach; ?>
+				foreach ( VW_FOOTER_ABOUT as $item ) {
+					echo vw_mnav_about_item( $item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
+				}
+				?>
 			</ul>
 
 			<?php if ( vw_chrome_motto_display() ) : ?>

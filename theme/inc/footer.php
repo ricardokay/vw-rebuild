@@ -53,10 +53,21 @@ const VW_FOOTER_LEGAL = [
 	[ 'label' => 'Terms',   'page' => 52 ],
 ];
 
-/** One list item: a link when the page is published, otherwise plain text. */
+/**
+ * The registry's one rule: a page's URL when it is published, otherwise ''.
+ *
+ * Every renderer of VW_FOOTER_ABOUT and VW_FOOTER_LEGAL goes through this — the
+ * footer columns and the mobile panel's About grid — so a page that stops being
+ * published degrades identically everywhere.
+ */
+function vw_footer_link_url( array $item ): string {
+	$id = (int) $item['page'];
+	return ( $id && 'publish' === get_post_status( $id ) ) ? (string) get_permalink( $id ) : '';
+}
+
+/** One footer list item: a link when the page is published, otherwise plain text. */
 function vw_footer_link_item( array $item ): string {
-	$id  = (int) $item['page'];
-	$url = ( $id && 'publish' === get_post_status( $id ) ) ? get_permalink( $id ) : '';
+	$url = vw_footer_link_url( $item );
 
 	$inner = $url
 		? '<a href="' . esc_url( $url ) . '">' . esc_html( $item['label'] ) . '</a>'

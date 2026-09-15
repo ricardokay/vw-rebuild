@@ -756,3 +756,9 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Decision (picked, then amended): **light bottom bar** on the page ground with a 1px top hairline, plus a faint upward shadow at half the strength of the shadow variant. The hairline draws the edge; the shadow only lifts. The sections panel stays dark.
 - Desktop is unchanged except for the motto: the wordmark sits in the same place, and the nav and rule move up by exactly the motto's height.
 - Next (part 2): opens with a mockup of a **full-bleed lead image directly under the mobile header on the homepage** (Wax Poetics reference), then article and section mobile polish.
+
+**September 14, 2026 — the sections panel becomes the "everything" drawer**
+- Decision (Ricardo, picked from 375px mockups): **P2** — the seven sections, plus **The Archive** as an eighth row grouped with them, a hairline, then the About set as a quiet two-column grid. The Archive stays a bar tab as well: drawers get scanned, so the duplication is deliberate.
+- Decision: **one registry, two renderers.** The footer's page-ID list (`VW_FOOTER_ABOUT`) is the only list, and one published-status rule (`vw_footer_link_url()`) serves both the footer and the drawer. The drawer's separate three-link list is deleted, so the footer and the drawer can no longer disagree about which pages exist.
+- Sections stay dominant; everything else is recessive. The drawer fits a 375×812 screen without scrolling and scrolls inside the panel on shorter phones.
+- Open: the Jobs pages (#60, #13407) are *published but empty*. Jobs is absent because the registry omits it, not because of the degrade rule — adding it back would render a live link to an empty page.
