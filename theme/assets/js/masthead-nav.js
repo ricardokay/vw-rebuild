@@ -26,7 +26,7 @@
 		triggers.forEach( function ( t ) {
 			var on = t.getAttribute( 'data-vw-mnav-open' ) === mode;
 			t.setAttribute( 'aria-expanded', on ? 'true' : 'false' );
-			t.classList.toggle( 'vw-mbar__item--open', on );
+			if ( t.classList.contains( 'vw-mbar__item' ) ) t.classList.toggle( 'vw-mbar__item--open', on );
 		} );
 	}
 
@@ -52,8 +52,14 @@
 		returnTo = null;
 	}
 
+	// Every [data-vw-mnav-open] is a trigger: the bar's tabs and the masthead's
+	// sections/search controls open the one panel. The masthead search control
+	// is a link to the search page so it still works without JavaScript; here
+	// it becomes a button.
 	triggers.forEach( function ( t ) {
-		t.addEventListener( 'click', function () {
+		if ( t.tagName === 'A' ) t.setAttribute( 'role', 'button' );
+		t.addEventListener( 'click', function ( e ) {
+			e.preventDefault();
 			var next = t.getAttribute( 'data-vw-mnav-open' );
 			if ( mode === next ) {
 				close();

@@ -8,9 +8,15 @@
    rules here win on source order at equal specificity, the same trap the
    active-nav red fell into (d417a70). See vw_enqueue_styles().
 
-   Colours: page tokens for the masthead; the footer's --vwf-* custom
-   properties, set inline on .vw-mnav from the chrome settings, for the bar
-   and panel. No colour literal below.
+   Colours: page tokens for the masthead and the light bottom bar; the
+   footer's --vwf-* custom properties, set inline on .vw-mnav from the chrome
+   settings, for the dark panel. One colour literal below: the bar's shadow tint.
+
+   Below 960px the masthead is a compact row (2026-09-14, variant A2): sections
+   button, wordmark, search link — no dateline, no motto, no heavy rule, one
+   hairline. Those overrides sit in a max-width block because they undo
+   desktop-first rules in homepage-v2.css; scoping them keeps the desktop
+   masthead byte-for-byte what it was.
 
    Without JavaScript (no html.vw-js) the bar and panel never show and the
    inline nav stays, with 44px tap targets.
@@ -42,8 +48,94 @@ body {
 	min-height: 44px;
 }
 
-.vwh2-masthead__slogan {
+
+/* ── Compact mobile masthead (below 960px) ─────────────────────── */
+
+.vwh2-masthead__icon {
 	display: none;
+}
+
+@media (max-width: 959.98px) {
+	.vwh2-masthead {
+		padding-top: 4px;
+		border-bottom: 1px solid var(--vw-border);
+	}
+
+	.vwh2-masthead__dateline {
+		display: none;
+	}
+
+	/* homepage-v2.css sets .vwh2-rule { display: block !important }, so only
+	   !important can take the masthead's heavy rule off on small screens. The
+	   selector reaches that one rule and no other. */
+	.vwh2-masthead + .vwh2-rule--heavy {
+		display: none !important;
+	}
+
+	.vwh2-masthead__row {
+		display: grid;
+		grid-template-columns: 44px 1fr 44px;
+		align-items: center;
+		min-height: 56px;
+	}
+
+	/* The 170px wordmark is only 31px tall; the link keeps a 44px target. */
+	.vwh2-masthead .vwh2-masthead__logo-link {
+		grid-column: 2;
+		display: flex;
+		align-items: center;
+		width: 170px;
+		min-width: 0;
+		min-height: 44px;
+		margin: 0 auto;
+	}
+
+	.vwh2-masthead .vwh2-masthead__icon {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+		color: var(--vw-ink);
+		text-decoration: none;
+		cursor: pointer;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.vwh2-masthead .vwh2-masthead__icon:hover,
+	.vwh2-masthead .vwh2-masthead__icon:focus {
+		background: none;
+		color: var(--vw-ink);
+	}
+
+	.vwh2-masthead .vwh2-masthead__icon:focus-visible {
+		outline: 2px solid var(--vw-red);
+		outline-offset: -2px;
+	}
+
+	.vwh2-masthead__icon--search {
+		grid-column: 3;
+	}
+
+	/* No JavaScript: nothing to open, and the inline nav is already showing
+	   directly below. Hidden, not removed, so the wordmark stays centred. */
+	html:not(.vw-js) .vwh2-masthead .vwh2-masthead__icon--sections {
+		visibility: hidden;
+	}
+
+	/* Same size and stroke as the bottom bar's icons, so the two rows read as
+	   one set. The parent theme fills every svg with currentColor. */
+	.vwh2-masthead__icon .vw-icon {
+		width: 20px;
+		height: 20px;
+		fill: none;
+		stroke: currentColor;
+	}
 }
 
 
@@ -88,9 +180,10 @@ html:not(.vw-js) .vw-here {
 	display: none;
 }
 
-/* The nav carried the gap between motto and rule; keep it without the nav. */
+/* The nav carried the space under the wordmark; with it collapsed, the compact
+   row's own 56px height carries it and only this sliver sits above the hairline. */
 .vw-js .vwh2-masthead {
-	padding-bottom: 12px;
+	padding-bottom: 4px;
 }
 
 /* The fixed bar must never cover content or the footer's last row. */
@@ -99,7 +192,9 @@ html:not(.vw-js) .vw-here {
 }
 
 
-/* ── Bottom bar ────────────────────────────────────────────────── */
+/* ── Bottom bar ────────────────────────────────────────────────────
+   Light (2026-09-14): the page ground, a hairline on top plus a faint upward
+   shadow, ink icons and labels, red only for the current mode. */
 
 .vw-mbar,
 .vw-mnav-panel {
@@ -117,8 +212,11 @@ html:not(.vw-js) .vw-here {
 	box-sizing: border-box;
 	height: calc(var(--vw-mbar-h) + env(safe-area-inset-bottom));
 	padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-	border-top: 1px solid var(--vwf-rule);
-	background: var(--vwf-bg);
+	border-top: 1px solid var(--vw-border);
+	background: var(--vw-bg-subtle);
+	/* The hairline draws the edge; this only lifts the bar off the page. Ink at
+	   5% — a shadow tint, not a palette colour, so it is the one literal here. */
+	box-shadow: 0 -3px 9px rgba(26, 22, 30, 0.05);
 }
 
 .vw-mbar .vw-mbar__item {
@@ -135,7 +233,7 @@ html:not(.vw-js) .vw-here {
 	border-radius: 0;
 	background: none;
 	box-shadow: none;
-	color: var(--vwf-text);
+	color: var(--vw-ink);
 	font-family: 'Inter', sans-serif;
 	font-size: 10px;
 	font-weight: 600;
@@ -147,18 +245,14 @@ html:not(.vw-js) .vw-here {
 	-webkit-tap-highlight-color: transparent;
 }
 
-.vw-mbar .vw-mbar__item + .vw-mbar__item {
-	border-left: 1px solid var(--vwf-rule);
-}
-
 .vw-mbar .vw-mbar__item:hover,
 .vw-mbar .vw-mbar__item:focus {
 	background: none;
-	color: var(--vwf-text);
+	color: var(--vw-ink);
 }
 
 .vw-mbar .vw-mbar__item:focus-visible {
-	outline: 2px solid var(--vwf-accent);
+	outline: 2px solid var(--vw-red);
 	outline-offset: -4px;
 }
 
@@ -174,17 +268,30 @@ html:not(.vw-js) .vw-here {
 	stroke: currentColor;
 }
 
-/* The current mode. The accent is a 2px mark, never resting text — it is
-   about 3.1:1 on the dark ground. */
+/* The current mode: red icon and label, plus a 2px red underline, so the
+   state never rests on colour alone. Red on the light ground is about 5.6:1. */
+.vw-mbar .vw-mbar__item--active,
+.vw-mbar .vw-mbar__item--active:hover,
+.vw-mbar .vw-mbar__item--active:focus,
+.vw-mbar .vw-mbar__item--open,
+.vw-mbar .vw-mbar__item--open:hover,
+.vw-mbar .vw-mbar__item--open:focus {
+	color: var(--vw-red);
+}
+
 .vw-mbar__item--active span,
 .vw-mbar__item--open span {
 	text-decoration: underline;
-	text-decoration-color: var(--vwf-accent);
+	text-decoration-color: var(--vw-red);
 	text-decoration-thickness: 2px;
 	text-underline-offset: 5px;
 }
 
 /* While the panel is open, only the open mode is marked. */
+.vw-mnav-is-open .vw-mbar .vw-mbar__item--active:not(.vw-mbar__item--open) {
+	color: var(--vw-ink);
+}
+
 .vw-mnav-is-open .vw-mbar__item--active:not(.vw-mbar__item--open) span {
 	text-decoration: none;
 }
@@ -434,18 +541,15 @@ html:not(.vw-js) .vw-here {
 }
 
 
-/* ── Slogan returns once the dateline has room ─────────────────── */
-
-@media (min-width: 600px) {
-	.vwh2-masthead__slogan {
-		display: inline;
-	}
-}
-
-
 /* ── 960px and up: the inline nav ──────────────────────────────── */
 
 @media (min-width: 960px) {
+	/* The row dissolves: the wordmark link lays out as a direct child of the
+	   masthead, exactly as it did before the row existed. */
+	.vwh2-masthead__row {
+		display: contents;
+	}
+
 	.vw-js .vwh2-masthead__nav {
 		display: flex;
 	}

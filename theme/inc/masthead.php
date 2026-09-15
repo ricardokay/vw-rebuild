@@ -101,25 +101,9 @@ function vw_masthead_render(): void {
 						<span class="vwh2-masthead__slogan"><?php echo esc_html( vw_chrome_slogan() ); ?></span>
 					</div>
 				<?php endif; ?>
-				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
-<?php
-					/*
-					 * SVG GUARD — do not inline this file, and do not give it or its
-					 * wrapper overflow:visible.
-					 *
-					 * logo_VW_wordmark.svg carries the "VANCOUVER'S WEEKLY NEWS SOURCE"
-					 * tagline glyphs at y 62.9–74.7, outside its viewBox (height 59.4).
-					 * 366 of its 516 path coordinates are those glyphs. The viewBox clip
-					 * is the ONLY thing hiding them: referenced as <img> they never
-					 * render, but inlined into the document — or with overflow opened on
-					 * the <svg> — the tagline appears and the masthead becomes the wrong
-					 * lockup.
-					 */
-					?>
-					<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.svg' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
-				</a>
-				<?php if ( vw_chrome_motto() ) : ?>
-				<p class="vwh2-masthead__motto"><?php echo esc_html( vw_chrome_motto() ); ?></p>
+				<?php vw_masthead_brand_render(); ?>
+				<?php if ( vw_chrome_motto_display() ) : ?>
+				<p class="vwh2-masthead__motto"><?php echo esc_html( vw_chrome_motto_display() ); ?></p>
 			<?php endif; ?>
 				<?php vw_masthead_nav_render(); ?>
 			</div>
@@ -130,9 +114,46 @@ function vw_masthead_render(): void {
 	<?php
 }
 
-/** Inline icons for the bottom bar and panel. Decorative; labels carry meaning. */
+/**
+ * Wordmark row. Below 960px it is the compact mobile header — a sections button
+ * left, the wordmark centred, a search link right — and both side controls open
+ * the same panel the bottom bar opens (masthead-nav.js binds every
+ * [data-vw-mnav-open]). At 960px and up the row is display:contents and the
+ * controls are hidden, so the desktop masthead is the wordmark alone, as before.
+ *
+ * Without JavaScript the sections button is hidden (the inline nav is showing
+ * directly below it) and the search control is a plain link to the search page.
+ */
+function vw_masthead_brand_render(): void {
+	?>
+	<div class="vwh2-masthead__row">
+		<button type="button" class="vwh2-masthead__icon vwh2-masthead__icon--sections" data-vw-mnav-open="sections" aria-controls="vw-mnav-panel" aria-expanded="false" aria-label="Sections"><?php echo vw_mobile_icon( 'menu' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup. ?></button>
+		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
+<?php
+			/*
+			 * SVG GUARD — do not inline this file, and do not give it or its
+			 * wrapper overflow:visible.
+			 *
+			 * logo_VW_wordmark.svg carries the "VANCOUVER'S WEEKLY NEWS SOURCE"
+			 * tagline glyphs at y 62.9–74.7, outside its viewBox (height 59.4).
+			 * 366 of its 516 path coordinates are those glyphs. The viewBox clip
+			 * is the ONLY thing hiding them: referenced as <img> they never
+			 * render, but inlined into the document — or with overflow opened on
+			 * the <svg> — the tagline appears and the masthead becomes the wrong
+			 * lockup.
+			 */
+			?>
+			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.svg' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
+		</a>
+		<a href="<?php echo esc_url( home_url( '/?s=' ) ); ?>" class="vwh2-masthead__icon vwh2-masthead__icon--search" data-vw-mnav-open="search" aria-controls="vw-mnav-panel" aria-label="Search"><?php echo vw_mobile_icon( 'search' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup. ?></a>
+	</div>
+	<?php
+}
+
+/** Inline icons for the masthead, bottom bar and panel. Decorative; labels carry meaning. */
 function vw_mobile_icon( string $name ): string {
 	$paths = [
+		'menu'     => '<path d="M3 7h10M3 12h18M3 17h14"/>',
 		'home'     => '<path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/>',
 		'sections' => '<rect x="3" y="3" width="7.5" height="7.5"/><rect x="13.5" y="3" width="7.5" height="7.5"/><rect x="3" y="13.5" width="7.5" height="7.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5"/>',
 		'search'   => '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>',
@@ -190,8 +211,8 @@ function vw_mobile_nav_render(): void {
 				<?php endforeach; ?>
 			</ul>
 
-			<?php if ( vw_chrome_motto() ) : ?>
-				<p class="vw-mnav-panel__motto"><?php echo esc_html( vw_chrome_motto() ); ?></p>
+			<?php if ( vw_chrome_motto_display() ) : ?>
+				<p class="vw-mnav-panel__motto"><?php echo esc_html( vw_chrome_motto_display() ); ?></p>
 			<?php endif; ?>
 		</div>
 

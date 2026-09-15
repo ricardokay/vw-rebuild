@@ -93,7 +93,7 @@ function vw_footer_palette_vars(): string {
 }
 
 function vw_footer_render(): void {
-	$motto = vw_chrome_motto();
+	$motto = vw_chrome_motto_display();
 	?>
 	<footer id="colophon" class="vw-footer" style="<?php echo esc_attr( vw_footer_palette_vars() ); ?>">
 		<div class="vw-footer__inner">

@@ -4424,3 +4424,118 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## Mobile nav follow-up — compact masthead, light bar, motto retired (2026-09-14)
+
+**Direction (Ricardo, after reviewing Stir, MUBI and Wax Poetics): light and airy, not heavier.**
+Two choices were render-gated at 375px on `/category/out-n-about/`, using the real wordmark and
+shown as the 2×2 combinations. **Picks: masthead A2 (compact row), bar (i) hairline.** Two
+amendments followed:
+- the hamburger became the Wax Poetics staggered style: three left-aligned lines of unequal
+  length, at the bottom bar's icon weight;
+- the bar kept its hairline and gained a faint upward shadow at half the shadow variant's
+  strength (`0 -3px 9px` at 5% ink, against (ii)'s `0 -6px 18px` at 10%).
+
+**Motto retired from every surface.** `vw_chrome_motto_display()` returns `''` and every render
+site reads it: desktop and mobile masthead (`inc/masthead.php`), the mobile panel's bottom line
+(same file), the homepage's inline masthead (`section-parts/homepage-v2.php`) and the footer
+identity block (`inc/footer.php`). The stored setting and its admin field are untouched — only the
+field's help text changed, from "Under the wordmark" to "Not currently displayed". Restoring is
+returning `vw_chrome_motto()` from that one function. The footer's "Independent since" line now
+owns its own 14px gap under the nameplate (6px if a motto returns), the same rule as the
+2026-09-12 masthead fix: rhythm cannot be carried by an optional element.
+
+**Compact mobile masthead (below 960px).**
+- `vw_masthead_brand_render()` is one shared row for header and homepage: a sections button, the
+  wordmark link, and a search link.
+- Mobile: a 56px grid (44px | 170px wordmark in a 44px link | 44px), dateline hidden, one 1px
+  hairline, and no heavy rule. The rule needed `!important`, because `homepage-v2.css` sets
+  `.vwh2-rule { display: block !important }`; the selector `.vwh2-masthead + .vwh2-rule--heavy`
+  reaches that one rule only.
+- These overrides sit in a `max-width: 959.98px` block, so the desktop-first `homepage-v2.css`
+  rules stay authoritative above it.
+- At 960px and up the row is `display: contents` and the icons are hidden. Desktop keeps the
+  same wordmark rect; the nav and rule move up by exactly the motto's 23px.
+
+**One panel, several triggers.** The hamburger and masthead search carry the same
+`data-vw-mnav-open` as the bar's tabs, and `masthead-nav.js` binds them all. The masthead search
+is a real link to `/?s=`: with JS it gets `role=button` and `preventDefault`; without JS it goes
+to the search page (200, search template). Without JS the hamburger is `visibility: hidden`: the
+inline nav is showing directly below it, and hiding it this way keeps the wordmark centred.
+
+**Light bar.** Page ground `--vw-bg-subtle`, `1px solid --vw-border` top hairline, the faint
+shadow, no cell dividers, ink items. The current or open mode is red with the 2px red label
+underline (about 5.6:1 on the light ground). The panel stays dark on the footer palette.
+
+**Capture method.** `tools/screenshot.sh` cannot lay out a true 375px. All before/after captures
+use a scratchpad frame page: headless Chrome loads the real URL in an iframe of exact width.
+Variant mockups were scratchpad copies of the served page with the candidate CSS/markup
+injected. Three capture artefacts cost time and are recorded so they are not re-debugged:
+- the parent theme's colour transitions froze bar icons at their old colour (capture-only
+  `transition: none`);
+- file-in-file iframes dropped the fixed bar (variants were served from a temporary
+  `127.0.0.1:8765`, stopped afterwards);
+- `--force-device-scale-factor=2` blanked it.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Mobile nav follow-up — retire the motto sitewide (setting kept); render-gate a compact mobile masthead (A1 centred / A2 row) and a light bottom bar ((i) hairline / (ii) shadow) at 375px, stop for picks, implement the chosen pair (A2 + i, amended: staggered hamburger; hairline + half-strength shadow), verify triggers and no-JS, record part 2; one commit, no push.
+
+WHAT I DID:
+- Session start: git log -1 → 8f61c7b; status clean; CURRENT STATE matched; /category/out-n-about/ at 375 rendered as documented
+- Motto: vw_chrome_motto_display() (returns '') in inc/chrome-settings.php; render sites switched in inc/masthead.php (masthead + panel), section-parts/homepage-v2.php (inline masthead), inc/footer.php (identity block); admin help text corrected; footer.css since-line owns its gap
+- Before-captures (9) via frame page; 2x2 variant renders at 375; STOPPED; picks A2 + (i)
+- inc/masthead.php → vw_masthead_brand_render() shared row (sections button, wordmark link, /?s= search link); 'menu' icon staggered M3 7h10 M3 12h18 M3 17h14 at stroke 1.8 (bar weight)
+- section-parts/homepage-v2.php → inline wordmark block replaced by vw_masthead_brand_render()
+- assets/js/masthead-nav.js → anchor triggers get role=button + preventDefault; open-class marking limited to bar items
+- assets/css/masthead-nav.css → compact masthead (max-width 959.98px block), row display:contents ≥960, light bar with hairline + 5% shadow, active/open red, dead slogan rules removed, masthead padding 12→4px
+- Fixed during verification: wordmark link 31px tall → 44px flex target
+- Every theme file copied to installed child theme with cmp; diff -rq clean
+- After-captures (9); CLAUDE.md CURRENT STATE, VW-MASTER-PLAN, this log
+
+EVIDENCE (verifiable):
+- php -l clean: chrome-settings.php, masthead.php, footer.php, homepage-v2.php
+- wp eval: vw_chrome_motto() → "The Record of the City’s Culture" (stored/default intact); vw_chrome_motto_display() → ''
+- curl /, section, article, /?s=strokes, 404 → 0 __motto elements; /?s= → 200 search template
+- 375 (/, out-n-about, WWE article): motto elements 0, motto text in masthead/footer/panel false; dateline hidden; heavy rule hidden; masthead [16,0,343,65] border-bottom 1px rgb(232,232,232); icons sections [16,10,44,44] search [315,10,44,44] fill none; wordmark 170x31 in 44px link; bar [0,752,375,60] bg rgb(247,246,244) border-top 1px rgb(232,232,232) shadow rgba(26,22,30,0.05) 0 -3px 9px, dividers 0, Home red on /, others ink; body padding-bottom 60px; overflow false; tapMin 44, under44 []; last footer row 724 < bar top 752; here-line Out N About / Photography underline 44px
+- 768 (same 3 surfaces): masthead [24,0,705,65], icons 44x44, dateline/rule hidden, bar light with 1px hairline (measured before the shadow amendment; the shadow's computed value was verified at 375, and mnav2-after-*-768.png shows it), overflow false, under44 [], last row 932 < bar 964
+- 1440 (same 3 surfaces): dateline shown, heavy rule shown [40,201,1345,3], wordmark [410,44,605,112] identical to before, nav [40,170,1345,31] one row 7 items (was y=193 — motto 23px removed), row display contents, icons hidden, bar hidden, active underline on Out N About / Photography, overflow false, under44 []
+- Breakpoint: 959 → compact row + bar, dateline/rule hidden; 960 → full desktop masthead, 1 nav row, no bar
+- Footer: nameplate → since 23px (1440) / 19px (375), since margin-top 14px, no .vw-footer__motto
+- Triggers (375, article, real clicks): hamburger and bar Sections → identical state {mode sections, panel 0,0,375x752 rgb(26,22,30), #page inert, 7 items, Photography active, focus dialog, both section triggers aria-expanded true, bar tab open}; masthead search and bar Search → identical {mode search, field shown, focus #vw-mnav-s, both search triggers expanded}; Escape returns focus to the trigger used; masthead search click did not navigate
+- No-JS (375, vw-js removed): hamburger visibility hidden, search <a href="/?s="> visible 44x44, inline nav 3 rows × 7 items at 44px, bar hidden, body padding 0, here hidden, motto 0, overflow false, under44 []
+- Captures in ~/vw-screenshots:
+  before  mnav2-before-{home,section,article}-{375,768,1440}.png
+  renders mnav2-variant-{A1-i,A1-ii,A2-i,A2-ii}-section-375.png (pre-amendment icons and bar)
+  after   mnav2-after-{home,section,article}-{375,768,1440}.png (article-375: bar over photo; section-375: bar over light content)
+
+FILES CHANGED:
+- theme/inc/chrome-settings.php — vw_chrome_motto_display(); motto field help text
+- theme/inc/masthead.php — motto render sites; vw_masthead_brand_render(); staggered menu icon
+- theme/section-parts/homepage-v2.php — motto render site; shared brand row
+- theme/inc/footer.php — motto render site
+- theme/assets/css/footer.css — since-line gap
+- theme/assets/css/masthead-nav.css — compact masthead, light bar, cleanup
+- theme/assets/js/masthead-nav.js — anchor triggers, bar-only open class
+- CLAUDE.md — CURRENT STATE (motto retired, compact masthead, light bar, launch map part 2)
+- VW-MASTER-PLAN.md — follow-up decision entry
+- PROJECT-LOG.md — this entry
+- DB: no writes. Installed child theme mirrored (outside git).
+
+VERIFIED: computed geometry and styles in a real viewport at 375, 768, 959/960 and 1440 on /, /category/out-n-about/ and the WWE article; triggers by real clicks and keys; no-JS by removing the gate class in-page; motto by served HTML and wp eval; visuals by viewing each capture.
+
+OUTSTANDING / RISKS:
+- PART 2 (record, not built): opens with a mockup of a full-bleed lead image directly under the mobile header on the homepage (Wax Poetics reference); also carries the dek typography and spacing-rhythm notes — those notes were NOT FOUND on file (PROJECT-LOG, VW-MASTER-PLAN, VW-DESIGN-BRIEF, memory); location needed from Ricardo
+- Homepage "From the Archive" line still reads "The record of the city’s culture doesn’t expire" — editorial copy, not the motto element; left as is
+- Motto retired on the mobile panel too (beyond the listed surfaces; covered by "no motto anywhere")
+- One !important added (mobile heavy rule vs homepage-v2.css .vwh2-rule display:block !important)
+- The variant renders predate both amendments (equal-line hamburger; bar without shadow); after-captures show the final state
+- Still NOT verified on a physical iPhone (safe-area inset, Safari toolbar); env() rules unchanged from part 1
+- The mobile masthead's date line is gone below 960px, so tablets (768) lose the dateline too — consistent with the nav breakpoint
+- Search results page look still pending a design verdict (from part 1)
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```

@@ -98,25 +98,10 @@ $vw_archive   = $vw_zone( 'archive' );
 				<span class="vwh2-masthead__slogan"><?php echo esc_html( vw_chrome_slogan() ); ?></span>
 			</div>
 		<?php endif; ?>
-		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
-<?php
-			/*
-			 * SVG GUARD — do not inline this file, and do not give it or its
-			 * wrapper overflow:visible.
-			 *
-			 * logo_VW_wordmark.svg carries the "VANCOUVER'S WEEKLY NEWS SOURCE"
-			 * tagline glyphs at y 62.9–74.7, outside its viewBox (height 59.4).
-			 * 366 of its 516 path coordinates are those glyphs. The viewBox clip
-			 * is the ONLY thing hiding them: referenced as <img> they never
-			 * render, but inlined into the document — or with overflow opened on
-			 * the <svg> — the tagline appears and the masthead becomes the wrong
-			 * lockup.
-			 */
-			?>
-			<img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/logo_VW_wordmark.svg' ); ?>" alt="Vancouver Weekly" class="vwh2-masthead__logo">
-		</a>
-		<?php if ( vw_chrome_motto() ) : ?>
-				<p class="vwh2-masthead__motto"><?php echo esc_html( vw_chrome_motto() ); ?></p>
+		<?php // Wordmark row, shared with header.php — see vw_masthead_brand_render() for the SVG guard. ?>
+		<?php vw_masthead_brand_render(); ?>
+		<?php if ( vw_chrome_motto_display() ) : ?>
+				<p class="vwh2-masthead__motto"><?php echo esc_html( vw_chrome_motto_display() ); ?></p>
 			<?php endif; ?>
 		<?php vw_masthead_nav_render(); ?>
 	</div>

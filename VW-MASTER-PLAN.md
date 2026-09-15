@@ -748,3 +748,11 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Decision: the **search results page gets a minimal pass only**, because the bar now sends readers there. Its look is pending a design verdict; a designed search belongs to the discovery round.
 - Consolidation: the homepage's duplicate inline nav is gone — header and homepage both call `vw_masthead_nav_render()`.
 - Open: the `must-see-films` front's story list has **zero side padding** at every width (pre-existing, now more visible from the nav). Real-device iOS behaviour (safe-area inset, Safari toolbar) is handled in CSS but untested on hardware.
+
+**September 14, 2026 — mobile nav follow-up: light and airy**
+- Direction (Ricardo, after reviewing Stir, MUBI and Wax Poetics): **light and airy, not heavier.**
+- Decision: **the motto is retired from every surface** until better wording exists. The stored setting and its admin field stay; restoring it is one line (`vw_chrome_motto_display()`).
+- Decision (picked from 375px renders): **compact mobile masthead, variant A2** — one row with a staggered thin-line hamburger, a smaller centred wordmark and a search icon. No dateline, no heavy rule, one hairline. The hamburger and search icon open the same panel as the bottom bar: one implementation, several triggers.
+- Decision (picked, then amended): **light bottom bar** on the page ground with a 1px top hairline, plus a faint upward shadow at half the strength of the shadow variant. The hairline draws the edge; the shadow only lifts. The sections panel stays dark.
+- Desktop is unchanged except for the motto: the wordmark sits in the same place, and the nav and rule move up by exactly the motto's height.
+- Next (part 2): opens with a mockup of a **full-bleed lead image directly under the mobile header on the homepage** (Wax Poetics reference), then article and section mobile polish.

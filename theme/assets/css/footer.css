@@ -57,10 +57,17 @@
 	text-transform: uppercase;
 }
 
+/* The gap under the nameplate belongs to this line, which always renders: the
+   motto is optional (retired 2026-09-14), and rhythm that has to survive an
+   element's absence cannot be carried by that element. */
 .vw-footer__since {
-	margin: 6px 0 0;
+	margin: 14px 0 0;
 	font-size: 13px;
 	opacity: 0.72;
+}
+
+.vw-footer__motto + .vw-footer__since {
+	margin-top: 6px;
 }
 
 /* ── Link columns ──────────────────────────────────────────────── */

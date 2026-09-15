@@ -94,6 +94,15 @@ function vw_chrome_motto(): string {
 	return array_key_exists( 'motto', $c ) ? (string) $c['motto'] : VW_CHROME_MOTTO;
 }
 
+/**
+ * The motto as displayed. Retired from every surface on 2026-09-14 until better
+ * language exists. The stored value and its admin field stay; restoring the
+ * motto sitewide is returning vw_chrome_motto() here.
+ */
+function vw_chrome_motto_display(): string {
+	return '';
+}
+
 /** Top-right slogan. Defaults derived from the founding year; overridable. */
 function vw_chrome_slogan(): string {
 	$c = vw_chrome_config();
@@ -190,7 +199,7 @@ function vw_chrome_render_fields(): void {
 				<label for="vwc-motto"><strong>Motto</strong></label>
 				<input type="text" id="vwc-motto" name="vw_chrome[motto]" class="regular-text"
 					value="<?php echo esc_attr( $motto ); ?>" maxlength="160">
-				<span class="vwc-field__help">Under the wordmark. Displayed in caps. Leave empty for no motto.</span>
+				<span class="vwc-field__help">Not currently displayed — the motto is retired from the site until new wording is chosen. The saved text is kept.</span>
 			</p>
 
 			<p class="vwc-field">
