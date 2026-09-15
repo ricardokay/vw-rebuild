@@ -187,7 +187,7 @@ function vw_curation_registry(): array {
 			'out-n-about'         => $section_zones( [ 17 ] ),
 			'political-megaphone' => $section_zones( [ 18 ] ),
 			'book-reviews'        => $section_zones( [ 30 ] ),
-			'must-see-films'      => $section_zones( [ 15 ] ),
+			'must-see-films'      => $section_zones( [ 15, 16 ] ),   // must-see-films + netflix-films, matching the section part
 		],
 	];
 

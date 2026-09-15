@@ -4915,3 +4915,82 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## Must See Films aligned to the section-front format (2026-09-14)
+
+**Report.** `/category/must-see-films/`, the seventh nav section, rendered a legacy Newspack block part: 12 posts in a raw grid with excerpts, zero side padding, a "Load more" button, and no lead, cap or Browse-all.
+
+**Diagnosis (read-only, gated).** Two of the three alignment gaps were already closed:
+- term 15 already carried `_vw_tpl = lead-3col`;
+- the curation registry already had a `must-see-films` zone.
+
+The front rendered the block only because `section-parts/must-see-films.php` did not exist, and the resolver falls back to `{slug}.html`. netflix-films (16) is a child of 15: 35 of its 37 posts are also directly in 15, and the 2 child-only posts (2013) rank 102nd and 105th, outside the 18-story page. **Ricardo picked `[15, 16]`**: page 1 is identical, the Browse-all count (171) matches the page-2 archive, and it follows the food-drink parent-plus-child precedent.
+
+**Change.**
+- `must-see-films.php` is `out-n-about.php` with the four-line delta.
+- The registry cats move from `[15]` to `[15, 16]`.
+- The `_vw_tpl` dry run found no write needed.
+- `must-see-films.html` is retired.
+- No database writes.
+
+**Found in verification.** The front shows three headlines twice. Each pair is two posts whose stored titles differ only in curly vs straight quotes, which the typography filter renders identically. `vw_older_duplicate_ids()` compares raw titles, so it seeds none of them. The same gap hides one pair each on A La Music and Photography. The old block front already repeated two of these titles. It is flagged for a separate gated fix, because normalizing the key changes three fronts.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Must See Films section front — align /category/must-see-films/ to the standardized section-front format (the 10d60d6 Political Megaphone / Book Reviews pattern). Display-layer and term-meta only, no content writes. Diagnose read-only and stop for OK (given: cats [15,16]); then section-parts/must-see-films.php from out-n-about.php with the four-line delta, registry [15] → [15,16], _vw_tpl dry run expecting no write, retire the legacy .html part in the same commit, correct doc drift; verify at 1440 and 375 against a-la-music, other six fronts byte-identical, nav active state, netflix-films child archive; one scoped commit; handoff in PROJECT-LOG and chat; no push.
+
+WHAT I DID:
+- Session start: CLAUDE.md CURRENT STATE and PROJECT-LOG tail read; git log -1 → 42aba30, clean, level with origin; 10d60d6 confirmed; 1440 look taken. FLAGGED drift: vw_chrome now {"slogan":"Independent Since 2012","mobile_lead":"standard"} vs CLAUDE.md "mobile_lead unset" — corrected in docs, not touched in DB
+- Stage 1 (read-only, reported and STOPPED): legacy .html part content; term 15/16 meta, names, counts; resolver order (.php before .html); registry and stored curation state; duplicate seeds; image tiers; page-1 rank of the child-only posts; lead autofill; kicker logic; nav active slug on the child archive; baseline md5 of 8 pages fetched twice
+- OK received: [15,16]
+- theme/section-parts/must-see-films.php created from out-n-about.php (edit script asserted each replacement once; diff vs source = exactly 4 lines: docblock title, $cats = [ 15, 16 ], curation context 'must-see-films', Browse-all label 'Must See Films'); php -l clean
+- theme/inc/curation-registry.php: 'must-see-films' => $section_zones( [ 15 ] ) → [ 15, 16 ] with an inline note; php -l clean
+- READ-ONLY _vw_tpl dry run on term 15 through vw_tpl_valid(): before-value ["lead-3col"] = target → write needed false → NO WRITE
+- Retired theme/section-parts/must-see-films.html: installed copy cmp-identical to repo → git rm + removed from the installed theme
+- New part and registry cp + cmp into the installed theme; diff -rq theme vs installed clean (only .DS_Store)
+- Verification: md5 of the six other fronts + netflix-films; served-HTML checks; headless measurement + captures of must-see-films and a-la-music at 1440 and 375, netflix-films at 1440; page-2 and child archive status
+- Found in verification (read-only follow-up): repeated headlines on the new front traced to quote-variant duplicate pairs the shared seed misses; reach measured across all seven fronts and the old front. Not fixed (shared helper; would change other fronts) — flagged below
+- CLAUDE.md CURRENT STATE (nav bullet, lead-setting drift, duplicate-pair note, must-see-films dirt line, launch map 8, routing lines 136–137), VW-MASTER-PLAN entry, this log
+
+EVIDENCE:
+- Resolver after change: vw_tpl_section_part(term 15) → {"type":"php", …/section-parts/must-see-films.php}; registry cats → [15,16]
+- Term meta dry run: before ["lead-3col"], target lead-3col, write needed false; term 16 _vw_tpl rows []
+- Byte-identical (?ver= stripped) to the pre-change baseline: a-la-music 5d66510445c0f23ed95c4cf4d02e2c62, photography 886ed306834e4a988117356617d03aa8, food-drink 82141a812871bb915395d94bb16875c7, out-n-about 25b4319c1f7138f580b14b27af455bc9, political-megaphone be21d783dca4321c301492212798f384, book-reviews b30b63c01af120c0321f20f818aa0b45, netflix-films 18d359326dbaa2d735922a2a351f6620 — all IDENTICAL
+- must-see-films served HTML (before → after): Newspack homepage-articles markers 10 → 0; "Load more" 1 → 0; pagination 0 → 0; vw-module--lead 0 → 1; vw-feat-list 0 → 1; Browse-all module 0 → 1; "Category:" 0 → 0; PHP warning/notice/fatal 0 → 0; HTTP 200
+- h1: one, screen-reader, "must see films" (term name); title "must see films – Vancouverweekly"; active nav label "Must See Films"; here-line link "Must See Films"
+- Stories: 18 distinct permalinks before the closer (lead anchor waiting-in-line-with-18-to-party = post 166, second story Somewhere Between, 10 list items, feature + 5 items); kickers printed: none (same-section suppression)
+- Browse-all: href /category/must-see-films/page/2/; text "Keep reading 171 Must See Films stories in the archive Browse all →"
+- 1440 rendered: module inner padding 40/40; lead block [40,341,1360,593] grid (left [40,341,412,393], centre [452,341,536,593], right [988,341,412,452]); lead image [481,341,478,367]; lead headline 22px; dek 15px; feature headline [40,1035,499,62] 26px; Browse-all block [0,1601,1440,203]; active nav shown, rgb(196,18,48), underline 2px; here-line hidden; overflow false; tap min 44, under-44 0; docH 5911 → 2405. a-la-music at 1440 matches: padding 40/40, grid lead [40,341,1360,660], Browse-all [0,1760,1440,203], same nav treatment
+- 375 rendered: module inner padding 16/16 (was a 0-padding article box [0,140,375,4839]); lead block [16,152,343,1640] flex; lead image [16,152,343,263]; lead headline 24px; list headlines 18px; Browse-all [0,2613,375,142]; here-line shown [124,69,128,44], red, underlined; nav items hidden (bar mode); overflow false; tap min 44, under-44 0; docH 5780 → 3547. a-la-music at 375 matches: padding 16/16, lead [16,152,343,1687] flex, here-line shown and underlined
+- Child/pages: /category/must-see-films/page/2/ 200, 12 entries, pagination present, here "Must See Films"; /category/netflix-films/ and /page/2/ 200, 12 entries each, pagination, here "Must See Films"; netflix-films 1440 rendered: active nav Must See Films underlined, overflow false
+- Repeated headlines on the new front: 3 titles shown twice — Somewhere Between (669 + 14377), Picture Me (13779 + 1634), 16 Acres (13204 + 1637). Cause: each pair stores one title with curly quotes (e2809c…) and one with straight quotes (22…); wptexturize renders both the same, but vw_older_duplicate_ids() keys on mb_strtolower(trim(post_title)), so the raw keys differ. Display-normalized pairs missed by the seed: must-see-films 4 [14377,1634,1637,9902], a-la-music 1 [5066], photography 1 [67571], food-drink/out-n-about/political-megaphone/book-reviews 0. The old .html front already repeated 2 of these titles among its 12 posts
+- Captures in ~/vw-screenshots:
+  before  m5-before-must-see-films-{1440,375}.png, m5-before-must-see-films-1440-full.png, m5-before-a-la-music-{1440,375}.png
+  after   m5-after-must-see-films-{1440,375}.png, m5-after-must-see-films-{1440,375}-full.png, m5-after-a-la-music-{1440,375}.png, m5-after-netflix-films-1440.png
+
+FILES CHANGED:
+- theme/section-parts/must-see-films.php — new; out-n-about.php lineage, four-line delta, cats [15,16]
+- theme/section-parts/must-see-films.html — deleted (legacy Newspack block front retired; also removed from the installed theme)
+- theme/inc/curation-registry.php — must-see-films zone cats [15] → [15,16]
+- CLAUDE.md — CURRENT STATE: nav bullet, vw_chrome drift, quote-variant duplicate note, must-see-films dirt line, launch map 8, routing lines 136–137
+- VW-MASTER-PLAN.md — decision entry
+- PROJECT-LOG.md — this entry
+- DB: no writes (term 15 _vw_tpl already lead-3col; dry run confirmed). Installed child theme mirrored (outside git).
+
+VERIFIED: served-HTML md5 comparison of seven untouched pages against a twice-fetched baseline; served-HTML structure checks on the new front; rendered geometry and computed styles in headless Chrome at exact 1440×900 and 375×812 on must-see-films against a-la-music, plus netflix-films at 1440; HTTP/structure checks on page 2 and the child archive; captures viewed.
+
+OUTSTANDING / RISKS:
+- [FLAG - reply 'noted' to dismiss] Three headlines appear twice on the new Must See Films front because the shared duplicate seed misses quote-variant title pairs (6 hidden-eligible posts across must-see-films, a-la-music, photography). Next step: a gated fix normalizing the title key in vw_older_duplicate_ids() (wptexturize + entity decode + whitespace), verified by md5 showing only those three fronts change
+- Lead image is an older story (166, 2020, tier 2): 161 of 169 film posts have no usable image, including the two newest (2024), which sit in the lists
+- h1 and document title use the lowercase term name "must see films" (also true of photography, food drink, out n about); casing needs a term-name write, not in scope
+- Legacy .html handling in inc/templates.php now has no users (left in place as generic resolver code)
+- Page 2 (native archive, 12 per page, includes netflix-films) overlaps some of the front's 18 stories — the same pattern as every front
+- netflix-films archive h1 textContent still begins with Newspack's hidden "Category: " span (CSS-hidden; page md5-identical to before)
+- Film section mark still deferred
+- vw_chrome currently stores mobile_lead "standard" (panel save outside this session); the homepage lead is text-first live
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```

@@ -784,3 +784,9 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Decision: **photographs sit on ink.** The ground is the frozen `--vw-ink` near-black, opaque in both motion paths, with light close and arrow icons and the page locked behind it.
 - The fix is display-layer CSS in the child theme: no plugin, no theme.json, no fork of core markup.
 - Open: at desktop width the credit pill can overlap the bottom 16px of a tall portrait (pre-existing placement).
+
+**September 14, 2026 — Must See Films joins the standard section-front format**
+- Status change: **all seven nav sections now render the same curated front** — a lead block, a featured list, an 18-story cap and a Browse-all handoff. The last legacy block-markup front (`must-see-films.html`) is retired.
+- Decision (Ricardo): the front draws from **must-see-films plus its child netflix-films** (`[15, 16]`), the Food & Drink parent-plus-child precedent. Page 1 is identical either way, but the Browse-all count (171) now matches the archive it hands off to.
+- Only a code file was needed. The category already had its template assigned and the curation registry already had the section, so there were no database writes.
+- Found: duplicate-headline suppression misses copies whose titles differ only in curly vs straight quotes. It affects 6 pairs across three fronts, three of them visible on Must See Films. A normalization fix is queued for its own approval because it changes those fronts.
