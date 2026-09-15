@@ -29,12 +29,33 @@
   /* ── Structural ──────────────────────────────────────────── */
 
   --vw-border:     #E8E8E8;   /* nav underline and any rare hairline needed */
+  --vw-shadow-soft: rgba(26, 22, 30, 0.05);  /* --vw-ink at 5%: bar lift, header seam */
 
 
   /* ── Typography role colors ─────────────────────────────── */
 
   --vw-kicker-ink: #1A1A1A;   /* category kickers — near-black uppercase */
   --vw-byline-ink: #555555;   /* bylines/credits — secondary, quiet */
+  --vw-dek-ink:    #464349;   /* deks — --vw-ink at 80% on --vw-bg-subtle, 9.3:1 */
+
+
+  /* ── Section marks ───────────────────────────────────────── */
+
+  --vw-mark-food:      #C97B2E;
+  --vw-mark-outabout:  #2E6B4A;
+  --vw-mark-political: #2A4A6B;
+  --vw-mark-books:     #5B3E7A;
+  --vw-mark-food-legacy: #8B5E3C; /* section-landing.css paired-bar marks only */
+  --vw-card-placeholder: #DDDDDD; /* section-landing.css .vw-card__img ground */
+
+
+  /* ── Photography band (homepage, dark) ───────────────────── */
+
+  --vw-band-bg:     #121113;
+  --vw-band-ink:    #EBE8E3;
+  --vw-band-muted:  #9C99A0;
+  --vw-band-dek:    #B7B4B9;
+  --vw-band-rule:   #333136;
 
 
   /* ── Red accent ──────────────────────────────────────────── */

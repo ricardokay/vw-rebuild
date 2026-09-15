@@ -190,34 +190,92 @@
 .vw-ah__mark--music { width: 12px; height: 12px; }
 .vw-ah__mark--music::before,
 .vw-ah__mark--music::after {
-	content: ''; position: absolute; top: 0; width: 4px; height: 12px; background: #C41230;
+	content: ''; position: absolute; top: 0; width: 4px; height: 12px; background: var(--vw-red);
 }
 .vw-ah__mark--music::before { left: 0; }
 .vw-ah__mark--music::after { left: 7px; }
 
 .vw-ah__mark--photo { width: 11px; height: 11px; border: 1.5px solid var(--vw-ink); box-sizing: border-box; }
 
-.vw-ah__mark--food { width: 10px; height: 10px; border-radius: 50%; background: #C97B2E; }
+.vw-ah__mark--food { width: 10px; height: 10px; border-radius: 50%; background: var(--vw-mark-food); }
 
 .vw-ah__mark--outabout {
 	width: 0; height: 0;
 	border-left: 6px solid transparent;
 	border-right: 6px solid transparent;
-	border-bottom: 10px solid #2E6B4A;
+	border-bottom: 10px solid var(--vw-mark-outabout);
 }
 
 .vw-ah__mark--political {
 	width: 0; height: 0;
 	border-top: 6px solid transparent;
 	border-bottom: 6px solid transparent;
-	border-left: 10px solid #2A4A6B;
+	border-left: 10px solid var(--vw-mark-political);
 }
 
-.vw-ah__mark--books { width: 14px; height: 3px; background: #5B3E7A; margin-top: 5px; }
+.vw-ah__mark--books { width: 14px; height: 3px; background: var(--vw-mark-books); margin-top: 5px; }
 
 
 @media (max-width: 782px) {
-	.vw-ah__split { grid-template-columns: 1fr; row-gap: 20px; }
+	.vw-ah__split { grid-template-columns: 1fr; row-gap: 16px; }
 	.vw-ah__split-media { grid-column: 1; }
 	.vw-ah__strip { font-size: 12px; }
+}
+
+
+/* ── Tall case A (square or portrait, class set in PHP) ───────────
+   Capped by height, centred, never cropped: a square renders 720x720, a
+   1600x2561 portrait 450x720. Below 783px the column is narrower than the cap
+   and nothing changes. The caption and credit strip keep the full width. */
+
+.vw-ah--tall .vw-ah__img {
+	width: auto;
+	max-height: 720px;
+	margin-inline: auto;
+}
+
+
+/* ── Phones (mobile round part 2, 2026-09-14) ─────────────────────
+   Below 783px — the split header's own breakpoint — every case is set flush
+   left: a centred four-line headline reads as a ragged block, and B and C were
+   already left. The headline steps down to 30px (8vw, back to 34px by 425px),
+   the header rhythm tightens to a 14/16 scale, and body copy keeps its 18px
+   with a slightly firmer 1.55 leading and a 24px paragraph gap in place of
+   Newspack's 32px. */
+
+@media (max-width: 782px) {
+	/* No here-line on articles, so this is the gap under the masthead hairline. */
+	.single #content { margin-top: 24px; }
+
+	.vw-ah { margin-bottom: 28px; }
+
+	.vw-ah--a { text-align: left; }
+	.vw-ah--a .vw-ah__rule { margin-left: 0; margin-right: 0; }
+
+	.vw-ah__kicker { margin-bottom: 8px; }
+
+	.vw-ah__hed {
+		font-size: clamp(30px, 8vw, 34px);
+		line-height: 1.1;
+		margin-bottom: 14px;
+	}
+
+	.vw-ah .vw-ah__rule { margin-bottom: 16px; }
+
+	.vw-ah__strip { margin-top: 16px; }
+
+	.single .entry-content > p {
+		line-height: 1.55;
+		margin-top: 24px;
+		margin-bottom: 24px;
+	}
+}
+
+/* One gutter with the masthead hairline (16px), not Newspack's 90vw column. */
+@media (max-width: 599.98px) {
+	.single #primary {
+		width: auto;
+		max-width: none;
+		margin-inline: 16px;
+	}
 }

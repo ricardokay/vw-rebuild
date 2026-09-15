@@ -106,3 +106,38 @@
 		wide.addListener( onWide );
 	}
 } )();
+
+/**
+ * Focused search mode (search results, below 960px).
+ *
+ * Close goes back when the reader arrived from a page on this site, so it
+ * returns them to where they searched from; otherwise it stays the plain link
+ * home it is without JavaScript. The search header is sticky, and gains its
+ * hairline only once it is actually stuck — a sentinel above it leaving the
+ * viewport is the signal.
+ */
+( function () {
+	var closeLink = document.querySelector( '[data-vw-search-close]' );
+	if ( closeLink ) {
+		closeLink.addEventListener( 'click', function ( e ) {
+			var ref = document.referrer;
+			var sameSite = ref && ref.indexOf( location.origin + '/' ) === 0;
+			if ( sameSite && window.history.length > 1 ) {
+				e.preventDefault();
+				window.history.back();
+			}
+		} );
+	}
+
+	var header = document.querySelector( '.search #primary > .page-header' );
+	if ( ! header || ! ( 'IntersectionObserver' in window ) ) return;
+
+	var sentinel = document.createElement( 'div' );
+	sentinel.setAttribute( 'aria-hidden', 'true' );
+	sentinel.className = 'vw-search-sentinel';
+	header.parentNode.insertBefore( sentinel, header );
+
+	new IntersectionObserver( function ( entries ) {
+		header.classList.toggle( 'is-stuck', ! entries[ 0 ].isIntersecting );
+	} ).observe( sentinel );
+} )();

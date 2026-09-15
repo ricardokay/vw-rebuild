@@ -44,6 +44,17 @@ const VW_CHROME_FOOTER_DEFAULTS = [
 	'footer_rule'   => '#3a3540',
 ];
 
+/*
+ * Mobile homepage lead, below 1024px. image-first is the full-bleed treatment
+ * chosen at the 2026-09-14 gate (L1); standard is the text-first flow it
+ * replaced. Desktop renders the same either way.
+ */
+const VW_CHROME_MOBILE_LEADS = [
+	'image-first' => 'Image first — full-bleed photo under the header, headline below',
+	'standard'    => 'Standard — headline and dek first, photo below',
+];
+const VW_CHROME_MOBILE_LEAD_DEFAULT = 'image-first';
+
 /** Raw stored settings, schema-checked. */
 function vw_chrome_config( bool $refresh = false ): array {
 	static $config = null;
@@ -80,6 +91,12 @@ function vw_chrome_footer_palette(): array {
 		$out[ $key ] = $hex ?: $default;
 	}
 	return $out;
+}
+
+/** Mobile homepage lead style, always a known key. */
+function vw_chrome_mobile_lead(): string {
+	$v = (string) ( vw_chrome_config()['mobile_lead'] ?? '' );
+	return isset( VW_CHROME_MOBILE_LEADS[ $v ] ) ? $v : VW_CHROME_MOBILE_LEAD_DEFAULT;
 }
 
 /** Founding year. */
@@ -176,6 +193,12 @@ function vw_chrome_sanitize( $raw ): array {
 		}
 	}
 
+	// Same rule as the palette: only a known value that differs from the default.
+	$lead = sanitize_key( (string) ( $raw['mobile_lead'] ?? '' ) );
+	if ( isset( VW_CHROME_MOBILE_LEADS[ $lead ] ) && VW_CHROME_MOBILE_LEAD_DEFAULT !== $lead ) {
+		$out['mobile_lead'] = $lead;
+	}
+
 	return $out;
 }
 
@@ -230,6 +253,27 @@ function vw_chrome_render_fields(): void {
 				</label>
 				<span class="vwc-field__help">The thin line above the wordmark carrying the date and the top-right line.</span>
 			</p>
+		</div>
+	</section>
+
+	<?php $mobile_lead = vw_chrome_mobile_lead(); ?>
+	<section class="vwc-zone vwc-settings">
+		<header class="vwc-zone__head">
+			<h4 class="vwc-zone__title">Mobile homepage lead</h4>
+			<span class="vwc-zone__locked">Phones and tablets only — desktop is unchanged</span>
+		</header>
+
+		<div class="vwc-fields">
+			<fieldset class="vwc-field vwc-field--choices">
+				<legend class="screen-reader-text">Mobile homepage lead</legend>
+				<?php foreach ( VW_CHROME_MOBILE_LEADS as $value => $label ) : ?>
+					<label>
+						<input type="radio" name="vw_chrome[mobile_lead]" value="<?php echo esc_attr( $value ); ?>" <?php checked( $mobile_lead, $value ); ?>>
+						<?php echo esc_html( $label ); ?>
+					</label>
+				<?php endforeach; ?>
+				<span class="vwc-field__help">How the lead story opens the homepage below 1024px wide. A lead without a usable photo is text-first either way.</span>
+			</fieldset>
 		</div>
 	</section>
 

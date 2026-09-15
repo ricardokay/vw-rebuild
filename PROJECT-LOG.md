@@ -4629,3 +4629,136 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## Mobile round part 2 — reading surfaces and the mobile homepage lead (2026-09-14)
+
+**Two gates, then propose → implement.** Mockups were rendered at 375px from copies of the served pages, using the real lead story (65350, Sigur Rós), served on a temporary 127.0.0.1:8765 (stopped after the picks).
+- **Gate 1: L1** (single full-bleed lead) was picked over L2 (carousel).
+- **Gate 2: S2** (focused search) was picked over S1 (current).
+
+Three amendments arrived during implementation:
+1. The lead style became a chrome setting.
+2. A seam shadow under the header in image-first mode.
+3. No here-line on articles.
+
+**Proposal, as implemented (375px before → after).**
+- **Gutter:** 19px (article/archive/search) and 20px (fronts) → 16px below 600px, aligned to the masthead hairline.
+- **Article header:** case A was centred on phones → left in every case below 783px. Headline 34px/1.07 → clamp(30px, 8vw, 34px)/1.1. Header → body margin 40 → 28. Kicker 30px under the hairline (the here-line is gone).
+- **Article body:** Georgia 18px kept; line-height 1.6 → 1.55; paragraph gap 32 → 24.
+- **Deks:** Inter #767676 → Georgia in `--vw-dek-ink` (#464349, ink at 80% on the ground), at every width.
+  - Articles carry no dek by design, so the restyle lands on the homepage deks (lead 17px, music 15, tri 14, photo band 14) and the section lead story (15px).
+- **Section fronts below 1024px:**
+  - lead headline 18 → 24px; sub-headline 16 → 19; list and feature-list headlines 15/17 → 18;
+  - first module top padding 26 → 12.
+- **Browse-all, below 900px:** a 36px caps link → a 3px ink rule, "1,055" (PT Serif 28) plus "A La Music stories in the archive" (Georgia 18), then a 44px CTA row. The module hairline that doubled the rule is removed.
+- **/archive/ below 960px:** title 14.4px caps → 30px.
+- **/archive/ rows below 600px:** 545px → 137–225px tall. Headline 25.2 → 20 (including Newspack's feature-latest first row); excerpt Georgia 18px unbounded → Inter 14px clamped to 3 lines; 96px square thumbnail on the right.
+- **Squares:** case-B squares were already deliberate (stacked at 343 on phones, 540 split on desktop, never upscaled). Case-A squares and portraits (9 posts) rendered 1200px wide, so a 2000px cover produced a 1444px header. They now get `vw-ah--tall` (height ≥ 0.95 × width) and cap at 720px tall, centred: the header is 964px.
+
+**The setting.**
+- `VW_CHROME_MOBILE_LEADS` holds `image-first` / `standard`; the default is `image-first`.
+- `vw_chrome_mobile_lead()` validates on read. The sanitizer stores only a known non-default value, the palette rule.
+- The field is a "Mobile homepage lead" radio pair in the chrome panel.
+- `homepage-v2.php` adds `vwh2-lead--image-first` only when the lead has an image and the setting is image-first. The CSS is scoped to max-width 1023.98px.
+
+**Seam shadow.** A transparent header-height caster box sits above the image column and casts `0 3px 9px var(--vw-shadow-soft)`, the bar's shadow mirrored. An outer shadow never paints under its own box, so only the downward part shows, across the full bleed. It is visible as a faint lift over the light sky; over a near-black photo a 5% ink shadow is effectively invisible.
+
+**Focused search.**
+- `vw_masthead_brand_render()` prints a close link in place of the sections button on `is_search()`.
+- `masthead-nav.js` turns close into `history.back()` when the referrer is same-origin, and adds a sentinel plus IntersectionObserver that toggles `.is-stuck`.
+- `vw_search_count_render()` on `loop_start` prints the count.
+- All styling is below 960px and scoped to `#primary > .page-header`, so Newspack's nested no-results header is untouched.
+
+**Found and fixed during verification.**
+- "All …" links reached 42px, not 44 (padding 13 → 14).
+- The zone-title link was 18px. It now gets the same zero-layout hit area.
+- Newspack's `.archive:not(.paged).feature-latest article.entry:first-of-type .entry-title` (0,6,2) kept the first archive row at 25.2px.
+- Newspack's 27px `#content` offset left air above the search field and on articles.
+- The archive header had a 54px bottom margin.
+- The focused-search selector also hid and stuck the nested "Nothing Found" header.
+- `is-stuck` appeared not to toggle in the in-app browser. The hidden pane throttles observers; it toggles correctly in headless Chrome.
+
+**Tooling.** The scratchpad `cdp_run.py` drives headless Chrome over CDP with exact `Emulation.setDeviceMetricsOverride` widths (375 mobile / 768 / 1440), runs one measurement script per page, and writes captures. At 1440 it records a geometry fingerprint of every visible element in `#page`; before and after are diffed, and each change is classified as y-shift only or size/type.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Mobile round part 2 — Gate 1 (L1 full-bleed lead / L2 carousel) and Gate 2 (S1 / S2 focused search) at 375 with real content, stop for picks (L1, S2: close = history back with home fallback, desktop search unchanged, hairline when stuck); then propose with measurements and implement article typography + dek, section fronts, /archive/, square featured images, colour-token groundwork. Amendments: (1) mobile lead as a chrome setting image-first/standard, default image-first, both verified at 375; (2) image-first seam shadow shown over dark + light images; (3) no here-line on single articles on mobile. Verify 375/768/1440; one scoped commit; no push.
+
+WHAT I DID:
+- Session start: git log -1 → a3c2647; status clean; / and WWE article (67914) at 375 matched CURRENT STATE; no doc mismatches
+- Gate renders (scratchpad build_gates.py; READ-ONLY lead_data.php for lead + 4 tier-1 autofills) → STOPPED → picks L1 + S2; temp server stopped
+- READ-ONLY queries: square featured posts (61; case A 5 / B 55 / C 1), tall case-A (9: 5 square, 4 portrait), s=strokes found_posts 21
+- Before-baseline: 10 surfaces × 375/768/1440 via cdp_run.py (before.json)
+- palette.css → --vw-dek-ink, --vw-shadow-soft, --vw-mark-{food,outabout,political,books,food-legacy}, --vw-card-placeholder, --vw-band-{bg,ink,muted,dek,rule}
+- inc/chrome-settings.php → VW_CHROME_MOBILE_LEADS, vw_chrome_mobile_lead(), sanitizer branch, radio field; curation-admin.css → .vwc-field--choices
+- section-parts/homepage-v2.php → vwh2-lead--image-first class from the setting
+- homepage-v2-data.css → L1 below 1024 (flex, order, full-bleed, 56.25vw–min(125vw,62svh) image, 31px hed, 3-line dek, seam caster); 44px hit areas on .vwh2-kicker__link/.vwh2-more/.vwh2-zonehead__title; text-variant desktop dek 16→18
+- homepage-v2.css → lead/music/tri/photo deks to Georgia + --vw-dek-ink; 16 colour literals → tokens
+- inc/masthead.php → search close link; vw_search_count_render() on loop_start; here-line skipped on is_singular('post')
+- assets/js/masthead-nav.js → close history-back; sticky sentinel + IntersectionObserver .is-stuck
+- masthead-nav.css → focused search masthead below 960; bar shadow literal → --vw-shadow-soft
+- archive.css → 16px gutter below 600; focused search header below 960 (sticky, full-bleed ground, stuck hairline, hidden h1, 56px PT Serif field, count); archive title 30px + header margin 8 below 960; archive rows below 600
+- inc/article-header.php → vw-ah--tall; article-header.css → tall cap 720, phones below 783 (left, 30–34px hed, 14/16 rhythm, #content 24, body 1.55 / 24px), 16px gutter below 600; 5 mark literals → tokens
+- section-landing.css → deks to Georgia/--vw-dek-ink (lead-block 3 lines below 1024, 2 at 1024+); below 1024 type scale; below 600 gutter 16 + first module 12; below 900 Browse-all closer; 11 literals → tokens
+- Every file cp + cmp into the installed child theme; final diff -rq clean (only .DS_Store)
+- Setting verification: dry run (READ-ONLY) → WRITE 1 update_option vw_chrome {"_schema":1,"mobile_lead":"standard"} → render check → WRITE 2 delete_option vw_chrome (the option did not exist before) — two separate calls, return values checked
+- CLAUDE.md CURRENT STATE, VW-MASTER-PLAN entry, this log
+
+EVIDENCE:
+- php -l clean: chrome-settings.php, masthead.php, article-header.php, homepage-v2.php; curl 200 with 0 warning/notice/fatal on /, /?s=strokes, /?s=zzqxnothing, /archive/, /category/a-la-music/, melo article
+- Final pass after3.json (10 surfaces × 375/768/1440 + extras): overflow false on all 39 jobs, offenders none, in-scope tap minimum 44, under44 [] everywhere (before: home 16px kicker/All links, section Browse-all 36px)
+- Desktop 1440 geometry diff vs before: art-std 0, art-photo 0, sq-b 0, sec-films 0, archive 0, search 0 (sentinel excluded, 0px tall). home 213 = 189 y-shift + 24 size/type (4 deks font/size, 6 hit-area link heights 18→46 / 16→44, parents +4/+9); sec-music 109 = 101 shift + 8 (main dek 13px Inter → 15px Georgia, parents +6); sec-books 107 = 99 + 8 (same); sq-a 97 = 90 + 7 (image 1200×1200 → 720×720 at x=360, header 1444 → 964)
+- 375 article (art-std): gutter x 19→16; kicker left x=16 (was centred x=111); hed 34→30px, 146→99px tall; body p lh 28.8→27.9, margins 32→24; docH 5907→5557; here-line absent, kicker y=94 (hairline 64); same on Sigur Rós, WWE, melo, wire
+- 375 home image-first: img [0,65,375,336] under the header; hed 31px at y=458; dek Georgia 17px rgb(70,67,73), 3 lines; byline y=700 < bar 752; seam caster box-shadow present; standard (option written): class vwh2-lead, text y=89, img [40,601,295,320] below, caster none; 1440 lead img [648,241,752,500] identical in both modes
+- Setting (READ-ONLY eval): sanitize standard → stored; image-first / IMAGE-FIRST / bogus / '' → not stored; option absent → accessor image-first; field renders 2 radios, image-first checked. After restore: option exists false, served / carries vwh2-lead--image-first
+- 375 section fronts: lead hed 18→24px, list hed 15→18, dek Georgia 15px 3 lines, gutter 20→16, image y 166→152; Browse-all link 36px → 119px block with CTA 343×44; here-line present on a-la-music, book-reviews, must-see-films, a-la-music/page/2, netflix-films
+- 375 /archive/: title 14.4 → 30px; rows 545 → 137–225px; all row titles 20px (incl. feature-latest first row); thumbnail [263,197,96,96]; excerpt Inter 14px 3 lines; pagination numerals 44×44
+- 375 search: header row 48px, close [16,2,44,44] href home, sections button absent, masthead search icon visibility hidden, h1 1px (screen reader), field [16,60,343,56] PT Serif 20px 2px underline, count "21 results for “strokes”", first result y 217→146, bar Search active; headless: is-stuck false at top / true at scrollY 700 (::after opacity 1, header top 0) / false back at top
+- Close by real click: from the WWE article (same-origin referrer) → back to /photos-wwe-…/; direct load (no referrer) → / (home)
+- No-results 375: sticky only on the top header; "Nothing Found" visible 22px; 1 form; overflow false. No-JS (vw-js removed): close visible 44×44, inline nav 7 items, bar hidden, overflow false
+- Colour groundwork: 33 literals → tokens (section-landing 11, homepage-v2 16, article-header 5, masthead-nav 1); remaining matches are comment text only
+- Captures in ~/vw-screenshots:
+  gates   m2-gate-{L1,L2,S1,S2}-375.png, m2-gate-{L1,L2}-375-long.png, m2-gate-S2-375-scrolled.png
+  before  m2-before-{home,art-std,art-photo,sq-a,sq-b,sec-music,sec-books,sec-films,archive,search}-{375,768,1440}.png
+  after   m2-after-{same 10}-{375,768,1440}.png (final pass)
+  seam    m2-after-home-seam-light-375.png + -zoom.png (real lead), m2-after-home-seam-dark-375.png + -zoom.png (capture-only src swap to a dark image)
+  modes   m2-after-home-standard-375.png + -zoom.png (standard mode, option temporarily written)
+  state   m2-after-search-stuck-375.png, m2-after-sec-music-closer-375.png, m2-after-sq-a-1440-full.png, m2-after-art-sigur-{375,1440}.png
+
+FILES CHANGED:
+- theme/palette.css — dek, shadow, mark, band, placeholder tokens
+- theme/inc/chrome-settings.php — mobile lead setting (constants, accessor, sanitizer, field)
+- theme/assets/css/curation-admin.css — radio group layout
+- theme/section-parts/homepage-v2.php — image-first lead class
+- theme/assets/css/homepage-v2-data.css — L1, seam shadow, 44px hit areas, text-variant dek size
+- theme/assets/css/homepage-v2.css — deks restyled; 16 literals → tokens
+- theme/inc/masthead.php — search close link, result count, no here-line on articles
+- theme/assets/js/masthead-nav.js — close history-back, stuck hairline
+- theme/assets/css/masthead-nav.css — focused search masthead; shadow token
+- theme/assets/css/archive.css — gutter, focused search header, archive title/rows
+- theme/inc/article-header.php — vw-ah--tall
+- theme/assets/css/article-header.css — tall cap, phone typography/rhythm, gutter, mark tokens
+- theme/assets/css/section-landing.css — deks, mobile type scale, gutter, Browse-all closer, tokens
+- CLAUDE.md — CURRENT STATE (part 2 bullet, here-line rule, launch map 8, known dirt)
+- VW-MASTER-PLAN.md — part 2 decision entry
+- PROJECT-LOG.md — this entry
+- DB: 2 writes, net zero — vw_chrome written {"_schema":1,"mobile_lead":"standard"} then deleted (it did not exist before). Installed child theme mirrored (outside git).
+
+VERIFIED: computed geometry and styles in headless Chrome at exact 375 / 768 / 1440 on the homepage (both lead modes), two articles (standard 67053, photo-led 67914) plus square posts 67150 (A) / 69164 (B) and Sigur Rós, three section fronts (a-la-music, book-reviews, must-see-films), /archive/, search (results + no results); desktop by full-element geometry diff against the before-baseline; close / back / home and stuck state by real clicks and scroll; no-JS by removing the gate class; the setting by sanitizer eval plus a real option write and restore; visuals by viewing the captures.
+
+OUTSTANDING / RISKS:
+- DESKTOP CHANGES (width-independent, stated): (1) deks on homepage (lead/music/tri/photo) and section lead stories now Georgia + --vw-dek-ink, slightly larger; +4–9px zone heights; (2) 44px hit areas on homepage kicker / zone-title / "All …" links (link boxes taller, text unmoved); (3) tall case-A images (9 posts) capped at 720px tall, centred
+- Seam shadow is effectively invisible over near-black lead photos (5% ink by design, matching the bar); the dark capture uses a capture-only image swap, not a real curated lead
+- Here-line removed on all single posts: where the kicker is a child category (e.g. "Music Interviews"), the parent section name ("A La Music") no longer appears on mobile articles; /archive/ never had a here-line
+- Must See Films: zero side padding unchanged (separate queued round); its .html front got none of the section rules
+- L1 at 768 runs a 768×635 image (62svh cap); tablets see a tall lead
+- Pre-existing, not touched: a second hairline between the credit strip and the article body; a very large author-bio name heading under articles; stale "PREVIEW ONLY" comments in article-header.css / inc/article-header.php
+- Search results rows themselves unchanged (duplicate pairs and raw-caption excerpts are known noise); count line hidden at 960 and up
+- Article dek: none exists by design (header decision), so "dek restyle" landed on homepage and front deks
+- Not verified on a physical iPhone (sticky field under the Safari toolbar, safe-area top inset)
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```

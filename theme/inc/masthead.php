@@ -67,6 +67,11 @@ function vw_masthead_nav_render(): void {
  * only thing on the page that still says which section you are in.
  */
 function vw_masthead_here_render(): void {
+	// Not on articles: the article header's kicker names the section ~40px
+	// below, so the line only repeated it (2026-09-14). Fronts and archives keep it.
+	if ( is_singular( 'post' ) ) {
+		return;
+	}
 	$active   = vw_nav_active_slug();
 	$sections = vw_masthead_sections();
 	if ( '' === $active || ! isset( $sections[ $active ] ) ) {
@@ -117,7 +122,12 @@ function vw_masthead_render(): void {
 function vw_masthead_brand_render(): void {
 	?>
 	<div class="vwh2-masthead__row">
+		<?php if ( is_search() ) : ?>
+			<?php // Focused search mode: close instead of sections. masthead-nav.js turns it into history back when the reader came from this site. ?>
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__icon vwh2-masthead__icon--close" data-vw-search-close aria-label="Close search"><?php echo vw_mobile_icon( 'close' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup. ?></a>
+		<?php else : ?>
 		<button type="button" class="vwh2-masthead__icon vwh2-masthead__icon--sections" data-vw-mnav-open="sections" aria-controls="vw-mnav-panel" aria-expanded="false" aria-label="Sections"><?php echo vw_mobile_icon( 'menu' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup. ?></button>
+		<?php endif; ?>
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="vwh2-masthead__logo-link">
 <?php
 			/*
@@ -138,6 +148,29 @@ function vw_masthead_brand_render(): void {
 		<a href="<?php echo esc_url( home_url( '/?s=' ) ); ?>" class="vwh2-masthead__icon vwh2-masthead__icon--search" data-vw-mnav-open="search" aria-controls="vw-mnav-panel" aria-label="Search"><?php echo vw_mobile_icon( 'search' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup. ?></a>
 	</div>
 	<?php
+}
+
+/**
+ * Focused search mode: the result count, printed where the main loop starts so
+ * search.php is not forked. It sits directly under the search header; with no
+ * results the loop never starts and the parent's "Nothing Found" speaks instead.
+ * Hidden at 960px and up (archive.css) — desktop search is unchanged.
+ */
+add_action( 'loop_start', 'vw_search_count_render' );
+function vw_search_count_render( WP_Query $query ): void {
+	if ( ! $query->is_main_query() || ! $query->is_search() || is_admin() ) {
+		return;
+	}
+	$total = (int) $query->found_posts;
+	printf(
+		'<p class="vw-search-count">%s</p>',
+		esc_html( sprintf(
+			/* translators: 1: number of results, 2: search terms */
+			_n( '%1$s result for “%2$s”', '%1$s results for “%2$s”', $total, 'vancouver-weekly' ),
+			number_format_i18n( $total ),
+			get_search_query( false )
+		) )
+	);
 }
 
 /** Inline icons for the masthead, bottom bar and panel. Decorative; labels carry meaning. */

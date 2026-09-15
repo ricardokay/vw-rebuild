@@ -492,3 +492,178 @@
 		font-size: 40px;
 	}
 }
+
+
+/* ══ Mobile round part 2 (2026-09-14) ═════════════════════════════
+   Everything below is max-width scoped: desktop search and archive render
+   exactly as before. */
+
+/* One gutter: the masthead hairline sits 16px in, and below 600px the
+   content now starts there too (Newspack's 90vw column put it at 19px). */
+@media (max-width: 599.98px) {
+	.archive #primary,
+	.search #primary {
+		width: auto;
+		max-width: none;
+		margin-inline: 16px;
+	}
+}
+
+@media (max-width: 959.98px) {
+
+	/* ── Focused search mode (S2) ─────────────────────────────────
+	   The field is the page: sticky under the compact header, no title (the h1
+	   stays for screen readers), a 56px serif field with an ink underline in
+	   place of a box. The hairline appears only once stuck (masthead-nav.js
+	   toggles .is-stuck); the ground behind it runs the full viewport width so
+	   results never show through in the gutters. */
+
+	/* No here-line above search, so Newspack's 27px content offset is only air. */
+	.search #content {
+		margin-top: 0;
+	}
+
+	.search #primary > .page-header {
+		position: sticky;
+		top: env(safe-area-inset-top);
+		z-index: 5;
+		margin: 0;
+		padding: 8px 0 10px;
+	}
+
+	.search #primary > .page-header::before,
+	.search #primary > .page-header::after {
+		content: '';
+		position: absolute;
+		left: calc(50% - 50vw);
+		right: calc(50% - 50vw);
+		pointer-events: none;
+	}
+
+	.search #primary > .page-header::before {
+		top: 0;
+		bottom: 0;
+		z-index: -1;
+		background: var(--vw-bg-subtle);
+	}
+
+	.search #primary > .page-header::after {
+		bottom: 0;
+		height: 1px;
+		background: var(--vw-border);
+		opacity: 0;
+	}
+
+	.search #primary > .page-header.is-stuck::after {
+		opacity: 1;
+	}
+
+	.search #primary > .page-header .page-title {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+
+	.search #primary > .page-header .search-form {
+		max-width: none;
+	}
+
+	.search #primary > .page-header .search-form .search-field {
+		min-height: 56px;
+		padding: 0 48px 0 0;
+		border: 0;
+		border-bottom: 2px solid var(--vw-ink);
+		background: transparent;
+		font-family: 'PT Serif', Georgia, serif;
+		font-size: 20px;
+		font-weight: 700;
+	}
+
+	.search #primary > .page-header .search-form .search-field:focus {
+		border-color: var(--vw-red);
+	}
+
+	.search #primary > .page-header .search-form .search-submit {
+		top: 6px;
+		right: 0;
+	}
+
+	.search .vw-search-count {
+		margin: 2px 0 0;
+		font-family: 'Inter', sans-serif;
+		font-size: 12px;
+		line-height: 1.5;
+		letter-spacing: 0.02em;
+		color: var(--vw-ink-muted);
+	}
+
+	/* ── /archive/ and category page 2+: readable rows ──────────── */
+
+	.archive .page-header {
+		margin-bottom: 8px;
+	}
+
+	.archive .page-header .page-title {
+		font-size: 30px;
+		text-transform: none;
+		letter-spacing: -0.02em;
+		line-height: 1.1;
+	}
+}
+
+@media (min-width: 960px) {
+	.vw-search-count {
+		display: none;
+	}
+}
+
+@media (max-width: 599.98px) {
+	.archive .site-main > article {
+		grid-template-columns: minmax(0, 1fr) 96px;
+		gap: 0 16px;
+		padding: 18px 0;
+	}
+
+	.archive .site-main > article > .post-thumbnail {
+		grid-column: 2;
+		grid-row: 1;
+		width: auto;
+		margin: 4px 0 0;
+	}
+
+	.archive .site-main > article > .post-thumbnail img {
+		aspect-ratio: 1 / 1;
+	}
+
+	/* The second selector outranks Newspack's feature-latest first-row size. */
+	.archive .site-main > article .entry-title,
+	.archive.feature-latest:not(.paged) .site-main > article.entry:first-of-type .entry-title {
+		font-size: 20px;
+		line-height: 1.2;
+		margin-bottom: 0;
+	}
+
+	.archive .site-main > article .entry-content,
+	.archive .site-main > article .entry-summary {
+		display: -webkit-box;
+		margin-top: 8px;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 3;
+		font-family: 'Inter', sans-serif;
+		font-size: 14px;
+		line-height: 1.55;
+		color: var(--vw-ink-muted);
+	}
+
+	.archive .site-main > article .entry-content p,
+	.archive .site-main > article .entry-summary p {
+		margin: 0;
+		font-size: inherit;
+		line-height: inherit;
+	}
+}

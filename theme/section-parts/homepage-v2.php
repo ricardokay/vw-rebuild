@@ -121,7 +121,14 @@ $vw_archive   = $vw_zone( 'archive' );
 			? trim( (string) wp_get_attachment_caption( get_post_thumbnail_id( $lp->ID ) ) )
 			: '';
 		?>
-	<section class="vwh2-lead<?php echo $lead_img ? '' : ' vwh2-lead--text'; ?>">
+	<?php
+	// Below 1024px the image-first setting moves the photo above the text and runs
+	// it full-bleed (homepage-v2-data.css). A text-variant lead ignores it.
+	$lead_class = $lead_img
+		? ( 'image-first' === vw_chrome_mobile_lead() ? ' vwh2-lead--image-first' : '' )
+		: ' vwh2-lead--text';
+	?>
+	<section class="vwh2-lead<?php echo esc_attr( $lead_class ); ?>">
 		<div class="vwh2-lead__text">
 			<?php $vw_kicker( $lp ); ?>
 			<h1 class="vwh2-lead__hed"><a href="<?php echo esc_url( get_permalink( $lp ) ); ?>"><?php echo esc_html( get_the_title( $lp ) ); ?></a></h1>

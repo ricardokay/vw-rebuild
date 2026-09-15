@@ -106,12 +106,18 @@ function vw_ah_render( WP_Post $post ): string {
 
 	$case = ! $has_img ? 'c' : ( $width >= VW_AH_WIDE_MIN ? 'a' : 'b' );
 
+	// A square or portrait case-A image at full column width is taller than the
+	// screen (a 2000px album cover renders 1200x1200, a 1600x2561 portrait 1920px
+	// tall), pushing the byline a viewport away from the headline. The class caps
+	// its height in article-header.css; nothing is cropped.
+	$tall = 'a' === $case && (int) $src[2] >= 0.95 * $width;
+
 	$credits = vw_ah_credits( $post );
 	$caption = $thumb_id ? trim( wp_strip_all_tags( (string) get_post_field( 'post_excerpt', $thumb_id ) ) ) : '';
 
 	ob_start();
 	?>
-	<div class="vw-ah vw-ah--<?php echo esc_attr( $case ); ?>" data-vw-ah-case="<?php echo esc_attr( strtoupper( $case ) ); ?>" data-vw-ah-imgw="<?php echo esc_attr( (string) $width ); ?>">
+	<div class="vw-ah vw-ah--<?php echo esc_attr( $case ); ?><?php echo $tall ? ' vw-ah--tall' : ''; ?>" data-vw-ah-case="<?php echo esc_attr( strtoupper( $case ) ); ?>" data-vw-ah-imgw="<?php echo esc_attr( (string) $width ); ?>">
 
 		<?php if ( $section ) : ?>
 			<span class="vw-ah__kicker">

@@ -51,7 +51,7 @@
 @media (min-width: 1024px) {
   .vwh2-lead--text { padding: 36px 0 8px 22px; }
   .vwh2-lead--text .vwh2-lead__hed { font-size: clamp(42px, 5vw, 60px); }
-  .vwh2-lead--text .vwh2-lead__dek { font-size: 16px; max-width: 46em; }
+  .vwh2-lead--text .vwh2-lead__dek { font-size: 18px; max-width: 46em; }
 }
 
 /* Music: the 28% image column is gone, so the remaining three children
@@ -144,4 +144,92 @@
 
 @media (min-width: 1024px) {
   .vwh2-container { padding-inline: 40px; }
+}
+
+
+/* ── Mobile lead: image first (chrome setting, default) ────────────
+   Chosen at the 2026-09-14 gate (L1, Wax Poetics reference). Below 1024px
+   the photo moves above the text and runs edge to edge, directly under the
+   header row; the headline sits BELOW it, never over it — archive photos
+   carry their own type (posters, sleeves) and a legible overlay would need
+   a scrim over every one of them.
+
+   The image keeps its own proportions between 16:9 and 4:5, and never takes
+   more than 62% of the screen height, so the headline starts above the fold.
+   Scoped to max-width because it undoes the desktop-first stacked lead in
+   homepage-v2.css; 1024px and up is untouched. */
+
+@media (max-width: 1023.98px) {
+  .vwh2-lead--image-first {
+    display: flex;
+    flex-direction: column;
+    margin-inline: -16px;
+    padding: 0;
+  }
+
+  .vwh2-lead--image-first .vwh2-lead__img-col { order: -1; }
+
+  /* The seam: the header row lifts off the photo with the bottom bar's shadow
+     mirrored (0 3px 9px at 5% ink). The caster is a transparent header-height
+     box sitting above the image — an outer shadow is never painted under its
+     own box, so only the downward part shows, across the full bleed. */
+  .vwh2-lead--image-first .vwh2-lead__img-col::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    z-index: 1;
+    height: 56px;
+    box-shadow: 0 3px 9px var(--vw-shadow-soft);
+    pointer-events: none;
+  }
+
+  .vwh2-lead--image-first .vwh2-lead__img {
+    width: 100%;
+    height: auto;
+    min-height: 56.25vw;
+    max-height: min(125vw, 62svh);
+    margin: 0;
+    object-fit: cover;
+  }
+
+  .vwh2-lead--image-first .vwh2-lead__text { padding: 18px 16px 4px; }
+
+  .vwh2-lead--image-first .vwh2-lead__hed {
+    font-size: 31px;
+    line-height: 1.08;
+    margin: 10px 0 12px;
+  }
+
+  .vwh2-lead--image-first .vwh2-lead__dek {
+    display: -webkit-box;
+    margin: 0 0 12px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .vwh2-lead--image-first + .vwh2-lead__caption { padding-top: 8px; }
+}
+
+@media (min-width: 641px) and (max-width: 1023.98px) {
+  .vwh2-lead--image-first { margin-inline: -24px; }
+  .vwh2-lead--image-first .vwh2-lead__text { padding-inline: 24px; }
+  .vwh2-lead--image-first .vwh2-lead__hed { font-size: clamp(31px, 5vw, 42px); }
+}
+
+
+/* ── Tap targets: kicker, zone-title and "All …" links ─────────────
+   All are 16–18px of text. Padding plus an equal negative margin gives a
+   44px hit area without moving anything — the nav's technique, and a
+   width-independent fix, so desktop gains the target too with no layout
+   change. */
+
+.vwh2-kicker__link,
+.vwh2-more,
+.vwh2-zonehead__title {
+  display: inline-block;
+  padding-block: 14px;
+  margin-block: -14px;
 }

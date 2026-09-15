@@ -321,6 +321,8 @@
 .vwc-field { margin: 0 0 16px; }
 .vwc-field:last-child { margin-bottom: 0; }
 .vwc-field label { display: inline-block; margin-bottom: 2px; }
+.vwc-field--choices { border: 0; padding: 0; min-width: 0; }
+.vwc-field--choices label { display: block; margin-bottom: 6px; }
 
 .vwc-field__help {
   display: block;

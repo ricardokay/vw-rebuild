@@ -17,7 +17,7 @@
    that reference it also update correctly.
 */
 :root {
-  --newspack-theme-color-bg-body: #F7F6F4;
+  --newspack-theme-color-bg-body: var(--vw-bg-subtle);
 }
 
 .vw-section-landing,
@@ -56,7 +56,7 @@
   position: absolute;
   width: 26px;
   height: 6px;
-  background: #C41230;
+  background: var(--vw-red);
 }
 .vw-section-mark--a-la-music::before { top: 0; }
 .vw-section-mark--a-la-music::after  { bottom: 0; }
@@ -74,7 +74,7 @@
   bottom: 0;
   width: 7px;
   height: 22px;
-  background: #2A4A6B;
+  background: var(--vw-mark-political);
 }
 .vw-section-mark--photography::after {
   content: '';
@@ -84,7 +84,7 @@
   bottom: 0;
   width: 7px;
   height: 11px;
-  background: #2A4A6B;
+  background: var(--vw-mark-political);
 }
 
 /* Food & Drink: full bar top, shorter bar indented to the right */
@@ -100,7 +100,7 @@
   left: 0;
   width: 26px;
   height: 6px;
-  background: #8B5E3C;
+  background: var(--vw-mark-food-legacy);
 }
 .vw-section-mark--food-drink::after {
   content: '';
@@ -110,14 +110,14 @@
   right: 0;
   width: 16px;
   height: 6px;
-  background: #8B5E3C;
+  background: var(--vw-mark-food-legacy);
 }
 
 /* Out N About: 3 descending-width bars (staircase) via span + 2 pseudo-elements */
 .vw-section-mark--out-n-about {
   width: 26px;
   height: 5px;
-  background: #2E6B4A;
+  background: var(--vw-mark-outabout);
   /* extra margin-bottom: 14px normal spacing + 16px for bars extending below the flow */
   margin-bottom: 30px;
 }
@@ -129,7 +129,7 @@
   left: 0;
   width: 18px;
   height: 5px;
-  background: #2E6B4A;
+  background: var(--vw-mark-outabout);
 }
 .vw-section-mark--out-n-about::after {
   content: '';
@@ -139,7 +139,7 @@
   left: 0;
   width: 10px;
   height: 5px;
-  background: #2E6B4A;
+  background: var(--vw-mark-outabout);
 }
 
 /* ── Feature story ───────────────────────────────────────────── */
@@ -232,7 +232,7 @@
   object-fit: cover;
   display: block;
   margin-bottom: 18px;
-  background: #ddd;
+  background: var(--vw-card-placeholder);
   border: 1px solid var(--vw-border);
 }
 
@@ -413,7 +413,7 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #FFFFFF;
+  color: var(--vw-bg);
   background: var(--vw-red);
   padding: 4px 9px 3px;
 }
@@ -578,11 +578,12 @@
 
 .vw-hero__hed a:hover { color: var(--vw-red); }
 
+/* Deks: the body serif in --vw-dek-ink, matching the homepage (2026-09-14). */
 .vw-hero__dek {
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  line-height: 1.65;
-  color: var(--vw-ink-muted);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--vw-dek-ink);
   max-width: 700px;
   margin: 0 0 12px;
 }
@@ -649,13 +650,13 @@
 .vw-lead-block__main-hed:hover { color: var(--vw-red); }
 
 .vw-lead-block__main-dek {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  line-height: 1.65;
-  color: var(--vw-ink-muted);
-  margin-bottom: 10px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--vw-dek-ink);
+  margin-bottom: 12px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1004,3 +1005,101 @@
 }
 
 
+
+
+/* ══ Mobile round part 2 (2026-09-14) ═════════════════════════════
+   Section fronts below 1024px, where the lead block is one column. The type
+   sizes above were set for the desktop's narrow side columns (an 18px lead
+   headline under a full-width photo); these give the single column its own
+   scale. Desktop keeps the grid rules above untouched, apart from the dek
+   restyle, which is width-independent. */
+
+@media (min-width: 1024px) {
+  .vw-lead-block__main-dek { -webkit-line-clamp: 2; }
+}
+
+@media (max-width: 1023.98px) {
+  .vw-lead-block__main-hed {
+    font-size: 24px;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+
+  .vw-lead-block__divider { margin: 16px 0; }
+
+  .vw-lead-block__sub-hed {
+    font-size: 19px;
+    line-height: 1.25;
+  }
+
+  .vw-lead-block__list > li { padding: 14px 0; }
+
+  .vw-lead-block__list-hed,
+  .vw-feat-list__item-hed {
+    font-size: 18px;
+    line-height: 1.25;
+  }
+}
+
+@media (max-width: 599.98px) {
+  /* One gutter with the masthead hairline. */
+  .vw-module__inner {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .vw-section-landing--noheader > .vw-section-blocks > .vw-module:first-child,
+  .vw-section-landing--noheader > .vw-section-blocks > *:first-child > .vw-module:first-child {
+    padding-top: 12px;
+  }
+}
+
+/* Browse-all on phones and tablets: the count returns as one serif line and
+   the call to action is its own 44px row — a closing moment, not a 36px link. */
+@media (max-width: 899.98px) {
+  .vw-section-more { padding: 8px 0 12px; }
+
+  /* The closer's own 3px rule is the division; the module hairline doubled it. */
+  .vw-module + .vw-section-more { border-top: 0; }
+
+  .vw-section-more__link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 8px;
+    padding-top: 16px;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .vw-section-more__link:hover { text-decoration: none; }
+
+  .vw-section-more__count,
+  .vw-section-more__line {
+    display: inline;
+    font-family: 'PT Serif', Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--vw-ink);
+  }
+
+  .vw-section-more__count { font-size: 28px; line-height: 1.1; }
+
+  .vw-section-more__line { font-size: 18px; font-weight: 400; font-family: Georgia, 'Times New Roman', serif; }
+
+  .vw-section-more__cta {
+    display: flex;
+    align-items: center;
+    flex-basis: 100%;
+    min-height: 44px;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--vw-red);
+  }
+
+  .vw-section-more__link:hover .vw-section-more__cta { text-decoration: underline; }
+}

@@ -762,3 +762,14 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Decision: **one registry, two renderers.** The footer's page-ID list (`VW_FOOTER_ABOUT`) is the only list, and one published-status rule (`vw_footer_link_url()`) serves both the footer and the drawer. The drawer's separate three-link list is deleted, so the footer and the drawer can no longer disagree about which pages exist.
 - Sections stay dominant; everything else is recessive. The drawer fits a 375×812 screen without scrolling and scrolls inside the panel on shorter phones.
 - Open: the Jobs pages (#60, #13407) are *published but empty*. Jobs is absent because the registry omits it, not because of the degrade rule — adding it back would render a live link to an empty page.
+
+**September 14, 2026 — mobile round part 2: reading surfaces and the mobile homepage lead**
+- Decision (Ricardo, gate picks from 375px renders): **L1 — a single full-bleed lead** directly under the header row, headline below the photo (not overlaid: archive photos carry their own type). The carousel (L2) was shown as the compare only; swipe-through rates are poor, and the lead zone holds one slot, so four more would have taken stories from the zones below.
+- Decision: the mobile lead is a **chrome setting**, not code — "Mobile homepage lead", **image-first (default)** or **standard** (text-first). Per-section variants are out of scope. Image-first adds a soft seam shadow under the header, mirroring the bottom bar's.
+- Decision (pick): **S2 — focused search mode** below 960px. Search distinguishes itself from the nav: close instead of sections (history back, else home), small wordmark, a dominant sticky field with a hairline only when stuck, a result count. Desktop search unchanged this round.
+- Decision: **no "you are here" line on articles** — the kicker already names the section. Fronts and category archives keep it.
+- Decision: **deks move to the body serif** (Georgia, `--vw-dek-ink`, ink at 80%) everywhere they appear, at every width. PT Serif ships Bold only, so no font file was added.
+- Decision: **one 16px mobile gutter**, aligned to the masthead hairline, replacing Newspack's 19px and the fronts' 20px.
+- Decision: **tall case-A article images are capped at 720px tall**, centred, never cropped. It is a desktop change for 9 posts: a 2000px album cover had rendered 1200×1200.
+- Groundwork: 33 colour literals moved onto palette tokens with zero visual change — the dark-mode foundation.
+- Open: `must-see-films` zero side padding (its own round); the stale "PREVIEW ONLY" comments in the article header files; real-iPhone verification.

@@ -10,7 +10,8 @@
 
    Colours: page tokens for the masthead and the light bottom bar; the
    footer's --vwf-* custom properties, set inline on .vw-mnav from the chrome
-   settings, for the dark panel. One colour literal below: the bar's shadow tint.
+   settings, for the dark panel. No colour literals: the bar's shadow tint is
+   --vw-shadow-soft.
 
    Below 960px the masthead is a compact row (2026-09-14, variant A2): sections
    button, wordmark, search link — no dateline, no motto, no heavy rule, one
@@ -136,6 +137,28 @@ body {
 		fill: none;
 		stroke: currentColor;
 	}
+
+	/* Focused search mode (2026-09-14, S2): search distinguishes itself from
+	   the nav. Close replaces the sections button, the wordmark steps down,
+	   the masthead search icon goes (the field is right there) and so does the
+	   hairline — the field's own ink underline is the rule. The bottom bar
+	   stays. Without JavaScript the inline nav fallback still shows. */
+	.search .vwh2-masthead {
+		padding-top: 0;
+		border-bottom: 0;
+	}
+
+	.search .vwh2-masthead__row {
+		min-height: 48px;
+	}
+
+	.search .vwh2-masthead .vwh2-masthead__logo-link {
+		width: 112px;
+	}
+
+	.search .vwh2-masthead .vwh2-masthead__icon--search {
+		visibility: hidden;
+	}
 }
 
 
@@ -214,9 +237,8 @@ html:not(.vw-js) .vw-here {
 	padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 	border-top: 1px solid var(--vw-border);
 	background: var(--vw-bg-subtle);
-	/* The hairline draws the edge; this only lifts the bar off the page. Ink at
-	   5% — a shadow tint, not a palette colour, so it is the one literal here. */
-	box-shadow: 0 -3px 9px rgba(26, 22, 30, 0.05);
+	/* The hairline draws the edge; this only lifts the bar off the page. */
+	box-shadow: 0 -3px 9px var(--vw-shadow-soft);
 }
 
 .vw-mbar .vw-mbar__item {
