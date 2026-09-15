@@ -7,6 +7,12 @@
  * so we do NOT inject into it — Preact would wipe a foreign child. Instead the
  * caption is a single element parented to <body> (position:fixed, outside
  * Preact's reconciliation) and toggled from the live `.wp-lightbox-overlay.active`.
+ *
+ * The same open/closed signal drives the scroll lock (2026-09-14): body
+ * position:fixed at -scrollY while the lightbox is open, the exact position
+ * restored on close. iOS Safari does not reliably honour overflow:hidden on the
+ * root for touch scrolling, and a page that still scrolls moves Safari's
+ * toolbars and the layout viewport out from under the fixed overlay.
  */
 ( function () {
 	var ACTIVE = '.wp-lightbox-overlay.active';
@@ -84,6 +90,32 @@
 		return caption;
 	}
 
+	// null while unlocked; the page's scroll offset while the lightbox holds it.
+	var lockedY = null;
+
+	function lockScroll() {
+		lockedY = window.scrollY;
+		var b = document.body.style;
+		b.position = 'fixed';
+		b.top = ( -lockedY ) + 'px';
+		b.left = '0';
+		b.right = '0';
+	}
+
+	function unlockScroll() {
+		var b = document.body.style;
+		b.position = '';
+		b.top = '';
+		b.left = '';
+		b.right = '';
+		var root = document.documentElement.style;
+		var behavior = root.scrollBehavior;
+		root.scrollBehavior = 'auto'; // an instant jump back, never a smooth scroll
+		window.scrollTo( 0, lockedY );
+		root.scrollBehavior = behavior;
+		lockedY = null;
+	}
+
 	var OBS_OPTS = { childList: true, subtree: true, attributes: true, attributeFilter: [ 'class', 'src' ] };
 	var obs = null;
 	var scheduled = false;
@@ -96,6 +128,8 @@
 
 	function render() {
 		var overlay = document.querySelector( ACTIVE ); // always the LIVE active overlay
+		if ( overlay && null === lockedY ) lockScroll();
+		if ( ! overlay && null !== lockedY ) unlockScroll();
 		var el = ensureCaption();
 		var text = overlay ? resolveCredit( overlay ) : '';
 		var disp = ( overlay && text ) ? 'block' : 'none';

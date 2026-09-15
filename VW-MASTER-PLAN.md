@@ -790,3 +790,9 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Decision (Ricardo): the front draws from **must-see-films plus its child netflix-films** (`[15, 16]`), the Food & Drink parent-plus-child precedent. Page 1 is identical either way, but the Browse-all count (171) now matches the archive it hands off to.
 - Only a code file was needed. The category already had its template assigned and the curation registry already had the section, so there were no database writes.
 - Found: duplicate-headline suppression misses copies whose titles differ only in curly vs straight quotes. It affects 6 pairs across three fronts, three of them visible on Must See Films. A normalization fix is queued for its own approval because it changes those fronts.
+
+**September 14, 2026 — lightbox on iPhone: viewport and scroll lock**
+- Fix (from Ricardo's iPhone): the dark lightbox ground did not reach the top edge, and the previous/next arrows were missing.
+- Cause, in core's lightbox: it sizes itself to `100vh`, which on iOS Safari is the tallest possible viewport, so with the toolbars showing the box overhangs the screen and its bottom-anchored arrows sit under Safari's toolbar. The page could also still scroll under the lightbox, moving the toolbars.
+- Decision: the lightbox follows the visible viewport (`100dvh`), keeps its controls clear of the home indicator (safe-area insets), and holds the page with the iOS-proof pattern (`body` fixed, exact position restored on close).
+- Status: verified in headless Chrome, including touch and iPhone-UA emulation. Real-device confirmation from Ricardo is pending; WebKit's toolbars cannot be reproduced headless.

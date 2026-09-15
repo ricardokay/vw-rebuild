@@ -19,7 +19,7 @@
 .vw-lightbox-caption {
 	position: fixed;
 	left: 50%;
-	bottom: 24px;
+	bottom: calc(env(safe-area-inset-bottom) + 24px);
 	transform: translateX(-50%);
 	max-width: 60%;
 	z-index: 2147483646; /* above the native lightbox overlay's dynamic z-index */
@@ -41,7 +41,7 @@
 /* Mobile: sit lower and allow more width; still clear of the top-right close X. */
 @media (max-width: 480px) {
 	.vw-lightbox-caption {
-		bottom: 16px;
+		bottom: calc(env(safe-area-inset-bottom) + 16px);
 		max-width: 84%;
 		font-size: 13px;
 	}
@@ -78,17 +78,36 @@
 	outline-offset: 2px;
 }
 
-/* Scroll lock. Core only snaps the page back after it has scrolled, so a wheel
-   or momentum scroll still moves it for a frame. Locking the root stops that.
-   No scrollbar-gutter: a reserved gutter sits outside the fixed overlay and
-   showed as a strip of page at the right edge. Where a classic scrollbar exists
-   the page reflows behind the opaque ground instead, which nobody sees. */
-html:has(.wp-lightbox-overlay.active) {
-	overflow: hidden;
+/* iOS Safari (2026-09-14). Core sizes the overlay height:100vh, which on iOS
+   is the LARGE viewport (toolbars collapsed): with Safari's toolbars showing,
+   the box overhangs the visible area, the photo centres low, and prev/next —
+   absolutely positioned 16px from the overlay's bottom below 960px — land
+   under the bottom toolbar. 100dvh tracks what is actually visible; browsers
+   without dvh keep the 100vh line.
+
+   The shadow spills the ground past the overlay's own box, so a strip exposed
+   while a toolbar animates is still ink. It is outside the scrim, which keeps
+   its fade; overflow:hidden clips children, never the element's own shadow.
+
+   Scroll lock is body position:fixed, set and undone by vw-lightbox-caption.js
+   — html overflow:hidden (the previous lock) is not reliably honoured by iOS
+   Safari for touch scrolling, and a page that still scrolls moves the
+   toolbars and the layout viewport under the overlay. */
+.wp-lightbox-overlay {
+	height: 100vh;
+	height: 100dvh;
+	overscroll-behavior: contain;
 }
 
-.wp-lightbox-overlay {
-	overscroll-behavior: contain;
+.wp-lightbox-overlay.active {
+	box-shadow: 0 0 0 100vmax var(--vw-ink);
+}
+
+@media (max-width: 959.98px) {
+	.wp-lightbox-overlay .wp-lightbox-navigation-button-prev,
+	.wp-lightbox-overlay .wp-lightbox-navigation-button-next {
+		bottom: calc(env(safe-area-inset-bottom) + 16px);
+	}
 }
 
 /* Dead-media net: the JS marks an image that failed to load, and its whole

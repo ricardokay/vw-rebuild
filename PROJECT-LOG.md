@@ -4994,3 +4994,81 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## Lightbox on iPhone: viewport height and scroll lock (2026-09-14)
+
+**Report (Ricardo, iPhone Safari).** After the dark-ground fix, page content still showed above the lightbox at the top edge, and the previous/next arrows were missing.
+
+**Cause (from code).** Core sizes the overlay `height: 100vh`, which on iOS Safari is the large viewport, so the box overhangs the screen when the toolbars show. Its below-960px arrows (`bottom: 16px`, no safe-area inset) land under the bottom toolbar. Our `html` overflow lock is not reliably honoured by iOS for touch scrolling, so the page could still move the toolbars and the layout viewport. Core does not hide the arrows on touch.
+
+**Fix.**
+- Overlay `100dvh`, with a `100vh` fallback.
+- An ink `box-shadow` spill past the overlay box.
+- `env(safe-area-inset-bottom)` on the arrows and the credit pill.
+- The body `position: fixed` scroll lock, with an exact restore, in `vw-lightbox-caption.js`.
+
+Headless-verified; the phone check is pending (checklist in the handoff).
+
+```
+=== REVIEWER HANDOFF ===
+TASK: iOS Safari lightbox regression — on Ricardo's iPhone the dark-ground lightbox was incomplete: (1) page visible above the overlay (headline / gallery thumbnails ghosting at the top), (2) prev/next missing. Diagnose from code (overlay height/position, our scroll lock, prev/next placement), apply the smallest known-iOS-pattern fix (dynamic-viewport overlay, iOS-proof scroll lock with exact restore, controls inside the visual viewport with safe-area padding), verify what headless can (previous matrix at 375/1440 + touch/UA approximation), STOP with a phone checklist; one scoped commit; handoff in PROJECT-LOG and chat; no push.
+
+STATUS: implemented and committed; headless-verified; REAL-DEVICE CHECK PENDING (Ricardo, checklist below).
+
+WHAT I DID:
+- Session start: git log -1 → 4e876ca, status clean, level with origin (ls-remote main = 4e876ca), installed theme mirror clean — no mismatches
+- READ-ONLY diagnosis: core wp-includes/blocks/image/style.css (overlay and navigation rules with media contexts), core view.js (hasNavigation, sizing from window.innerHeight, scroll snap-back), theme gallery.css lock rule, vw-lightbox-caption.js observer/render
+- theme/assets/css/gallery.css: removed html:has(.wp-lightbox-overlay.active){overflow:hidden}; .wp-lightbox-overlay height 100vh → 100dvh (100vh fallback line kept), overscroll-behavior contain kept; .wp-lightbox-overlay.active box-shadow 0 0 0 100vmax var(--vw-ink); below 960px prev/next bottom calc(env(safe-area-inset-bottom) + 16px); credit pill bottom calc(env(safe-area-inset-bottom) + 24px) and, at ≤480px, + 16px
+- theme/assets/js/vw-lightbox-caption.js: body scroll lock driven by the existing open/closed render (lockScroll: lockedY = scrollY, body position fixed, top -lockedY, left/right 0; unlockScroll: clear those four styles, scroll-behavior auto for the jump, scrollTo(0, lockedY), restore scroll-behavior); header comment updated; node --check clean
+- Both files cp + cmp into the installed child theme
+- Harness: touch emulation (maxTouchPoints 5) + iPhone Safari UA override; lb_measure.js reports overlay height vs innerHeight, box-shadow, nav bottom, body position/top; lb_close.js now measures on-screen page movement (the opened thumbnail's top per frame) instead of scrollY, since scrollY is 0 under a fixed body
+- Matrix: 8 opens (dark/light × 375/1440 × motion/reduced) + 2 touch/iPhone-UA opens at 375; 8 closes + 2 touch closes; CSSOM cascade check of the height and nav-bottom declarations
+- CLAUDE.md lightbox bullet, VW-MASTER-PLAN entry, this log
+
+DIAGNOSIS:
+- Overlay (core): .wp-lightbox-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; overflow: hidden; z-index: 100000 }. On iOS Safari 100vh is the LARGE viewport (toolbars collapsed), so with the toolbars showing the box overhangs the visible area; core sizes the image from window.innerHeight (visible height) but centres it at 50% of the taller box
+- Prev/next (core): position absolute, bottom 16px below 960px (bottom 50% + translateY(-50%) at ≥960), left/right with env(safe-area-inset-left/right) but no safe-area-inset-bottom — 16px above the overhanging bottom lands under Safari's bottom toolbar. Core does NOT hide them on touch: hasNavigation = gallery image count > 1 (no surface-vs-accept decision needed)
+- Scroll lock (ours): html overflow:hidden, not reliably honoured by iOS Safari for touch scrolling; core's own lock only snaps back after a scroll and skips that while a touch is in progress, so the page could still scroll, animating the toolbars and moving the layout viewport under the fixed overlay — consistent with page content exposed at the top edge
+- Credit pill (ours): position fixed, bottom 16/24px, no safe-area inset
+
+EVIDENCE (headless Chrome — cannot reproduce WebKit toolbars):
+- Cascade: overlay height — inline#wp-block-image-inline-css (sheet 4) height: 100vh, then gallery.css (sheet 18) height: 100dvh → dvh wins; nav bottom — core 16px (sheet 4), then gallery.css (max-width: 959.98px) calc(env(safe-area-inset-bottom) + 16px) → ours wins; dvh supported
+- All 10 opens (incl. touch 5 + iPhone UA): scrim rgb(26,22,30) opacity 1; ground pixels outside photo/caption/buttons non-ink 0 (47,572 / 103,582 / 28,772 / 182,288 sampled per run type); top element at all 10 probe points = overlay; overlay height = innerHeight (812 / 900); overlay box-shadow ink; body position fixed, top −867 / −1026 / −125 / −354, scrollY 0 while open
+- Photo centred (offset [0,0]) in all 10; close [315,16,44,44] at 375 / [1380,16,44,44] at 1440 with 24 light icon pixels; prev/next present in all 10 — [16,756,44,40] + [315,756,44,40] at 375 (bottom 16px + safe area 0), [16,390,44,40] + [1380,390,44,40] at 1440 — 22 light icon pixels each; caption [94,748,188,48] at 375 / [619,844,202,32] at 1440 (unchanged from the previous round)
+- All 10 closes: page movement while open under scrollBy(400), scrollTop=900 and wheel(500) = 0px (opened thumbnail top 304→304 / 330→330 / 320→320 / 226→226); after close overlay inactive + hidden, scroll restored exactly (867 / 1026 / 125 / 354 = open position), thumbnail back at the same screen top, body position static with no inline style left, inert 0, caption hidden, focus on the opening trigger, scrollWidth = viewport
+- Screenshots in ~/vw-screenshots: m6-after-lb-{dark,light}-open-{375,1440}.png, m6-after-lb-{dark,light}-open-rm-{375,1440}.png, m6-after-lb-{dark,light}-open-touch-375.png
+
+PHONE CHECKLIST (Ricardo, iPhone Safari, after the theme files are on the site you open):
+1. Open http://vancouverweekly-local.local/old-crow-medicine-show-orpheum/ (or the staging equivalent). Scroll down until the gallery is mid-screen, so Safari's toolbars are showing.
+2. Tap a gallery photo. Look at the very top edge, including behind the status bar and address bar: ink to the edge, no headline or thumbnails showing through.
+3. Look at the bottom: the ‹ and › arrows sit left and right of the "Photo by …" credit, above Safari's toolbar and the home indicator, not under them.
+4. Tap › and ‹: the photo changes and the credit updates.
+5. With the photo open, try to scroll the page (drag up and down on the dark area): nothing behind moves, and the toolbars do not collapse or expand.
+6. Tap ✕ (top right): you are back at exactly the same spot in the gallery; the page did not jump to the top or shift.
+7. Repeat 2–6 once with the toolbars collapsed (scroll the page first so Safari minimises them), and once in landscape.
+8. Optional: Settings → Accessibility → Motion → Reduce Motion on, then repeat step 2 (the ground should still be fully dark).
+Report any step that fails, with a screenshot.
+
+FILES CHANGED:
+- theme/assets/css/gallery.css — overlay 100dvh, ink shadow spill, safe-area bottoms for prev/next and credit pill; html overflow lock removed
+- theme/assets/js/vw-lightbox-caption.js — body position:fixed scroll lock with exact restore
+- CLAUDE.md — CURRENT STATE lightbox bullet (iOS follow-up, pending phone check)
+- VW-MASTER-PLAN.md — iOS decision entry
+- PROJECT-LOG.md — this entry
+- DB: no writes. Installed child theme mirrored (outside git).
+
+VERIFIED: headless Chrome at exact 375×812 and 1440×900, real core lightbox triggers and close button, dark and light gallery photos, motion and reduced-motion, plus touch + iPhone-UA emulation at 375; pixel-sampled ground; per-frame page-movement sampling; CSSOM cascade order for the overriding declarations. NOT verified on WebKit or a physical iPhone.
+
+OUTSTANDING / RISKS:
+- Real-device verification pending: dynamic toolbars, safe-area insets, rubber-band overscroll and iOS 26 translucent chrome cannot be reproduced headless (checklist above)
+- The ink shadow spill appears instantly on open and disappears instantly on close (outside the overlay box only); the in-box scrim keeps core's fade
+- Core's zoom keyframes still use 50vh / 100vw for the start position, so on iOS with toolbars showing the zoom-in may start a few pixels off the thumbnail (cosmetic, 0.4s)
+- Body position:fixed while open: fixed-position page elements behind the overlay (bottom bar, which is inert) are unaffected; any page script reading window.scrollY while the lightbox is open sees 0
+- The cascade win depends on core's image-block CSS printing before gallery.css (inline in <head>, sheet 4 vs 18, on the gallery post); a surface where WordPress prints block CSS in the footer would need the selector strengthened
+- Pre-existing, unchanged: credit pill overlaps the bottom 16px of tall portraits at 1440; 400px enlarged file at 375 (core srcset); pill colours still literals
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```
