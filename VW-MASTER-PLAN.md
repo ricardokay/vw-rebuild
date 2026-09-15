@@ -778,3 +778,9 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Fix: with the mobile lead set to standard (text-first), the lead story sat inside a stale 24px side padding from the old desktop-first stacked flow. At 375px its headline, dek and image ran 295px wide at x=40, while every other zone uses the 343px column at x=16, so the lead photo looked narrower than the music photo below it.
 - Standard mode now spans the column below 1024px.
 - Image-first, the text-only lead and desktop are pixel-identical to before.
+
+**September 14, 2026 — lightbox photographs on ink**
+- Fix: the gallery lightbox is WordPress core's image-block lightbox. Without a theme.json, core painted it white at 90% opacity and relied on its zoom animation to reach full opacity. With reduced motion switched on, the page showed through behind every photo, and dark concert photographs floated on white.
+- Decision: **photographs sit on ink.** The ground is the frozen `--vw-ink` near-black, opaque in both motion paths, with light close and arrow icons and the page locked behind it.
+- The fix is display-layer CSS in the child theme: no plugin, no theme.json, no fork of core markup.
+- Open: at desktop width the credit pill can overlap the bottom 16px of a tall portrait (pre-existing placement).

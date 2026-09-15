@@ -4832,3 +4832,86 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## Lightbox ground: photographs on ink (2026-09-14)
+
+**Report.** Opening a gallery photo showed a white ground with the page bleeding through at the top; dark concert photos floated on white (Old Crow Medicine Show gallery, mobile).
+
+**Session-start mismatch (flagged).** The brief expected HEAD `e59f21c`. That object exists nowhere: not a local object, not in the reflog, not on any branch or stash, and not on the remote. Local and remote HEAD are both `0898eba`, confirmed by `git show --stat` as the standard-mode lead fix (CLAUDE.md, PROJECT-LOG.md, VW-MASTER-PLAN.md, homepage-v2-data.css). Work proceeded on `0898eba`. The remote was re-checked before committing and was unchanged.
+
+**Diagnosis.** The lightbox is WordPress 7.1 core's image-block lightbox: Interactivity API, `.wp-lightbox-overlay` attached to `<body>`, markup printed by `wp-includes/blocks/image.php`, CSS in `wp-includes/blocks/image/style.css`. It is not Newspack's and not theme code. The theme adds only the body-level credit pill (`gallery.css` + `vw-lightbox-caption.js`). The causes:
+1. The theme has no `theme.json`, so core falls back to inline `style="background-color: #fff"` on `.scrim` and inline `fill:#000` on the buttons (`image.php:335`).
+2. `.scrim` rests at `opacity: 0.9`. Only `.zoom.active .scrim { animation: turn-on-visibility forwards }`, inside `@media not (prefers-reduced-motion)`, lifts it to 1.
+   - **Measured with reduced motion emulated:** scrim `rgb(255,255,255)` at opacity 0.9, animation none; 285 distinct colours in the top 120px band. The gallery thumbnails, footer and bottom bar were visible through the ground (`m4-before-lb-dark-open-rm-375.png`). The top shows it most because the masthead and gallery sit there.
+   - **With motion:** the resting ground was opaque white, but every open and close fades through partial opacity.
+3. Icons rendered `rgb(17,17,17)`. The parent theme's `.wp-lightbox-close-button… { color: unset !important }` plus its `svg { fill: currentColor }` beat core's inline fill.
+
+Core already snaps scroll back after it moves and marks 29 body children inert.
+
+**Least invasive layer: child-theme CSS in `gallery.css`**, the stylesheet that already styles this lightbox and loads on every page. A `theme.json` would change global styles across Newspack; filtering or replacing core's overlay markup would fork core output.
+
+**Fix.**
+- `.scrim` is `var(--vw-ink) !important` (the inline style makes `!important` unavoidable) at `opacity: 1`.
+- Icons are `fill: var(--vw-bg-subtle)`, set on the svg.
+- The close button is 44×44, with a 2px `--vw-bg-subtle` focus ring.
+- `html:has(.wp-lightbox-overlay.active) { overflow: hidden }`, and `overscroll-behavior: contain` on the overlay.
+- The ground is the frozen `--vw-ink` #1A161E, the same value as the footer palette's default ground. The `--vwf-*` variables exist only inline on the footer and panel elements, and this overlay is attached to `<body>`, outside them.
+
+**Found and fixed during verification.**
+- The first pass set `color` on the buttons, which lost to the parent's `color: unset !important`, so the icons stayed near-black. The fill now sits on the svg.
+- The first pass also added `scrollbar-gutter: stable` to the lock. The reserved gutter sat outside the fixed overlay and showed a 15px strip of page at the right edge at 1440 in one run. Removed.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Lightbox ground fix — opening a gallery or article image showed a white ground with the page bleeding through at the top (dark concert photos on white; Old Crow Medicine Show gallery, mobile). Diagnose read-only which lightbox and why; fix to an opaque near-black token ground, photo centred, caption and close legible on dark, body scroll locked, no bleed at any edge; display layer only, no plugins; verify at 375 and 1440 with one dark and one light photo (open, lock, close/restore), screenshot each width; one scoped commit; handoff in PROJECT-LOG and chat; no push.
+
+WHAT I DID:
+- Session start: read CURRENT STATE and log tail; git log -1 → 0898eba (brief expected e59f21c); status clean. FLAGGED: e59f21c not found locally (cat-file, reflog, branches, stash) or on the remote (ls-remote HEAD and main = 0898eba). Per Ricardo's mid-task request printed git log -3 and git show --stat 0898eba: it is the standard-mode lead fix (CLAUDE.md, PROJECT-LOG.md, VW-MASTER-PLAN.md, homepage-v2-data.css)
+- READ-ONLY diagnosis: theme lightbox code (gallery.css, vw-lightbox-caption.js); core image.php overlay render (inline scrim #fff and fill #000 fallbacks when no theme.json); core image/style.css rules, keyframes and reduced-motion wrappers; core view.js scroll/inert/touch handling; theme.json absent in parent and child; WordPress 7.1
+- READ-ONLY gallery survey (canvas luminance): Old Crow Medicine Show (67308) 11 images, luminance 14–51 → dark = index 10 (14); Burnaby Blues & Roots 2014 24 images → light = index 0 (163); 363 published posts carry lightbox galleries
+- Harness: cdp_run.py gained prefers-reduced-motion emulation and an optional visible-scrollbar mode; lb_open.js (click the trigger, wait for the enlarged image), lb_measure.js (overlay/scrim/image/close/nav/caption geometry and styles, top element at 10 points), lb_close.js (scroll attempts with a per-frame deviation sampler, then close and restore checks), lb_report.py (samples every 2px of ground outside the photo, caption and buttons against --vw-ink; icon pixel counts)
+- Before-fix baseline: dark/light × 375/1440 open + close, and dark 375 with reduced motion
+- theme/assets/css/gallery.css → lightbox block inserted before the dead-media rule: scrim var(--vw-ink) !important, opacity 1; svg fill var(--vw-bg-subtle); close 44×44; focus-visible ring; html:has(.wp-lightbox-overlay.active) overflow hidden; overlay overscroll-behavior contain
+- Fixed during verification: button color rule lost to the parent's color:unset !important (icons still rgb(17,17,17)) → fill set on the svg; scrollbar-gutter: stable left a 15px page strip at the right edge at 1440 → removed
+- Each edit cp + cmp into the installed child theme
+- Final pass: 8 open (dark/light × 375/1440 × motion/reduced) + 2 visible-scrollbar opens at 1440 + 8 close tests
+- CLAUDE.md CURRENT STATE bullet, VW-MASTER-PLAN entry, this log
+
+EVIDENCE:
+- Before, reduced motion, 375 dark: scrim rgb(255,255,255) opacity 0.9 animation none, inline "background-color: #fff"; top 120px band 285 distinct colours; page visible through the ground (m4-before-lb-dark-open-rm-375.png)
+- Before, motion: scrim rgb(255,255,255) opacity 1 (after the forwards animation); close fill inline #000, svg rgb(17,17,17); html overflow visible; close 40×40
+- After, all 8 open runs (dark 609692479140035, light 585140268261923; 375×812 and 1440×900; motion and reduced motion): scrim rgb(26,22,30), opacity 1 (animation turn-on-visibility, or none under reduced motion); ground pixels outside photo/caption/buttons sampled every 2px — 47,572 / 103,582 / 28,772 / 182,288 per run type — non-ink 0 in every run; 8 edge pixels ink or photo only; top element at all 10 probe points is the overlay (scrim or image)
+- Photo centred: centre offset [0,0] in all 8 (e.g. dark 1440 img [160,65,1120,769], light 1440 [384,40,671,820], dark 375 [-1,277,377,258])
+- Close: [315,16,44,44] at 375, [1380,16,44,44] at 1440; svg fill rgb(247,246,244); close-box pixels before 24 dark on light → after 24 light on dark; nav icons 22 light px each
+- Caption: shown, "Photo by Jennifer McInnis", white text on rgba(0,0,0,0.55) over ink, 13px [94,748,188,48] at 375 / 14px [619,844,202,32] at 1440 — unchanged, legible on dark
+- Visible-scrollbar runs at 1440 (dark and light): non-ink ground 0, edges ink, scrollbar width 0 while locked
+- Scroll lock, all 8 close tests: html overflow hidden while open; scrollBy(400) + scrollTop+300 + wheel(500) → maximum per-frame deviation 0px; body children inert 29
+- Close restores, all 8: overlay active false and visibility hidden; scroll back to 867 / 1026 / 125 / 354 (exact open positions); inert 0; html overflow visible; caption hidden; focus back on the opening trigger; scrollWidth = viewport (375 / 1440); document height unchanged
+- Screenshots in ~/vw-screenshots:
+  after, open  m4-after-lb-dark-open-{375,1440}.png, m4-after-lb-light-open-{375,1440}.png
+  after, reduced motion  m4-after-lb-{dark,light}-open-rm-{375,1440}.png
+  after, visible scrollbars  m4-after-lb-{dark,light}-open-sb-1440.png
+  before  m4-before-lb-{dark,light}-open-{375,1440}.png, m4-before-lb-dark-open-rm-375.png (white ground, page ghosting)
+
+FILES CHANGED:
+- theme/assets/css/gallery.css — lightbox ground on ink, light icons, 44px close, focus ring, root scroll lock
+- CLAUDE.md — CURRENT STATE lightbox bullet
+- VW-MASTER-PLAN.md — lightbox decision entry
+- PROJECT-LOG.md — this entry
+- DB: no writes. Installed child theme mirrored (outside git).
+
+VERIFIED: rendered measurement in headless Chrome at exact 375×812 and 1440×900 on a real dark and a real light gallery photo, with and without reduced motion, plus visible-scrollbar runs at 1440; pixel-sampled ground; open, scroll attempts and close exercised through the real core lightbox triggers and close button; screenshots viewed.
+
+OUTSTANDING / RISKS:
+- Open/close still fades over core's 0.25–0.4s animation, during which the page is partly visible by design; at rest the ground is opaque in both motion paths
+- Root overflow:hidden while open: on systems with classic scrollbars (e.g. Windows) the page behind reflows by the scrollbar width, hidden behind the opaque ground; core's zoom origin uses the scrollbar width measured at open, so the zoom animation may start up to ~15px off there (not reproducible in headless macOS Chrome)
+- Not verified on a physical iPhone (Safari toolbars, touch momentum under overflow:hidden, safe-area); core also blocks touchmove on the overlay
+- Pre-existing, unchanged: at 1440 the credit pill overlaps the bottom 16px of tall portraits (light photo: image ends y=860, pill y 844–876); at 375 core serves a 400px-wide enlarged file (srcset at 1× density); the pill colours are still literals (rgba(0,0,0,.55), #fff), not tokens
+- One !important added (against core's inline scrim colour)
+- Brief's expected HEAD e59f21c does not exist in this repository; worked on 0898eba
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```

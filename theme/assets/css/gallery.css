@@ -47,6 +47,50 @@
 	}
 }
 
+/* Lightbox ground (2026-09-14). The overlay is WordPress core's image lightbox.
+   Its scrim carries an inline background-color:#fff — this theme has no
+   theme.json, so core falls back to white — at a resting opacity of 0.9 that
+   only core's zoom animation lifts to 1. With reduced motion that animation
+   never runs and the page ghosts through the white. Photographs sit on ink:
+   the scrim is --vw-ink and opaque at rest in both motion paths. !important is
+   the only way past an inline style. */
+.wp-lightbox-overlay .scrim {
+	background-color: var(--vw-ink) !important;
+	opacity: 1;
+}
+
+/* Close, previous and next: the parent theme forces color:unset !important on
+   these buttons and fills every svg with currentColor, so the icons render in
+   body ink — invisible on the dark ground. The fill is set on the icon itself,
+   which outranks the parent's bare svg rule without a second !important. */
+.wp-lightbox-overlay .wp-lightbox-close-button svg,
+.wp-lightbox-overlay .wp-lightbox-navigation-button svg {
+	fill: var(--vw-bg-subtle);
+}
+
+.wp-lightbox-overlay .wp-lightbox-close-button {
+	min-width: 44px;
+	min-height: 44px;
+}
+
+.wp-lightbox-overlay button:focus-visible {
+	outline: 2px solid var(--vw-bg-subtle);
+	outline-offset: 2px;
+}
+
+/* Scroll lock. Core only snaps the page back after it has scrolled, so a wheel
+   or momentum scroll still moves it for a frame. Locking the root stops that.
+   No scrollbar-gutter: a reserved gutter sits outside the fixed overlay and
+   showed as a strip of page at the right edge. Where a classic scrollbar exists
+   the page reflows behind the opaque ground instead, which nobody sees. */
+html:has(.wp-lightbox-overlay.active) {
+	overflow: hidden;
+}
+
+.wp-lightbox-overlay {
+	overscroll-behavior: contain;
+}
+
 /* Dead-media net: the JS marks an image that failed to load, and its whole
    enclosing element goes — no orphaned caption, no empty frame. */
 .vw-media-dead {
