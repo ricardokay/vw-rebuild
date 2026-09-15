@@ -233,3 +233,19 @@
   padding-block: 14px;
   margin-block: -14px;
 }
+
+
+/* ── Mobile lead: standard (text-first) ────────────────────────────
+   homepage-v2.css gives the stacked lead 24px side padding below 1024px,
+   left from the flow before the container carried its own gutter. On top of
+   the container's 16/24px it inset headline, dek and image to x=40 at 375 —
+   295px against the 343px column every other zone uses, so the lead photo
+   sat visibly narrower than the music photo below it. Standard mode drops
+   that inset; image-first sets its own padding and the text variant keeps
+   its red-bar indent, so both are excluded. */
+
+@media (max-width: 1023.98px) {
+  .vwh2-lead:not(.vwh2-lead--image-first):not(.vwh2-lead--text) {
+    padding-inline: 0;
+  }
+}

@@ -773,3 +773,8 @@ Split into three build sessions. The homepage does not cut over without this rou
 - Decision: **tall case-A article images are capped at 720px tall**, centred, never cropped. It is a desktop change for 9 posts: a 2000px album cover had rendered 1200×1200.
 - Groundwork: 33 colour literals moved onto palette tokens with zero visual change — the dark-mode foundation.
 - Open: `must-see-films` zero side padding (its own round); the stale "PREVIEW ONLY" comments in the article header files; real-iPhone verification.
+
+**September 14, 2026 — standard-mode homepage lead: full-column fix**
+- Fix: with the mobile lead set to standard (text-first), the lead story sat inside a stale 24px side padding from the old desktop-first stacked flow. At 375px its headline, dek and image ran 295px wide at x=40, while every other zone uses the 343px column at x=16, so the lead photo looked narrower than the music photo below it.
+- Standard mode now spans the column below 1024px.
+- Image-first, the text-only lead and desktop are pixel-identical to before.

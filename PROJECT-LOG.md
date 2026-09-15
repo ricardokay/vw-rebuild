@@ -4762,3 +4762,73 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## Standard-mode homepage lead: image narrower than the column (2026-09-14)
+
+**Report.** With "Mobile homepage lead" on standard, the lead image rendered narrower than the column at 375px, with visible dead margins.
+
+**Session-start mismatches (flagged).**
+- `origin/main` now includes `2cbeac2` (pushed from Ricardo's Terminal).
+- The `vw_chrome` option row existed again, although it was deleted and re-read as 0 rows at the end of the previous session. The row was a chrome-panel save: `{"_schema":1,"founded":2012,"motto":…,"slogan":"No Ads · No Clickbait · Independent Since 2012","dateline":true,"mobile_lead":"standard"}`. The standard toggle came from the admin panel, and the save also stored the founded, motto, slogan and dateline values explicitly.
+
+**Diagnosis (read-only computed styles and matched rules at 375, 768, 1440).** None of the three suspects:
+- the `width="1024"` attribute is overridden by `.vwh2-lead__img { width: 100% }`;
+- the size slot is `large` with `sizes="auto, …"`, so a 300w file loads, but the box is CSS-sized;
+- `max-width: 100%` does not bind.
+
+The image box equalled the text measure exactly: headline, dek and image all 295px at x=40. Both sat inside `homepage-v2.css @(max-width:1023px) .vwh2-lead { padding: 24px 24px 0 }`, a side padding from the desktop-first stacked flow that stacks on the container's own 16px gutter (24px at 641+). Every other zone spans the 343px column at x=16, including the music image directly below (343 wide). So the lead photo was 48px narrower than the page column: the "dead margins". At 768 it was the same, 672px at x=48 against 720px at x=24.
+
+**Fix.** One rule in `homepage-v2-data.css`, below 1024px: `.vwh2-lead:not(.vwh2-lead--image-first):not(.vwh2-lead--text) { padding-inline: 0 }`. Image-first sets its own padding, and the text variant keeps its red-bar indent; both are excluded by selector.
+
+**Found in passing (not changed).** In standard mode the lead's closing `.vwh2-rule` hairline is now exactly as wide as the photo and sits directly under its bottom edge. Before, it showed 24px past the photo on each side.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Standard-mode homepage lead image renders narrower than the text column at 375px. Diagnose read-only (stale width attribute / old-flow max-width / different size slot), smallest fix so the standard lead image spans the full content column at mobile widths with no effect on image-first, desktop or other zones; verify at 375 and 768 in BOTH toggle states (dry-run-then-write flip, revert to default, print re-read), desktop unchanged; one scoped commit; no push.
+
+WHAT I DID:
+- Session start: git log -1 → 2cbeac2; status clean, now level with origin/main (pushed since last session); CURRENT STATE and log tail read. FLAGGED: vw_chrome row present again (a panel save carrying mobile_lead=standard plus founded/motto/slogan/dateline at default values) — previous session ended with 0 rows
+- READ-ONLY: stored option read; headless CDP diagnosis of lead section/text/dek/img-col/a/img rects, computed styles, attributes and every matched width/padding rule at 375/768/1440 (diag.json)
+- Cause: homepage-v2.css @(max-width:1023px) .vwh2-lead padding 24px 24px 0 (old desktop-first stacked flow) on top of the container gutter → lead inset to x=40 / 295px while the page column is x=16 / 343px. Not the width attribute, not the size slot, not max-width
+- Standard-mode before-baseline with a full-element geometry fingerprint at all 3 widths (std_before.json) + captures
+- theme/assets/css/homepage-v2-data.css → appended the below-1024 rule .vwh2-lead:not(.vwh2-lead--image-first):not(.vwh2-lead--text) { padding-inline: 0 }; cp + cmp into the installed child theme
+- Standard-mode after measurement (std_after.json) + captures
+- READ-ONLY dry run through vw_chrome_sanitize() with the stored values + mobile_lead=image-first → removed {"mobile_lead":"standard"}, added [], changed []
+- WRITE (1 call, guarded by exact-value check): update_option vw_chrome without mobile_lead → returned true; re-read printed
+- Image-first after measurement (if_after.json) + captures; compared to the approved 2cbeac2 measurements (after3.json) and pixel-compared to the approved captures
+- CLAUDE.md CURRENT STATE, VW-MASTER-PLAN entry, this log
+
+EVIDENCE:
+- Diagnosis 375 (standard): container pad 16; .vwh2-lead [16,65,343,856] pad 24px 24px 0; text [40,89,295,492]; dek [40,303,295,204]; img [40,601,295,320], width:100% from homepage-v2.css, height 320 @max-width 1023, width attr 1024, currentSrc A1MPxNbg-300x269.jpeg; music image below [16,961,343,257]. 768: lead pad 24 in container 24 → img [48,426,672,320] vs music [24,786,720,260]
+- Standard after fix, 375: text [40,89,295,492] → [16,89,343,381]; hed [40,130,295,158] → [16,130,343,126]; dek [40,303,295,204] → [16,272,343,153]; img [40,601,295,320] → [16,490,343,320] (= column, = music image x/width); docH 6532 → 6421; 223 elements: 212 changed = 195 y-shift only + 17 lead-internal/parent-height; overflow false; tap min 44, under44 []
+- Standard after fix, 768: img [48,426,672,320] → [24,382,720,320]; text 672 → 720; 223 elements: 195 y-shift + 17 lead/parents; overflow false; under44 []
+- Standard 1440: 230 elements, 0 changed; pixel diff before vs after fix: none
+- Write re-read: {"_schema":1,"founded":2012,"motto":"The Record of the City’s Culture","slogan":"No Ads · No Clickbait · Independent Since 2012","dateline":true}; accessor image-first; served / carries <section class="vwh2-lead vwh2-lead--image-first"
+- Image-first after fix vs approved (2cbeac2): leadImg/Text/Hed/Dek/Byline + musicDek rects identical at 375 ([0,65,375,336] image), 768 ([0,65,768,635]) and 1440; docH 6336/7036/3754 identical; 1440 full geometry −0/+0; pixel diff vs m2-after-home-{375,768,1440}.png: none at all three
+- Desktop parity across states: 1440 standard vs image-first geometry differs only in the lead's class name; pixel diff none
+- Captures in ~/vw-screenshots:
+  standard before  m3-std-before-home-{375,768,1440}.png, m3-std-before-home-{375,768}-lead.png
+  standard after   m3-std-after-home-{375,768,1440}.png, m3-std-after-home-{375,768}-lead.png (375-lead: lead photo and AIR photo on one 16–359 column)
+  image-first      m3-if-after-home-{375,768,1440}.png, m3-if-after-home-{375,768}-lead.png
+
+FILES CHANGED:
+- theme/assets/css/homepage-v2-data.css — standard-mode lead drops the stale side padding below 1024px
+- CLAUDE.md — CURRENT STATE setting line (standard fix; vw_chrome row now stored, mobile_lead unset)
+- VW-MASTER-PLAN.md — fix entry
+- PROJECT-LOG.md — this entry
+- DB: 1 write — vw_chrome mobile_lead key removed (standard → image-first default); other keys unchanged. Installed child theme mirrored (outside git).
+
+VERIFIED: both toggle states measured the same way — computed rects, a full-element geometry diff and captures at 375, 768 and 1440 — in headless Chrome at exact widths; standard before vs after fix; image-first against its approved measurements and pixel captures; desktop pixel parity between states and before/after.
+
+OUTSTANDING / RISKS:
+- DB STATE CHANGED BY THIS ROUND: the setting is back to image-first, as instructed; Ricardo's panel choice of standard was overwritten. Re-select standard in the panel if it was wanted
+- The vw_chrome row now stores founded/motto/slogan/dateline explicitly (from the panel save, not this round). The slogan is frozen as typed, so it no longer follows the founding year automatically (existing sanitizer behaviour)
+- In standard mode the lead's closing hairline now sits exactly under the photo's bottom edge at the same width, so it reads as the photo's edge, not a separate rule
+- Standard-mode lead text measure also widened (295 → 343 at 375; 672 → 720 at 768) — required for the image to match the text column
+- Standard image is still a fixed 320px-tall cover crop below 1024 (unchanged)
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```
