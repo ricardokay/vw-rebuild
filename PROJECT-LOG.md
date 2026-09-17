@@ -5126,3 +5126,75 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## Publishing verification, Phase 1: proving the path by doing (2026-09-17)
+
+Four marked test stories were created, published, edited, scheduled and retired, exercising the paths an editor uses. All four are now retired drafts (`_vw_retired_review = 1`), and the published count is back to 3,371.
+
+**The path works.** Draft stays private; publish is immediate; edits propagate to every surface with no stale copy; a scheduled post published itself on time; retiring removes a story from pages, pagination, author archives, feed and sitemap.
+
+**What an operator needs to know** (carried into Phase 2): the dek is the Excerpt field and only 1 of 3,371 posts has one; a story without a usable featured image can never lead; gallery credits live in each image caption and appear only in the lightbox; the article page shows no dek by design.
+
+**Environment finding.** `active_plugins` lists 19 plugins but only 3 are installed locally, so the block editor is what loads here and nothing caches. Classic Editor or LiteSpeed on the launch host would change both facts — and the tutorial.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Publishing verification, Phase 1 of 2 — prove the publishing path end to end by creating real, clearly-marked test content (standard story, gallery story, desk byline, edit-after-publish, scheduling), verify every rendered surface, retire it all (draft + _vw_retired_review, never trash), report findings, STOP before the Phase 2 tutorial.
+
+STATUS: Phase 1 complete, all test content retired, site back to 3,371 published. STOPPED for review before PUBLISHING.md.
+
+WHAT I DID:
+- Session start: git log -1 → 7d92440, clean, level with origin; installed-theme mirror clean; 3,371 published; timezone America/Vancouver; homepage at 375 renders in standard (text-first) lead mode, matching the stored mobile_lead — no doc mismatches
+- READ-ONLY investigation: authors (real vs desk label), attachments safe to reuse (never the getty-hold draft's), curation state, categories, oEmbed providers, cron, plugin/editor reality
+- 11 gated writes, each its own approval with the code printed and the return value checked: create Story A draft → publish → create Story B draft → publish → create Story C draft → publish → edit Story A → schedule Story D → create admin session → remove admin session → retire all four
+- Verification by HTTP and by rendered measurement in headless Chrome at 375 and 1440 (article geometry, gallery grid, lightbox, homepage, section fronts, archive, search, feeds, sitemap, author archives)
+- CLAUDE.md CURRENT STATE: plugin reality, local PHP worker limit, publishing-path verification record; this log entry
+
+TEST CONTENT (all retired: post_status draft + _vw_retired_review = 1, marked _vw_test_content; nothing trashed or deleted):
+- 86017 story-a "[TEST] Sigur Rós …" — a-la-music (7), author Chris Shalom (24), featured 85920 → edited to 85918, dek set, pull quote + YouTube embed
+- 86019 story-b "[TEST] Photos: a night in the pit" — photography (6), author Bob Hanham (411), 6-image native gallery with credits, portrait featured 85923
+- 86021 story-c "[TEST] Desk byline check" — photography (6), author "Photography" (171, desk label), no featured image
+- 86024 story-d "[TEST] Scheduled: the 10-minute check" — a-la-music (7), scheduled +10 minutes
+
+EVIDENCE:
+- Draft privacy: before publishing, /?p=86017 and the slug both 404 logged out; the title appeared in no search
+- Publish: 86017 draft → publish, published count 3371 → 3372 → 3373 → 3374 (+ 3375 when the scheduled one landed); each wp_update_post return checked
+- Story A article (375 / 1440): case A header, kicker "A La Music", headline, featured image 343×229 / 1200×800, body 18px/27.9 and 20px/32, pull quote 25.2px / 28px, **YouTube embed resolved to a real 16:9 iframe** (343×193 / 1200×675), no overflow at either width
+- Story A placement: became the **homepage lead automatically** (auto-fill = newest story with a usable image) with dek and byline; a-la-music anchor with dek; kicker correctly suppressed on its own section front; present on /archive/ and found by search
+- Bylines: section-front card byline **links** to /author/chris-shalom/; the **article header byline is plain text, not a link** (the known 2026-09-12 gap, unchanged); desk-label Story C renders "September 17, 2026 · 1 min read" with **no "By" and no link**, while Story B's card on the same front shows the linked "By Bob Hanham"
+- Story B gallery: 6 images, 2 columns at 375 / 3 at 1440, grid captions hidden by design, 6 lightbox triggers; whole-image tap opened the lightbox (touch at 375, mouse at 1440) on ink rgb(26,22,30) with the credit pill "Photo by Ryan Johnson" and body position:fixed; portrait featured image capped by the tall case-A rule to **480×720 centred** at 1440 from a 1365×2048 original
+- Edit loop (title + featured image, slug deliberately untouched): new headline and new image file present on article, homepage, section front, archive and search; old headline and old image file return 0 hits on every surface; **no stale surface** — page caching is inert locally
+- Scheduling: created status=future at 16:01:20 with publish_future_post registered 600s out; **published itself on time with no intervention** (confirmed status=publish, page HTTP 200)
+- Retirement: all four → draft + _vw_retired_review=1; published back to **3,371 exactly**; 0 test posts left published; **0 trashed**; direct URLs 404; 0 "[TEST]" markers and 0 test slugs on /, both section fronts, /archive/, /archive/page/2/, /category/a-la-music/page/2/, both author archives, /feed/ and the post sitemap; searching "[TEST]" returns 0 result articles (the string only echoes in the field and title); homepage lead restored to 65350
+- Editor (fetched with a real admin session, since a minted cookie without a session token is rejected): the **block editor** loads locally — no Classic editor markup, no Elementor — with Excerpt, Featured image, Categories and Author panels present, plus Newspack editor assets
+
+FINDINGS FOR PHASE 2 / FOR RICARDO:
+1. **Plugin reality gap (decide before the tutorial is final).** active_plugins lists 19 plugins; only 3 exist on disk (newspack-blocks, newspack-plugin, vw-security). Classic Editor, Elementor + Pro, LiteSpeed Cache, Justified Image Grid, Custom Permalinks, Newsletter, UpdraftPlus and others are listed-but-absent. Locally that means the block editor and no caching. **If Classic Editor is installed on the launch host, every screen in the tutorial changes**; if LiteSpeed is active there, editors will need cache purging after edits.
+2. **The dek is the manual Excerpt field, and almost nobody has used it**: exactly **1** of 3,371 published posts has one. The cards fall back to trimmed body text. The house rule ("deks required") needs stating, and the Excerpt panel is a collapsed secondary panel in the block editor — worth a screenshot in the tutorial.
+3. **A story with no featured image cannot lead.** The homepage lead is the newest story with a usable (≥1024px) image: Story D never led despite being newest, and Story B (portrait) took the lead over Story A. Operators need to know image size decides placement.
+4. **Gallery credits only show in the lightbox.** Grid captions are hidden by design, so the credit must go in each image's Caption field or it is invisible until a reader opens the photo.
+5. **The article page shows no dek**, by design — the dek exists only on cards. Worth saying plainly so editors do not hunt for it.
+6. **Article-header bylines never link**, while card bylines do (pre-existing inconsistency, logged 2026-09-12; not fixed here).
+7. **Local PHP is 2 workers** (pm=static, max_children=2). Parallel headless-browser verification wedged the FPM socket mid-run and the whole site 502'd; recovered with a graceful `kill -USR2` on the master, no data touched. Production sizing and sequential verification both matter.
+8. Admin account 200's user_login is a mangled multi-name string ("Abi Coulson Kelsey Dionne Andy Gronberg Kyle Harcott Nat") with display name "Ricardo Khayatte" — cosmetic but confusing on any screen that shows logins.
+9. Reusing an existing photo as a featured image carries its stored caption ("Photo by Mariko Margetson") into the lightbox credit — fine here, but a real trap when an editor picks a library image for a different story.
+
+FILES CHANGED:
+- CLAUDE.md — CURRENT STATE: plugin reality, 2-worker PHP limit, publishing-path verification record and retired test IDs
+- PROJECT-LOG.md — this entry
+- DB: 11 writes, all intentional — 4 test posts created (now retired drafts, still present by design), 1 edit, 1 schedule, 1 admin session added and removed. Published count unchanged at 3,371. No theme/code changes.
+
+VERIFIED: draft privacy, publish, rendered geometry at 375 and 1440, gallery and lightbox behaviour by real touch and mouse input, byline rules on three surfaces, edit propagation across five surfaces, scheduled self-publish, and full retirement across pages, pagination, author archives, feed and sitemap.
+
+OUTSTANDING / RISKS:
+- The four test posts remain as retired drafts (86017, 86019, 86021, 86024) so the evidence is inspectable; delete them whenever you prefer
+- The block-editor screens were confirmed by fetched HTML, not by driving the UI; the editor page timed out once under the 2-worker limit, so no screenshots of the editor exist yet
+- Whether the launch host runs Classic Editor / LiteSpeed is unresolved and directly changes the tutorial
+- Nothing was tested as a non-admin role (Author/Contributor); vw-security's user-approval gate was not exercised
+- Comment behaviour, revisions and media-upload limits were not part of this brief
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```

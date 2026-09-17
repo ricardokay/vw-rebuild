@@ -75,6 +75,9 @@ This file governs all Claude Code sessions on this project. Rules here override 
 **STANDING RULES FOR ALL NEW WORK: mobile-first is mandatory. NO new third-party plugins — custom child-theme code only.**
 
 **Environment:** local MySQL socket run-ID changes when Local restarts — **use `tools/wp.sh`**, which re-detects it. Working tree clean.
+- **Plugin reality (measured 2026-09-17):** `active_plugins` lists **19** plugins (inherited from the production DB) but only **3 exist on disk locally** — `newspack-blocks`, `newspack-plugin`, `vw-security`. WordPress silently skips the rest, so locally the **block editor** is what an editor gets, Elementor never runs, and LiteSpeed caches nothing (`advanced-cache.php` absent, `WP_CACHE` false). **Classic Editor, Elementor + Pro, LiteSpeed Cache, Justified Image Grid, Custom Permalinks, Newsletter, UpdraftPlus and the rest are listed-but-absent** — whichever are installed on the launch host will change the editor and add page caching. Decide the production plugin set before the operator tutorial is final.
+- **Local PHP is 2 workers** (`pm = static`, `pm.max_children = 2`). Parallel headless-browser runs wedged the socket on 2026-09-17 and every page 502'd; recovered with a graceful `kill -USR2` on the php-fpm master (no data touched). Keep browser verification sequential.
+- **Publishing path verified end to end 2026-09-17** (see PROJECT-LOG): draft → publish → edit → schedule → retire, across homepage, section fronts, article, archive and search. Test posts **86017 / 86019 / 86021 / 86024 are retired** (draft + `_vw_retired_review = 1`, marked `_vw_test_content`), so `_vw_retired_review` now covers 6 posts.
 
 ---
 
