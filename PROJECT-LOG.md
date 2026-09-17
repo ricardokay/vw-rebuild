@@ -5198,3 +5198,9 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## Decision: publishing round Phase 2 deferred (2026-09-17)
+
+2026-09-17: Publishing round Phase 2 (PUBLISHING.md tutorial) deferred to post-launch at Ricardo's call. Phase 1 findings 1–9 preserved above as tutorial input. Next: staging deploy.
