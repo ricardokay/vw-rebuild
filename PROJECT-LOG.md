@@ -6086,6 +6086,106 @@ OUTSTANDING-RISKS:
 - CLAUDE.md CURRENT STATE and POST-LAUNCH.md flip list not updated this round (commit scope limited to code + PROJECT-LOG); the list above supersedes POST-LAUNCH's copy.
 ```
 
+## 2026-09-18 — DNS cutover step 2: site URL flip to https://vancouverweekly.com (staging server DB)
+No Cloudflare, DNS, mail or `blog_public` changes (`blog_public` is still 0).
+
+**The flip was already done before this step.** When Cloudways set vancouverweekly.com as the primary domain, it had already rewritten home, siteurl and 120,292 of the 120,294 staging-host occurrences. We checked that bulk rewrite against this morning's off-site dump (`vw-db-20260918.sql.gz`, which still has the staging host) and against the live DB (streamed with `wp db export -`, nothing written):
+
+| Form | Dump (pre-flip) | Live, before this step | Live, after this step |
+|---|---|---|---|
+| staging host | 120,294 | 2 | 0 |
+| `https://vancouverweekly.com` | 12 | 120,304 | 120,307 |
+| `http://vancouverweekly.com` | 183 | 183 | 183 |
+| `http://www.vancouverweekly.com` | 1,056 | 1,056 | 1,056 |
+| `https://www.vancouverweekly.com` | 26 | 26 | 26 |
+| `www.vancouverweekly.com` (no scheme) | 44 | 44 | 44 |
+| bare `vancouverweekly.com` | 8,397 | 8,397 | 8,397 |
+
+- **Archive URLs are untouched:** every archive form is identical across all three snapshots.
+- **No mangling:** `vancouverweekly.comvancouverweekly` and `https://https://` are both 0. The single `www.www.vancouverweekly.com` is already in the pre-flip dump, so it is archive data.
+- **Serialized data:** the 42 serialized values holding the domain (postmeta, options, usermeta, termmeta) all unserialize; 0 broken.
+- **guid:** 22,625 rows hold vancouverweekly.com (1,239 archive + 21,386 staging).
+
+**Writes this step:**
+1. **Backup:** `/home/master/vw-cutover/pre-urlflip-20260918-2220.sql.gz` (folder mode 700). 28,196,607 bytes (27M), gzip -t OK, sha256 `001ca157d4330039d683f415364ba77bfff76781417414c9d77a7db99c219563`.
+2. **Search-replace** `wordpress-1670431-6668298.cloudwaysapps.com` → `vancouverweekly.com`, `--all-tables`: dry run 2 = real 2 (`wptg_users.user_url` and `wp_users.user_url`, both ID 1 `admin`).
+3. **home / siteurl:** `https://vancouverweekly.com` before and after (unchanged).
+4. **Newsletter referrer:** `wptg_newsletter` id 2 held `https://wordpress-1670431-6668298.cloudwaysapps.co` — a host cut off at the `varchar(50)` column limit, with no path. It was the only match, and an exact one, so a single `UPDATE … WHERE id=2 AND referrer=<exact>` set it to `https://vancouverweekly.com`.
+5. `wp cache flush` (Redis) and `wp rewrite flush`.
+
+**Verification:**
+- Dry runs for the staging host, `wordpress-1670431` and `cloudwaysapps` all return **0**.
+- Occurrence table above: `https://vancouverweekly.com` +3 (the 2 user_url rows and the 1 referrer); every archive form unchanged.
+- Published posts: 3,110.
+
+**Still pending:**
+- Varnish panel purge.
+- `blog_public` (the next gated step).
+- Cloudflare (Ricardo).
+- The server dump in `/home/master/vw-cutover/` is deleted at the post-launch cleanup, with the other round dumps.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: DNS cutover step 2 — verify and complete the site URL flip to https://vancouverweekly.com on the staging server DB. Gated. No Cloudflare/DNS/mail/blog_public changes.
+
+CONTEXT: The Cloudways primary-domain switch had already rewritten home, siteurl and 120,292 of 120,294 staging-host occurrences before this step. Gate 1 (read-only) confirmed it was clean; Ricardo approved "go" with adjustments.
+
+BEFORE → AFTER:
+- home: https://vancouverweekly.com → https://vancouverweekly.com (unchanged)
+- siteurl: https://vancouverweekly.com → https://vancouverweekly.com (unchanged)
+
+BACKUP (taken before any write): /home/master/vw-cutover/pre-urlflip-20260918-2220.sql.gz — 28,196,607 bytes (27M), gzip -t OK, sha256 001ca157d4330039d683f415364ba77bfff76781417414c9d77a7db99c219563. Folder mode 700, outside public_html.
+
+WRITES:
+- search-replace wordpress-1670431-6668298.cloudwaysapps.com → vancouverweekly.com --all-tables: dry run 2 = real 2 (wptg_users.user_url + wp_users.user_url, ID 1 admin).
+- wptg_newsletter id 2 referrer: "https://wordpress-1670431-6668298.cloudwaysapps.co" (cut off at varchar(50), no path; the only match, an exact one) → "https://vancouverweekly.com". Single UPDATE keyed on id AND exact value.
+- wp cache flush; wp rewrite flush.
+
+VERIFY:
+- Dry runs for the staging host, "wordpress-1670431" and "cloudwaysapps" (all tables): 0 / 0 / 0.
+- Occurrences in the full live DB (pre-flip dump → after): staging host 120,294 → 0; https://vancouverweekly.com 12 → 120,307 (the 120,292 Cloudways flipped, plus 3 this step).
+- Archive forms identical to the pre-flip dump: http://vw 183, http://www.vw 1,056, https://www.vw 26, www.vw 44, bare vw 8,397.
+- No mangling: comvancouverweekly 0, https://https:// 0. The one www.www. is pre-existing archive data.
+- 42 serialized values holding the domain: 0 broken. guid rows with vw: 22,625 (1,239 archive + 21,386 staging).
+- Published: 3,110. blog_public: 0 (untouched).
+
+NOT DONE / NEXT: blog_public (next gated step); Varnish panel purge; Cloudflare (Ricardo). Server dump deleted at the post-launch cleanup. PROJECT-LOG updated; not committed.
+```
+
+## 2026-09-18 — DNS cutover step 3: site set public (`blog_public`)
+One write on the staging server: `blog_public` **0 → 1** (`wp option update`, verified by reading it back). No Cloudflare, DNS or mail changes.
+
+**Checks (read-only, cache-busted):**
+- **WordPress robots meta** (`wp_robots()` in PHP, no cache): only `max-image-preview:large`. No `noindex`.
+- **Origin as `vancouverweekly.com`** (`curl --resolve vancouverweekly.com:443:138.197.142.198 -k`):
+  - robots.txt is 200 with only `Disallow: /wp-admin/`, `Allow: /wp-admin/admin-ajax.php` and `Sitemap: https://vancouverweekly.com/wp-sitemap.xml`.
+  - The homepage robots meta is `max-image-preview:large`.
+  - Neither response has an `X-Robots-Tag` header.
+- **The staging host** `wordpress-1670431-6668298.cloudwaysapps.com`:
+  - robots.txt serves the same permissive file.
+  - The homepage now 301s to `https://vancouverweekly.com/` (WordPress canonical redirect).
+  - Every response carries `X-Robots-Tag: noindex, nofollow`. It is not in `.htaccess` or vw-security, so Cloudways adds it for the default `*.cloudwaysapps.com` host. That is correct, since the staging URL should stay unindexed.
+- **Public DNS** still points at Cloudflare (proxied), and it serves the **old site** (hello-elementor theme). So a plain `curl https://vancouverweekly.com/robots.txt` shows the old host, not this server.
+
+**Found for the next step:** the origin has **no SSL certificate for vancouverweekly.com yet**. `curl` without `-k` fails with "no alternative certificate subject name matches". Let's Encrypt for `vancouverweekly.com` + `www` has to be issued on Cloudways before the Cloudflare A records move. With Full (strict), Cloudflare would return a 526 until then.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: DNS cutover step 3 — set blog_public on the staging server. No Cloudflare/DNS/mail changes.
+
+BEFORE → AFTER: blog_public 0 → 1 (wp option update; read back = 1). Nothing else written.
+
+VERIFY:
+- wp_robots() (PHP, uncached): "max-image-preview:large" only — no noindex.
+- Origin as vancouverweekly.com (--resolve to 138.197.142.198, -k): robots.txt 200 = Disallow /wp-admin/, Allow admin-ajax.php, Sitemap https://vancouverweekly.com/wp-sitemap.xml; home robots meta max-image-preview:large; no X-Robots-Tag.
+- Staging host: robots.txt permissive; / 301 → https://vancouverweekly.com/; X-Robots-Tag "noindex, nofollow" on every response, added by Cloudways for *.cloudwaysapps.com (not .htaccess, not vw-security) — correct to keep.
+- Public vancouverweekly.com still resolves via Cloudflare to the OLD site (hello-elementor theme), so the public robots.txt is not yet this server's.
+
+FLAG FOR NEXT STEP: origin has no certificate for vancouverweekly.com (curl without -k: subject name mismatch). Issue Let's Encrypt (apex + www) on Cloudways before moving the Cloudflare A records, or Full (strict) returns 526.
+
+NOT DONE: Cloudflare, SSL issue, Varnish panel purge. PROJECT-LOG updated; not committed.
+```
+
 ## 2026-09-18 — B1b: 22 broken-gallery posts that B1 missed are retired to draft (live DB)
 B1's criterion (`post_content LIKE '%justified-image-grid%'`) missed two groups of published posts. A read-only diagnosis the same day found them (Sam Smith, 68169, was showing a raw Facebook error in place of its gallery):
 - **G1, 11 posts:** the JIG error text is stored in the post itself (`<span class="jigErrorMessage">… OAuthException Code: 10 …`). The import copied these pages from the Wayback Machine after the album had already stopped loading. Reinstalling the gallery plugin would not fix them; only the FB gallery migration can.
