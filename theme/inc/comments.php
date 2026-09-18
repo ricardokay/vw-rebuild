@@ -101,6 +101,17 @@ add_filter( 'feed_links_show_comments_feed', '__return_false', 100 );
 add_filter( 'post_comments_feed_link', '__return_empty_string', 100 );
 
 /**
+ * Serve comment feeds empty.
+ *
+ * WP_Query fetches feed comments with its own SQL, so the_comments above never
+ * sees them and /comments/feed/ and /{post}/feed/ still printed comment text.
+ */
+add_filter( 'comment_feed_where', 'vw_comments_feed_where', 100 );
+function vw_comments_feed_where(): string {
+	return 'WHERE 1=0';
+}
+
+/**
  * Drop the "Leave a comment" / "N Comments" link from entry meta.
  *
  * get_comments_number() already returns 0, which suppresses the count, but

@@ -5506,3 +5506,198 @@ OUTSTANDING-RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## 2026-09-18 — Staging Round 2a: comments closed, entity wording, public-surface scrub, cache report
+
+All writes on staging (`bmm-server-1`, app `zqnrzcfryt`). Code changed locally, committed, rsynced file-by-file. Server clock is UTC, hence the 0918 file dates. Server-side artefacts: `/home/master/vw-round2a/` (outside the web root).
+
+### STANDING RULE (new)
+**Config and DB backups are never written inside `public_html`.** They go to `/home/master/<round>/` on the server and `backups-local/` (+ iCloud) locally. Round 1 broke this with `wp-config.php.bak-20260918` in the web root. Nginx's deny rule did not match that suffix, so the file was publicly downloadable (see Part 3).
+
+### Part 1 — Comments closed sitewide
+**Before:**
+- `default_comment_status` stored `open`, `default_ping_status` stored `open`.
+- `vw-security.php` overrode both through `pre_option_*`: comments forced to `'open'` ("keep comments"), pings forced to `0`. That override is also where the non-standard `ping_status = '0'` on 2,975 posts came from.
+- 20,259 of 24,601 `wptg_posts` rows had comments or pings not closed: attachment 16,026, post 4,212, page 21.
+- `wptg_comments`: 301 approved, 5,598 pending (4,931 comment, 481 pingback, 186 trackback).
+- The two sample articles already rendered no form, list or count, because the theme display layer (`inc/comments.php`) was in place. REST `/wp/v2/comments` returned `[]`.
+
+**Writes:**
+1. Backup: `posts-comment-ping-before-20260918.tsv` (ID, comment_status, ping_status for all 24,601 rows), sha256 `b6c9fc28…80e5dc0`. Stored on the server, in `backups-local/round2a/` and in iCloud `round2a/`.
+2. `default_comment_status` changed to `closed` (wp option update). `default_ping_status` changed to `closed` by direct SQL on 1 row: `wp option update` reported "unchanged" while the vw-security filter was masking the stored value.
+3. Bulk close in 6 ID-range batches. Expected = updated in each: 1,328 / 12 / 60 / 4,476 / 9,050 / 5,333 = **20,259, equal to the dry run**. Object cache flushed.
+4. Diff against the backup: 20,259 rows changed, 0 changed that were already closed, 0 ID mismatches. All 24,601 rows are now `closed/closed`.
+5. **Gap fixed (theme):** `/comments/feed/` (10 items) and per-post `/feed/` (e.g. 15 matches on top-10-metal-albums-of-2012) were still publishing comment text. WP_Query fetches feed comments with its own SQL, so the `the_comments` filter never sees them. The new `comment_feed_where` filter in `theme/inc/comments.php` sends both feeds empty.
+6. **vw-security fix:** lines 88–89 now return `'closed'` for both defaults. vw-security is now tracked at `plugins/vw-security/vw-security.php` (it was untracked; checked for secrets first, none).
+
+**Verified:**
+- Sample articles: form 0, #respond 0, comment-list 0, comments-link 0, "Leave a comment" 0, comment text 0.
+- REST returns `[]`. Both comment feeds have 0 items; the main feed still has 10.
+- `wp option get default_comment_status` = `closed`, before and after front-end page loads. `get_default_comment_status('post')` = closed/closed. Stored values: closed/closed.
+
+**Reversal:**
+- Rows: restore from the TSV, e.g. generate `UPDATE wptg_posts SET comment_status=…, ping_status=… WHERE ID=…` for rows whose values differ, then `wp cache flush`.
+- Options: set back to `open`.
+- Theme: remove the `comment_feed_where` block, or restore `/home/master/vw-round2a/inc-comments.php.before`.
+- vw-security: restore `/home/master/vw-round2a/vw-security.php.before` (md5 `5211996d…`).
+- The 5,899 comments were not touched.
+
+### Part 2 — Entity wording
+- **Scan:** every post type except revisions, plus postmeta, options/widgets, terms, termmeta, usermeta and theme/plugin code.
+- **Hits:** 97 "Corp" tokens, all in 6 published pages, nowhere else. MySQL's case-insensitive `weekly inc…` matches in 7 articles were false positives.
+- **Rule:** "Vancouver Weekly Corp[.]" → "Vancouver Weekly". Where the "Corp." ended a sentence ("Our", "Entries", "Where" follow), the full stop is kept. "CORP. ," → ",". The doubled Terms heading "Vancouver Weekly Corp. Vancouver Weekly Corp. Legal Statement" → "Vancouver Weekly Legal Statement" (approved).
+- **Method:** direct `$wpdb->update` of `post_content` + `clean_post_cache`, so no kses, no revisions and bytes are identical outside the replacements.
+- **Backup:** `entity-pages-before-20260918.sql` (6 full rows), sha256 `d97a4808…bcd588f`. Stored on the server, locally and in iCloud. The apply output with every before/after line is `backups-local/round2a/p2-apply-output.txt`.
+
+| ID | Page | Tokens | md5 before → after (= dry run) |
+|---|---|---|---|
+| 52 | /terms-and-conditions/ (footer) | 36 | 311629e5… → 640a3f8b… |
+| 1951 | /terms-and-conditions-2/ | 36 | 80b97c5f… → 5711671a… |
+| 7241 | /contest-rules/ | 22 | ab2b09f0… → 9ac50cd6… |
+| 56 | /privacy-policy-2/ (footer) | 1 | bd05092d… → 34daf8e4… |
+| 1950 | /privacy-policy/ | 1 | e71f8e88… → 3abd73ec… |
+| 3372 | /guest-contributor-agreement/ | 1 | 685bdf21… → b1e4d510… |
+
+- **Verified:** DB residual 0 (non-revision). The 6 rendered pages return 200 with 0 "weekly corp". Spot renders: "Vancouver Weekly Legal Statement", "investment advice by Vancouver Weekly.", "TO VANCOUVER WEEKLY, YOU", "operated by the Vancouver Weekly. Our".
+- **Left alone:** revisions 55, 58 and 64838 (not public).
+- **Reversal:** import the 6 rows from `entity-pages-before-20260918.sql` (a REPLACE of those IDs), then `wp cache flush`.
+
+### Part 3 — Public-surface scrub (staging)
+**Surfaces scanned:**
+- Pages: home, article, section front, /archive/, search, Terms, 404.
+- Feeds: /feed/, /comments/feed/.
+- Other: robots.txt, sitemaps, REST index/users/pages/vw/v1, wp-login, readme.html, xmlrpc, author archive.
+- Probes of sensitive paths.
+
+| # | Finding | Severity | Status |
+|---|---|---|---|
+| 1 | `/wp-config.php.bak-20260918` served 200 (DB password, Redis credentials) | CRITICAL | **Fixed**: moved to `/home/master/vw-round2a/`, the cached Varnish copy purged by URL. The URL now returns 403 (nginx denies `wp-config*`, so 403 rather than 404). The only fetch in retained access logs (back to 2026-09-12) was our own probe IP. |
+| 2 | Comment feeds published comment text | Medium | **Fixed** (Part 1) |
+| 3 | Admin login slug exposed: `/?author=1` → `/author/admin/`, `/wp-json/wp/v2/users/1` | Medium | Open, round 2b |
+| 4 | Theme `previews/*.html` mockups publicly served | Low | Open |
+| 5 | WP version exposed (generator meta, feed generator, `ver=7.1.1`, readme.html, license.txt) | Low | Open |
+| 6 | `/wp-json/wp/v2/users` lists authors | Low | Open (standard WP) |
+| 7 | `/wp-sitemap.xml` 404 | Info | Expected while `blog_public=0`; check at launch |
+
+- **Clean:**
+  - 0 hits for Claude, Anthropic, PROJECT-LOG, CLAUDE.md, vw-rebuild, TODO, FIXME, `/Users/`, vancouverweekly-local, ai1wm and vw-migration across 21 surfaces.
+  - Noindex (meta + X-Robots-Tag) on 8/8 HTML surfaces; `blog_public=0`.
+  - `server: nginx` with no version; no X-Powered-By.
+  - xmlrpc blocked. `ai1wm-backups/` and `vw-security-logs/` 404. `wp-config.php`, `.git` and `debug.log` 403.
+- **Backup-file sweep** of `public_html`:
+  - Patterns: `*.bak*`, `*.sql*`, `*.old`, `*.orig`, `*.save`, `*.swp`, `*~`, `wp-config*`, `*.wpress`, `*.zip`, `*.tar*`, `*.dump`, `.env*`, `*.pem`, `*.key`.
+  - Result: only `wp-config.php` and `wp-config-sample.php` remain.
+
+### Part 4 — Cache drop-ins (report only, no changes)
+- **`advanced-cache.php` (Breeze): active, not just armed.**
+  - The drop-in only checks that `plugins/breeze/breeze.php` exists. `breeze-config.php` has `breeze-active => '1'`, TTL 1440 min, and `WP_CACHE` is true, so Breeze's `execute-cache.php` runs on every front request with the plugin inactive.
+  - 48 cache files, some written in the last 2 hours.
+  - With the plugin off, no save or publish hook purges them, so pages can be up to 24h stale on top of Varnish.
+- **`object-cache.php` (Object Cache Pro 1.25.5): functioning.**
+  - It loads `plugins/object-cache-pro/api.php` whether or not the plugin is active: class `PhpRedisObjectCache`, Redis 8.10.1, set/get round trip OK, no errors.
+  - The only log line is the normal "WordPress version has changed, flushing cache" notice.
+  - Raw-SQL writes bypass it, so every raw write must be followed by `wp cache flush` (done this round).
+- **Varnish:** active at the server layer (`/archive/` HIT, age 1206s).
+- **Recommendation for launch:**
+  - Remove the Breeze drop-in: move `advanced-cache.php` out, set `WP_CACHE` false, empty `wp-content/cache/breeze`. Reversal: put the file back and set `WP_CACHE` true.
+  - Keep OCP. Reversal: delete `object-cache.php` or set `WP_REDIS_DISABLED` true.
+  - Keep Varnish.
+  - With Breeze gone nothing purges Varnish on publish. Per the no-new-plugins rule, the fix is a small custom purge-on-save hook in our own code.
+  - Decision → round 2b.
+
+### Risks carried to Round 2b
+- **Breeze drop-in decision.** It is serving an un-purged disk page cache now; purge from the Cloudways panel (which also empties the Breeze cache) before judging any page.
+- **OCP/Redis** noted as functioning without its plugin being active; keep, and flush after any raw SQL.
+- Part 3 items 3–6 are open.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Staging Round 2a — comments closed sitewide, entity-wording fix, public-surface scrub re-run on staging, cache drop-in decision report. Approvals round: (1) move wp-config backup out of the web root + sweep, (2) vw-security default fix, (3) apply entity wording, (4) close. No DNS/mail, no plugin installs, no push.
+
+WHAT I DID:
+1. Moved `public_html/wp-config.php.bak-20260918` to `/home/master/vw-round2a/` (sha256 bd5dbd04…bcde9).
+   - Varnish still served it (HIT from my earlier probe), so I PURGEd that one URL.
+   - The URL now returns 403 (nginx denies `wp-config*`).
+   - Backup-file sweep of public_html found nothing else.
+2. vw-security lines 88–89 now return 'closed' for both defaults.
+   - Diff vs the server:
+     -add_filter( 'pre_option_default_ping_status', '__return_zero' );
+     -add_filter( 'pre_option_default_comment_status', function() { return 'open'; } ); // keep comments
+     +add_filter( 'pre_option_default_ping_status', function() { return 'closed'; } );
+     +add_filter( 'pre_option_default_comment_status', function() { return 'closed'; } );
+     (plus the comment line above them reworded)
+   - Server copy backed up; file deployed; file now tracked at plugins/vw-security/.
+   - The stored default_ping_status was still 'open' (masked by the old filter), so I set it to 'closed' by direct SQL.
+3. Entity wording applied to 6 pages exactly as dry-run. 6-row backup taken first.
+4. Earlier in the round: Part 1 bulk close of 20,259 rows; the comment-feed gap fixed in theme/inc/comments.php and deployed; scrub; cache report.
+
+EVIDENCE:
+- Part 1:
+  - Rows changed: dry 20,259 = written 20,259 (1,328/12/60/4,476/9,050/5,333). Diff vs backup: 20,259 changed, 0 previously closed. All 24,601 rows closed/closed.
+  - Options stored closed/closed. wp option get default_comment_status = closed before and after front-end loads. New-post default closed/closed.
+  - Articles top-10-metal-albums-of-2012 and ugh-your-music-sucks-my-music-rocks-editorial: form/respond/list/comments-link/"Leave a comment"/comment text all 0.
+  - REST comments []. /comments/feed/ 0 items (was 10); per-post feed 0 (was 15 matches); /feed/ 10.
+- Part 2, per page (tokens, md5 before → after; all equal to the dry run):
+  - 52 /terms-and-conditions/: 36, 311629e5 → 640a3f8b
+  - 1951 /terms-and-conditions-2/: 36, 80b97c5f → 5711671a
+  - 7241 /contest-rules/: 22, ab2b09f0 → 9ac50cd6
+  - 56 /privacy-policy-2/: 1, bd05092d → 34daf8e4
+  - 1950 /privacy-policy/: 1, e71f8e88 → 3abd73ec
+  - 3372 /guest-contributor-agreement/: 1, 685bdf21 → b1e4d510
+  - Total 97. DB residual 0. Rendered "weekly corp" 0 on all 6.
+  - Before → after samples:
+    - "Vancouver Weekly Corp. Vancouver Weekly Corp. Legal Statement" → "Vancouver Weekly Legal Statement"
+    - "investment advice by Vancouver Weekly Corp.." → "…Vancouver Weekly."
+    - "TO VANCOUVER WEEKLY CORP. , YOU" → "TO VANCOUVER WEEKLY, YOU"
+    - "operated by the Vancouver Weekly Corp. Our" → "…Vancouver Weekly. Our"
+    - "property of Vancouver Weekly Corp. Entries" → "…Vancouver Weekly. Entries"
+    - "Vancouver Weekly Corp reserves the right" → "Vancouver Weekly reserves the right"
+  - Full per-hit list: backups-local/round2a/p2-apply-output.txt.
+- Scrub findings:
+  1. wp-config .bak publicly served — CRITICAL — FIXED (403; only fetch in the logs was our own IP).
+  2. Comment feeds published comment text — MEDIUM — FIXED.
+  3. admin slug exposed via /?author=1 and /wp-json/wp/v2/users/1 — MEDIUM — open.
+  4. Theme previews/*.html publicly served — LOW — open.
+  5. WP version exposed (generator, feed, ver=, readme.html, license.txt) — LOW — open.
+  6. REST users list — LOW — open.
+  7. Sitemap 404 while noindex is on — INFO.
+  - Clean: 0 AI/dev/local-path/ai1wm/vw-migration traces on 21 surfaces; noindex 8/8 with blog_public=0; no X-Powered-By and no server version; xmlrpc blocked.
+- Drop-in report:
+  - Breeze advanced-cache.php is ACTIVE with the plugin inactive: breeze-active=1, WP_CACHE true, 48 cache files (some <2h old), TTL 24h, nothing purges on publish.
+  - OCP object-cache.php FUNCTIONING: Redis 8.10.1, set/get OK.
+  - Varnish active (HIT, age 1206s).
+  - Recommendation: remove Breeze (move the drop-in out + WP_CACHE false; reverse by moving it back); keep OCP; keep Varnish plus a custom purge-on-save hook. Decision in 2b.
+- Backups (server /home/master/vw-round2a/, local backups-local/round2a/, iCloud round2a/):
+  - posts-comment-ping-before-20260918.tsv b6c9fc28…80e5dc0
+  - entity-pages-before-20260918.sql d97a4808…bcd588f
+  - inc-comments.php.before (md5 94389676…)
+  - vw-security.php.before (md5 5211996d…)
+
+FILES CHANGED:
+- Repo:
+  - theme/inc/comments.php (+comment_feed_where; staging md5 f9d40c8e = local)
+  - plugins/vw-security/vw-security.php (new in git; staging md5 ad64d83d = local)
+  - PROJECT-LOG.md
+- Staging:
+  - wptg_posts comment_status/ping_status (20,259 rows)
+  - options default_comment_status and default_ping_status
+  - post_content of 6 pages
+  - the two files above
+  - wp-config.php.bak-20260918 moved out of the web root
+- Local site: vw-security.php and theme inc/comments.php (both = repo).
+
+VERIFIED: every DB write against the dry-run counts, the checksums and a before/after diff; rendered output by HTTP with cache-busting query strings; option persistence through front-end loads; the .bak URL (403, MISS); backup hashes identical on server and locally.
+
+OUTSTANDING-RISKS:
+- Breeze drop-in decision (round 2b). Its disk cache plus Varnish can serve stale pages. PURGE FROM THE CLOUDWAYS PANEL before judging any page.
+- OCP/Redis functioning without its plugin being active. Keep; always `wp cache flush` after raw SQL.
+- Scrub items 3–6 open.
+- The moved .bak (with credentials) sits in /home/master/vw-round2a/ as rw-rw-r-- owned by the app user (chmod not permitted as bmmmaster). Delete it with the rest of /home/master/vw-migration/ at staging sign-off.
+- Deployed files are owned by bmmmaster; run "Reset File Permissions" in the panel if you want uniform ownership.
+- CLAUDE.md CURRENT STATE and VW-MASTER-PLAN.md were not updated (outside the scoped add).
+- Commit SHA reported in chat.
+- NOT PUSHED.
+=== END HANDOFF ===
+```
