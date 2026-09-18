@@ -6085,3 +6085,60 @@ OUTSTANDING-RISKS:
 - Cloudflare SSL mode and proxy status during certificate issue are unverified from here; Ricardo checks them in Cloudflare at cutover.
 - CLAUDE.md CURRENT STATE and POST-LAUNCH.md flip list not updated this round (commit scope limited to code + PROJECT-LOG); the list above supersedes POST-LAUNCH's copy.
 ```
+
+## 2026-09-18 — B1b: 22 broken-gallery posts that B1 missed are retired to draft (live DB)
+B1's criterion (`post_content LIKE '%justified-image-grid%'`) missed two groups of published posts. A read-only diagnosis the same day found them (Sam Smith, 68169, was showing a raw Facebook error in place of its gallery):
+- **G1, 11 posts:** the JIG error text is stored in the post itself (`<span class="jigErrorMessage">… OAuthException Code: 10 …`). The import copied these pages from the Wayback Machine after the album had already stopped loading. Reinstalling the gallery plugin would not fix them; only the FB gallery migration can.
+- **G2, 11 posts:** the underscore shortcode `[justified_image_grid facebook_id=… facebook_album=…]`, which showed on the page as raw text. IDs 18215–18247.
+
+The groups do not overlap. **Only the status and one meta key changed.** Nothing was trashed and no content was edited. Each post is now `draft` with **`_vw_retired_jig_b1b = 1`**. That key is new and separate from B1's `_vw_retired_jig_b1`, so this set can be reversed on its own.
+
+**Backup and undo key:**
+- Pre-write dump: `/home/master/vw-b1b/pre-b1b-20260918-2317.sql.gz` (27M, sha256 `ad47e319…ac516650`, gzip-tested, "Dump completed" present).
+- Manifest: `b1b-retirement-manifest-20260918.csv` (22 rows: ID, post_title, group, prior_status=publish). It is in `/home/master/vw-b1b/` and in `backups-local/` (gitignored); sha256 `5cd91997…c376365d8` is identical in both copies.
+
+**Writes:** two batches, grouped as above. Each post was checked to be `publish` before the write, and every command's return value was checked. Batch 1 (G1): 11/11. Checkpoint: 11 drafts flagged, published 3,099. Batch 2 (G2): 11/11.
+
+**Verified:**
+- **Published total:** 3,110 → **3,088** (−22).
+- **Flagged:** 22 posts carry `_vw_retired_jig_b1b = 1`, and all 22 are draft.
+- **Nothing left over:** 0 published posts match `jigErrorMessage`, `OAuthException`, `[justified_image_grid` or `justified-image-grid`.
+- **Trash:** 1, unchanged from before.
+- **B1 set:** 261 drafts, untouched.
+- **Logged out:** `?p=` and the permalink both 404, with and without a cache-buster, for 68169 `/sam-smith-orpheum/`, 18218 `/squamish-valley-music-festival-2013/` and 67902 `/photos-vancouver-folk-music-festival-day-1-61181-2/`.
+
+**Reversal:** when the FB gallery migration restores these galleries, set every post with `_vw_retired_jig_b1b = 1` back to `publish` (the manifest lists the 22 IDs). G1 posts need their stored error `<span>` replaced by the migrated gallery before they are republished.
+
+**Pending Ricardo's review (NOT retired):** 5 published posts that match other Facebook-media patterns and may only link to Facebook: 67801 *Photos of Rifflandia Festival 2016* (facebook.com/…/photos/), 948 *3 Progressive Companies Are Making Vancouver's Future Bright* (…/photos/), 67086 *Mac DeMarco: the Boy Next Door with Beer* (facebook.com/media/set), 66152 *Enchanted Nights at Bloedel Conservatory, begins today* (`class="fb-` embed div), 68953 *White Poppy debuts new line-up at free Lido show* (fbcdn image).
+
+**Still open:** Cloudways panel purge (Varnish), so section fronts, /archive/ and search stop serving cached listings that link to the retired posts.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: B1b — retire the published broken-gallery posts that B1's LIKE '%justified-image-grid%' criterion missed. Live DB. Status + meta only, reversible, gated.
+
+WHAT I DID:
+- Confirmed read-only: exactly 22 published matches, G1 11 (jigErrorMessage/OAuthException text stored in the post) + G2 11 ([justified_image_grid underscore shortcode), disjoint, 0 carrying any _vw_retired* flag. Published 3,110; trash 1.
+- Backup: /home/master/vw-b1b/pre-b1b-20260918-2317.sql.gz (27M, sha256 ad47e3195ecda886937047b3abf0ddc5de41116326bb00c75aeff915ac516650, gzip -t ok).
+- Manifest: b1b-retirement-manifest-20260918.csv (22 rows, prior_status=publish) in /home/master/vw-b1b/ + backups-local/ (sha256 5cd91997…c376365d8, both copies match).
+- Batch 1 (G1) 11/11, checkpoint: 11 draft flagged, published 3,099. Batch 2 (G2) 11/11. Each post was checked to be publish before writing; every return code checked.
+
+EVIDENCE:
+- G1 IDs: 65433 65787 67566 67586 67687 67797 67806 67902 68081 68169 68395
+- G2 IDs: 18215 18218 18221 18224 18228 18231 18234 18237 18240 18244 18247
+- Published 3,110 → 3,088 (−22). _vw_retired_jig_b1b=1 on 22 posts, all draft.
+- Published posts still matching jigErrorMessage / OAuthException / [justified_image_grid / justified-image-grid: 0.
+- Trash 1 → 1. B1's 261 drafts untouched.
+- Logged-out 404 (plain + cache-busted, ?p= and permalink): 68169, 18218, 67902.
+
+FILES CHANGED: PROJECT-LOG.md (this entry only is committed; the uncommitted DNS-step-2/3 entries above it stay unstaged in the working tree). Server: /home/master/vw-b1b/ (dump + manifest). Local: backups-local/b1b-retirement-manifest-20260918.csv (gitignored).
+
+VERIFIED: DB counts and flags above; HTTP 404 on 3 samples. Not pushed.
+
+OUTSTANDING-RISKS:
+- Cloudways panel purge still needed; fronts/archive/search listings may serve cached links to the retired posts until then.
+- 5 unclassified FB-media posts left published, pending Ricardo's review: 67801, 948, 67086, 66152, 68953.
+- G1 posts store the error text in the post itself, so republishing them without the migrated gallery brings the error back.
+- The lightbox fix for 67693 (Elliott Brood, the only native gallery without the lightbox attribute) is not done; separate task.
+- post_modified on the 22 posts is now 2026-09-18 (wp post update side effect).
+```
