@@ -6242,3 +6242,51 @@ OUTSTANDING-RISKS:
 - The lightbox fix for 67693 (Elliott Brood, the only native gallery without the lightbox attribute) is not done; separate task.
 - post_modified on the 22 posts is now 2026-09-18 (wp post update side effect).
 ```
+
+## 2026-09-18 — Lightbox + masonry enabled on post 67693 (live DB, one post)
+Post 67693, *Photos of Elliott Brood at The Commodore Ballroom in Vancouver*, was the only one of the 364 published `wp:gallery` posts whose image blocks lacked `"lightbox":{"enabled":true}`, so tapping a photo did nothing. It also lacked the `vw-fb-gallery` class, so it did not get the 3-column masonry layout. A read-only census found that all 21 image blocks without lightbox among published gallery posts were in this post (the other 11,070 have it). All 363 other gallery posts carry `"className":"vw-fb-gallery"`. Rendered lightbox handlers before the fix: 67693 had 0; post 69221, the control, had 32.
+
+**The edit, to this post's `post_content` only:**
+- All 21 image blocks: `{"id":N,"sizeSlug":"large","linkDestination":"none"}` became `{…,"lightbox":{"enabled":true}}`. This is the exact form the other posts use.
+- Gallery block: `,"className":"vw-fb-gallery"` added to its settings, and `vw-fb-gallery` added to the class of its `<figure>`. Its existing `sizeSlug` was kept.
+
+**How it ran:** one guarded `wp eval-file` script (`/home/master/vw-67693/fix-67693.php`). It aborts unless the edit counts are exactly 21 image blocks, 1 gallery block and 1 figure. It saves with `wp_update_post`, with kses switched off so the WP-CLI run (no logged-in user) could not filter the markup.
+
+**Backup and undo key:** `/home/master/vw-67693/before.txt` (5,877 bytes, sha256 `bdd12f08…a887b111`), plus `before-meta.txt` (status publish, post_modified 2026-06-19 02:22:16). `after.txt` and `after.sha256` are alongside, and both checksums verify. WordPress also saved the new version as revision 86292; the pre-fix content is in `before.txt`. **To reverse:** write `before.txt` back into post 67693 with `wp_update_post`.
+
+**Verified:**
+- The stored content is byte-identical to the intended edit.
+- Lightbox is on 21/21 image blocks; 0 are left without it. The gallery setting and the figure class each appear once.
+- Status is still `publish`.
+- The `diff` of before and after shows only the gallery lines and the 21 image-block lines.
+- The other 728 gallery posts (363 published and 365 draft) all kept the same post_modified.
+- Server render with a cache-buster: 42 lightbox handlers (21 × 2) and the `vw-fb-gallery` class is present. The plain URL still showed the Varnish copy from before the fix (0 handlers) at write time.
+- post_modified on 67693 is now 2026-09-18 16:31:31.
+
+**Still open:** a Cloudways panel purge (Varnish), then Ricardo checks on the live post that tapping a photo opens the lightbox.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Enable lightbox (+ masonry class, approved) on post 67693, the only native gallery missing the lightbox attribute. Live DB, one post, reversible, gated.
+
+WHAT I DID:
+- Read-only census: 364 published wp:gallery posts, 363 with "lightbox":{"enabled":true}. Image-block shapes across published gallery posts: 11,070 with lightbox, 21 without, all 21 in 67693 (attachment ids 73122–73142). Gallery block: 363 with "className":"vw-fb-gallery", 67693 without.
+- Backup: /home/master/vw-67693/before.txt, 5,877 bytes, sha256 bdd12f0816f4d556ebc1ee2e811d4661494219ded4c45e01a8056cd3a887b111; before-meta.txt (publish, modified 2026-06-19 02:22:16); others-modified-before.json (728 other gallery posts).
+- Write: one wp eval-file script, which aborts unless the counts are img=21, gallery=1, figure=1; wp_update_post with kses switched off. Only post 67693 was edited.
+
+EVIDENCE:
+- Stored content === intended, byte-for-byte. Lightbox 21/21, bare 0. The gallery className and the figure class each appear 1 time.
+- Status: publish (unchanged). The other 728 gallery posts (363 publish + 365 draft) kept the same post_modified_gmt, 0 changed.
+- diff before.txt after.txt: only lines 5–7 (gallery comment, figure class, first image) plus the 20 other image-block comment lines.
+- Server render with a cache-buster: 42 showLightbox hooks (was 0), vw-fb-gallery present. The plain URL is still served from Varnish (0 hooks) until the purge.
+- Side effects: post_modified is now 2026-09-18 16:31:31; WordPress saved the new version as revision 86292.
+
+FILES CHANGED: PROJECT-LOG.md (this entry). Server: /home/master/vw-67693/ (before/after + sha256, meta, snapshot, script). Not pushed.
+
+VERIFIED: DB markup, status, isolation, and the server-side render. NOT verified: the live cached URL and a real tap opening the lightbox (needs the purge and Ricardo's check).
+
+OUTSTANDING-RISKS:
+- Cloudways panel purge (Varnish) needed before the live URL reflects the fix.
+- The gallery block keeps "sizeSlug":"large" (the other 363 lack it); it has no effect on the page, and it was kept to limit the edit to what was approved.
+- scp to /home/master fails (the Cloudways SFTP root differs from SSH); files were sent over ssh stdin instead.
+```
