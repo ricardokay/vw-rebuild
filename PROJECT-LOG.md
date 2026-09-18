@@ -5953,3 +5953,11 @@ OUTSTANDING-RISKS:
 - NOT PUSHED.
 === END HANDOFF ===
 ```
+
+## 2026-09-18 — Off-site backup set (Cloudways staging → Ricardo's Mac)
+
+- **Location:** `backups-local/offsite-20260918/` (gitignored). The DB dump is also in iCloud `vw-rebuild-backups/offsite-20260918/`.
+- **DB:** `vw-db-20260918.sql.gz`, 27,959,730 bytes (453 MB uncompressed), via `wp db export --single-transaction`. sha256 `1a465cb7cc66248d552a5c12281f9e25709b2fcc472cb98158087b715314cfbb` is identical on server, local and iCloud; gzip -t OK. The server copy was deleted after transfer (the server still shows 19G free).
+- **Uploads: INCLUDED.** 263,104 files, 17,698,458,646 bytes, with a path+size manifest identical to the server (`uploads-manifest-server.tsv`); a 286-file random sha256 sample matched. macOS openrsync hung twice against the server, so the bulk transfer was a per-year tar stream over SSH.
+- **Restore:** fresh WP + the repo's child theme and `vw-security` → `wp db import` of the .gz → copy `uploads/` into `wp-content/` → `wp search-replace` the staging URL to the target domain → flush caches.
+- No site changes. Mac free space after: 37 GiB.
