@@ -5961,3 +5961,127 @@ OUTSTANDING-RISKS:
 - **Uploads: INCLUDED.** 263,104 files, 17,698,458,646 bytes, with a path+size manifest identical to the server (`uploads-manifest-server.tsv`); a 286-file random sha256 sample matched. macOS openrsync hung twice against the server, so the bulk transfer was a per-year tar stream over SSH.
 - **Restore:** fresh WP + the repo's child theme and `vw-security` → `wp db import` of the .gz → copy `uploads/` into `wp-content/` → `wp search-replace` the staging URL to the target domain → flush caches.
 - No site changes. Mac free space after: 37 GiB.
+
+## 2026-09-18 — DNS cutover prep: footer prune, 301 redirects, cutover readiness
+
+No DNS, mail or DB changes. Code built and verified locally, then deployed to staging by rsync; server copies backed up first to `/home/master/vw-dnsprep/before/` (outside the web root, mode 700). The staging-host search-replace was **not** run (it is a cutover step).
+
+### Part 1 — Footer prune (display layer only; every page stays in the DB)
+- **Source:** theme code only. No nav menu is assigned to any location, and every widget area is empty. The About column (`VW_FOOTER_ABOUT`, `inc/footer.php`) also feeds the mobile panel's About grid (`inc/masthead.php`). The legal pair is `VW_FOOTER_LEGAL`.
+- **Removed from About:** all 6 links. None of the 6 qualified for the keep-if-real exception:
+  - Advertise (#66) is a one-line sales email.
+  - Contributor Kit (#1955) is empty shortcodes.
+  - Newsletters (#78) is a signup form whose plugin is gone.
+  - Resources (#49) is a list of writing-guide links from about 2010.
+  - Privacy Policy (#56) and Terms (#52) are real pages, but they stay reachable through the legal links, so the About copies were duplicates.
+- `VW_FOOTER_ABOUT` is now `[]`. The 6 rows are kept in its doc comment for restoring. Both renderers print nothing while it is empty: no About heading and no empty panel grid.
+- **Before:** 7 sections + 6 About + 2 legal. **After:** the nameplate (`/`), 7 sections and Privacy (`/privacy-policy-2/`, 200) + Terms (`/terms-and-conditions/`, 200), 10 links in all. Verified on staging (cache-busted) on `/`, an article, `/archive/` and `/category/photography/`. No `vw-footer__unlinked` spans. Also checked visually, locally, at desktop width and 375px (drawer).
+
+### Part 2 — Redirects (`plugins/vw-security/inc/redirects.php`, domain-relative)
+- **Source:** the `custom_permalink` postmeta (Custom Permalinks plugin). It holds **43 rows / 42 distinct paths**, not 38. Each path was checked on staging:
+  - **29 already return 200.** 26 are the native slug of the duplicate copy of the same article; 3 are the post's own slug. They were left alone, because a 301 would take over a working URL.
+  - **11 are B1-retired gallery pairs** (IDs 222–255; both copies are drafts). Left as 404s until the FB migration restores them.
+  - **2 return 404 but the post is live under its native slug.** These are the only custom-path 301s.
+- **Events leftovers → `/`:**
+  - `/events-calendar/` is page 9806, empty.
+  - `/events/` is page 1779, dead All-in-One Event Calendar markup.
+  - `/events-2/` is page 1953, empty.
+  - `/category/upcoming-events/` is category 49; all 9 of its posts are drafts.
+  - The pages stay published in the DB; the redirect runs at `template_redirect` priority 1, before they render.
+- **Implementation:** an exact path match (slashes trimmed, lowercase). The target is `home_url( '/' . $path )`, with no hostname in code. Redirects are sent with `X-Redirect-By: vw-security`.
+
+| Old path | First | Location | Final |
+|---|---|---|---|
+| /the-best-fitness-studios-for-every-vancouverites-specific-needs-56605-2/ | 301 | /the-best-fitness-studios-for-every-vancouverites-specific-needs/ | 200 (1 hop) |
+| /album-review-bute-streets-sunny-days-hazy-nights/ | 301 | /bute-street-rock-some-familiar-subjects-with-sunny-days-hazy-nights/ | 200 (1 hop) |
+| /events-calendar/ | 301* | / | 200 (1 hop) |
+| /events/ | 301* | / | 200 (1 hop) |
+| /events-2/ | 301* | / | 200 (1 hop) |
+| /category/upcoming-events/ | 301* | / | 200 (1 hop) |
+| /events-calendar, /events (no slash) | 301* | / | 200 (1 hop) |
+| control: /photos-the-strokes-rogers-arena-70341-2/ (B1) | 404 | — | 404 |
+| control: /photos-alan-doyle-queen-elizabeth-theatre-70428-2/ (B1) | 404 | — | 404 |
+| control: /kismet-asks-the-big-questions-69951-2/ (already-200 group) | 200 | — | 200 |
+| control: /privacy-policy/ | 200 | — | 200 |
+| control: /events-calendar-foo/ | 404 | — | 404 |
+
+\* Verified with a cache-busting query. Without one, Varnish still served the pre-deploy 200 for the four events paths, so **a panel purge is required** before those URLs redirect for readers. No loops, and no redirect landing on a 404.
+
+### Part 3 — Cutover readiness (read-only)
+**Staging host in the DB** (`wp search-replace https://wordpress-1670431-6668298.cloudwaysapps.com https://vancouverweekly.com --all-tables --dry-run`): **27,830 replacements**.
+
+| Table.column | Rows |
+|---|---|
+| wptg_posts.guid | 21,386 |
+| wptg_posts.post_content | 4,396 |
+| wptg_postmeta.meta_value | 1,790 |
+| wptg_comments.comment_author_url | 154 |
+| wptg_posts.pinged | 44 |
+| wptg_loginizer_logs.url | 24 |
+| wptg_comments.comment_content | 21 |
+| wptg_options.option_value | 4 |
+| wp_posts.guid (stub) | 4 |
+| wp_options / wp_posts.post_content (stub) | 2 / 2 |
+| wptg_e_submissions.referer, wptg_users.user_url, wp_users.user_url | 1 each |
+
+- The bare host (no scheme) gives the same 27,830, and the `http://` variant 0, so the https pair covers everything.
+- guid is +2 on Round 1 (21,384); these are rows created on staging since then.
+- 4,628 `vancouverweekly.com` references already exist in the DB and are untouched by the replace.
+
+**Hardcoded host outside the DB** (not caught by search-replace):
+- `wp-content/breeze-config/breeze-config.php` on the server holds the staging homepage. It is inert (Breeze inactive, drop-in removed); delete it in the week-one cleanup.
+- `vw-security.php:476` matches `.cloudwaysapps.com/` against the **filesystem path** (`/home/1670431.cloudwaysapps.com/`), not the hostname, so it survives cutover.
+- The theme has 0 hits. `wp-config.php` has no `WP_HOME`/`WP_SITEURL`/`COOKIE_DOMAIN`, and `.htaccess` has only the stock WordPress block.
+
+**LAUNCH-DAY FLIP LIST — current and complete (supersedes Round 1's list):**
+1. **Backup first.** `wp db export /home/master/vw-cutover/pre-cutover.sql.gz` (outside public_html).
+2. **Search-replace.** Dry run first, and confirm the 27,830 figure (± new rows):
+   `wp search-replace 'https://wordpress-1670431-6668298.cloudwaysapps.com' 'https://vancouverweekly.com' --all-tables --dry-run --report-changed-only`
+   Then the same command without `--dry-run`.
+3. **`blog_public`.** `wp option update blog_public 1`.
+4. **Domain + SSL on Cloudways.** Add `vancouverweekly.com` + `www` as the primary domain in the panel. Issue Let's Encrypt for both. If the Cloudflare record is proxied (orange cloud), HTTP validation may need it grey-clouded while the certificate issues. Afterwards, Cloudflare SSL/TLS mode must be **Full (strict)**, never Flexible (Flexible causes redirect loops).
+5. **Cloudflare A record(s) → 138.197.142.198** (Ricardo, in Cloudflare; MX/Google Workspace records untouched).
+6. **Cloudways password protection.** Currently off (staging returns 200 with no auth prompt); nothing to do.
+7. **Purge.** Varnish from the panel, `wp cache flush` for Redis, and Cloudflare's cache if proxied.
+8. **Smoke test** on the real domain: `/`, an article, `/archive/`, a front, the 6 redirects above, and `/wp-login.php`.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: DNS cutover prep. Part 1: footer prune. Part 2: domain-relative 301s. Part 3: cutover readiness. No live DNS/mail change, no search-replace, no push.
+
+WHAT I DID:
+- Traced the footer source (theme code only; no menus or widgets in use).
+- Emptied VW_FOOTER_ABOUT (6 stub/duplicate links; none kept under the real-page exception). Gated both renderers on a non-empty registry. Legal pair and 7 sections kept.
+- Read the custom_permalink postmeta (43 rows / 42 paths) and curled every path on staging. Implemented 301s only for the 2 that 404 with a live target.
+- 301'd 4 events leftovers to /.
+- Redirect map lives in vw-security/inc/redirects.php. Path-only; target is home_url().
+- Verified locally (curl + desktop and 375px screenshots).
+- Backed up the 3 server files, rsynced 4 files and checked sha256 local = server.
+- Redirect test table and footer check on staging.
+- Read-only cutover scan: search-replace dry run, wp-config/.htaccess, code grep.
+
+EVIDENCE:
+- Footer before: 7 sections + Advertise / Contributor Kit / Newsletters / Privacy Policy / Terms / Resources + Privacy / Terms.
+- Footer after: nameplate + 7 sections + Privacy (/privacy-policy-2/ 200) + Terms (/terms-and-conditions/ 200) = 10 links, on /, an article, /archive/, /category/photography/. No About heading, no empty panel grid.
+- Redirects (staging): 2 custom paths 301 → live post 200. /events-calendar/, /events/, /events-2/, /category/upcoming-events/ (+ no-slash forms) 301 → / 200, verified cache-busted; plain requests still get a Varnish-cached 200 until purge. Controls: 2 B1 paths 404; already-200 paths still 200; near-miss path 404. No loops.
+- Staging host in DB (dry run): 27,830. guid 21,386 · post_content 4,396 · postmeta 1,790 · comment_author_url 154 · pinged 44 · loginizer 24 · comment_content 21 · wptg_options 4 · stub wp_* 9 · e_submissions / wptg_users 1 each. http:// = 0. Bare host = same 27,830.
+- Hardcoded host grep: only wp-content/breeze-config/breeze-config.php (inert). The vw-security :476 match is the filesystem path. Theme 0. wp-config/.htaccess clean.
+
+FILES CHANGED:
+- theme/inc/footer.php — VW_FOOTER_ABOUT emptied (rows kept in the comment); About column gated.
+- theme/inc/masthead.php — mobile panel About grid gated.
+- plugins/vw-security/inc/redirects.php — new; 6-entry path map.
+- plugins/vw-security/vw-security.php — requires inc/redirects.php.
+- PROJECT-LOG.md — this entry.
+- Server: the 4 code files; backups in /home/master/vw-dnsprep/before/.
+
+VERIFIED: rendered footer on 4 staging surfaces + local screenshots; every redirect by curl (first hop + final); sha256 local = server; PHP lint; wp eval on staging (6 redirects, About = 0).
+
+OUTSTANDING-RISKS:
+- PURGE NEEDED: the 4 events URLs serve a cached 200 until Varnish is purged from the panel.
+- The brief's "38" did not match the data (43 rows / 42 paths). 26 live URLs are duplicate copies, left for the duplicate-pair editorial review.
+- Legal pages still say "Vancouver Weekly Corp." (known, pending legal advice); the kept Privacy link is the -2 copy (#56).
+- breeze-config.php holds the staging host (inert) → week-one cleanup.
+- Cloudflare SSL mode and proxy status during certificate issue are unverified from here; Ricardo checks them in Cloudflare at cutover.
+- CLAUDE.md CURRENT STATE and POST-LAUNCH.md flip list not updated this round (commit scope limited to code + PROJECT-LOG); the list above supersedes POST-LAUNCH's copy.
+```

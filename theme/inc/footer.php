@@ -27,26 +27,22 @@ function vw_footer_preview_active(): bool {
  * import and the 43-page cull will consolidate them; an ID survives a slug
  * change, and a page that stops being published degrades to plain text.
  *
- * Chosen copies, by stripped content length (2026-09-13):
- *   66   /advertise/            85 chars   (#15893 is an identical stub)
- *   1955 /contributor-kit-2/    99 chars   (#68, the canonical slug, is empty)
- *   78   /newsletter/          349 chars
- *   56   /privacy-policy-2/  3,265 chars
- *   52   /terms-and-conditions/ 21,502 chars
- *   49   /resources/         2,648 chars
+ * Empty since the DNS-prep prune (2026-09-18): every About entry pointed at a
+ * stub or an outdated page, and Privacy/Terms stay reachable through
+ * VW_FOOTER_LEGAL. The pages remain in the DB for the post-launch rebuild. Rows
+ * as they were, to restore once a page is real:
  *
- * Jobs is deliberately absent. Both copies (#60, #13407) are empty, and an
- * entry with nowhere to go is worse than no entry. It returns as a row here
- * once a real page exists — the "simple email-us" page is still undecided.
+ *   [ 'label' => 'Advertise With Us', 'page' => 66 ]    one-line sales email
+ *   [ 'label' => 'Contributor Kit',   'page' => 1955 ]  empty shortcodes
+ *   [ 'label' => 'Newsletters',       'page' => 78 ]    dead signup form
+ *   [ 'label' => 'Privacy Policy',    'page' => 56 ]
+ *   [ 'label' => 'Terms',             'page' => 52 ]
+ *   [ 'label' => 'Resources',         'page' => 49 ]    c.2010 writing links
+ *
+ * Both renderers (the footer column, the mobile panel grid) print nothing while
+ * the registry is empty.
  */
-const VW_FOOTER_ABOUT = [
-	[ 'label' => 'Advertise With Us', 'page' => 66 ],
-	[ 'label' => 'Contributor Kit',   'page' => 1955 ],
-	[ 'label' => 'Newsletters',       'page' => 78 ],
-	[ 'label' => 'Privacy Policy',    'page' => 56 ],
-	[ 'label' => 'Terms',             'page' => 52 ],
-	[ 'label' => 'Resources',         'page' => 49 ],
-];
+const VW_FOOTER_ABOUT = [];
 
 const VW_FOOTER_LEGAL = [
 	[ 'label' => 'Privacy', 'page' => 56 ],
@@ -139,6 +135,7 @@ function vw_footer_render(): void {
 						</ul>
 					</nav>
 
+					<?php if ( VW_FOOTER_ABOUT ) : ?>
 					<nav class="vw-footer__col" aria-labelledby="vw-footer-about">
 						<h2 class="vw-footer__heading" id="vw-footer-about">About</h2>
 						<ul class="vw-footer__list">
@@ -149,6 +146,7 @@ function vw_footer_render(): void {
 							?>
 						</ul>
 					</nav>
+					<?php endif; ?>
 				</div>
 			</div>
 

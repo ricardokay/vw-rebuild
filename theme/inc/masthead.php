@@ -240,6 +240,7 @@ function vw_mobile_nav_render(): void {
 				<li><a class="vw-mnav-panel__item<?php echo $is_arch ? ' vw-mnav-panel__item--active' : ''; ?>" href="<?php echo esc_url( home_url( '/archive/' ) ); ?>"<?php echo $is_arch ? ' aria-current="page"' : ''; ?>>The Archive</a></li>
 			</ul>
 
+			<?php if ( VW_FOOTER_ABOUT ) : ?>
 			<ul class="vw-mnav-panel__about" aria-label="About">
 				<?php
 				foreach ( VW_FOOTER_ABOUT as $item ) {
@@ -247,6 +248,7 @@ function vw_mobile_nav_render(): void {
 				}
 				?>
 			</ul>
+			<?php endif; ?>
 
 			<?php if ( vw_chrome_motto_display() ) : ?>
 				<p class="vw-mnav-panel__motto"><?php echo esc_html( vw_chrome_motto_display() ); ?></p>

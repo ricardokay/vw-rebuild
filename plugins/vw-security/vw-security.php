@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 
 require_once __DIR__ . '/inc/qr.php';
 require_once __DIR__ . '/inc/two-factor.php';
+require_once __DIR__ . '/inc/redirects.php';
 
 // ── 1. PHARMACEUTICAL / SEO SPAM BLOCKLIST ────────────────────────────────────
 //
