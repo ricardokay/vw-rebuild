@@ -5265,3 +5265,96 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## 2026-09-17 — FB gallery migration: read-only assessment of the Meta export
+
+Read-only feasibility assessment of the Meta "Download Your Information" export against the 261 JIG posts retired by B1 earlier today. No DB writes, no imports, no media extracted into uploads/. Conclusion: **the migration is not feasible pre-launch, and cannot restore most of the 261 at any date.**
+
+**Export inventory.** ZIP `backups-local/facebook-VancouverWeekly-2026-06-18-54FRaXvE.zip`, 2,343,749,826 bytes, gitignored via `.gitignore:73`. 16,621 entries. **563 album JSONs**, **15,888 media files** (15,818 jpg / 65 png / 5 mp4) totalling **2,215 MB**, **15,871 photo entries**. Extracted JSON only to `backups-local/fb-export/` (8.4 MB, 569 files, gitignored); the 2.2 GB of media was deliberately left in the ZIP and all byte figures were read from the ZIP index. Disk 55 GB free before, 53 GB after.
+
+**Mojibake gotcha confirmed and fixable.** 1,047 strings arrive latin-1-escaped; `encode('latin-1').decode('utf-8')` repairs all of them (`Timothy Nguyá»n` → `Timothy Nguyễn`). All figures computed post-repair. `last_modified_timestamp` is export-era (2026) for 558/563 albums and is useless as a date — album dates were derived from the minimum photo `creation_timestamp`.
+
+**Credits are the export's strongest asset — not a blocker.** 479/563 (85.1%) carry a parseable album-level credit; +65 rescued by photo-level credit = 544 (96.6%) parsed to a clean name; **553/563 (98.2%) carry a by-line phrase**. The 10 without are junk (`Instagram Photos`, `Profile pictures`, seven empty `Untitled album`/`cut`) totalling **7 photos**. Credit coverage on the subset matching the 261 is **98.9%**. Roster consolidates to **37 photographers**; only **5 lack WP accounts** (Tanis Lischewski, Vikrant Sharma, Dark Works, Levi Robson, Jack Mandeley — 6 albums, 265 photos).
+
+**Two corrections to the working assumptions:** Alix Critchley **already has** WP accounts (111, 386), and JustJash **already has** accounts as Joshua Peter Grafstein (132, 250) — the export spells it `Jashua`/`JustJash`. Also found: Timothy exists under three spellings (FB `Nguyễn`, WP display `Nguyên`, WP login `Nyguyen`), and every photographer appears to hold two WP accounts.
+
+**No usable per-image captions.** 13,294/15,871 (83.8%) photo entries have a description, but 61.7% are a credit line only and distinct strings per album are typically 1–4 regardless of album size — the album credit stamped on each image, sometimes with the artist name appended. Sampled 31 albums across 2012–2021. EXIF present on ~85% of sampled photos. Per-photo descriptions are valuable for *credit* (they rescued 65 albums), not for captions.
+
+**Matching — the core number.** IDF-weighted token similarity + sequence ratio over normalized titles. IDF weighting was essential: a naive matcher scored `Michael Bublé | Rogers Arena` against `Post Malone @ Rogers Arena` at 0.62 on the shared venue alone, inflating the apparent match rate to 71%. Corrected results for the 261:
+
+- **54 (20.7%)** title match AND date within 45 days — confident
+- 19 (7.3%) title match, 46–400 days — plausible, needs human review
+- 18 (6.9%) title match, >400 days — **likely a different show**, discard
+- **91 (34.9%)** any title match — the ceiling
+- **170 (65.1%)** no album at all
+
+Date proximity, not similarity score, separates right from wrong: every correct sample sits within 13 days, every wrong one beyond a year. One pair is a different *band* (`Big Sugar` post / `Big Wreck` album).
+
+**The gap is structural.** Album production runs 20–50 per quarter from 2014 through 2018Q4, drops to 13 in 2019Q1, then stops dead (one stray 2021Q4 album). Only **14 albums date from 2019-01-01 or later**, while **159 of the 261 posts (61%) do**. 141 of the 170 misses (83%) are 2019–2020 posts. For 2014–2016 the export covers 59/70 (84%); for 2019–2020 it covers 18/159 (11%). No matcher tuning recovers what is not in the file.
+
+**Wider value found.** Cross-matched against `recovery-inventory.csv`: **137 of 1,764** dead-image posts (7.8%, all published) have a matching album, covering **2,421 dead images** with **3,714 available photos**, **median ratio 1.08**. Post 67156 Metallica has 255 dead images / 254 album photos; Rifflandia 110/109; YES 85/84; Gogol Bordello 78/77. The FB album is demonstrably the original source of the dead images. Also found **163 orphan albums** (4,226 photos, 627 MB) matching no post at all.
+
+**Disk.** Uploads now 16.46 GB / 263,106 files (4.40 GB originals ×15,427; 12.06 GB derivatives ×247,476). **30 registered subsizes, 16 derivatives per original, 2.74× byte multiplier.** Scenario A (2,572 matched photos): +394 MB originals, ~1.05 GB derivatives, **~1.4 GB, ~43,600 files**. Scenario B (all 15,871): +2.16 GB originals, ~5.9 GB derivatives, **~8.1 GB, ~270,000 files — the uploads tree roughly doubles to ~533k files**. Transfer is not the bottleneck; generating 41k–254k derivatives at 30 sizes on a 1-vCPU droplet is, and must not run near cutover. The Cloudways DO 2 GB plan's 50 GB storage was NOT verified on the server.
+
+**Recommendation: do nothing pre-launch.** Leave the 261 retired — B1 is reversible, the galleries never rendered, the ZIP is archived and ignored. Post-launch order: (1) fix the identity layer (duplicate accounts, Nguyễn spellings, 5 missing accounts) *before* images arrive carrying attribution; (2) import only the 54 date-confirmed matches, gated on date ≤45 days, never on title score; (3) hand-review the 19 plausible; (4) discard the 18 >400-day matches; (5) separately mine the export against `recovery-inventory.csv` — 137 live published posts is a better return than the draft-only B1 work; (6) leave the 163 orphan albums to an editorial decision.
+
+FILES CHANGED:
+- fb-gallery-migration-assessment.md — new, the full assessment
+- PROJECT-LOG.md — this entry
+- Untracked by design, never added: backups-local/fb-export/ (extracted JSON, gitignored)
+- DB: **zero writes.** Read-only queries only (post dates for the 261, user list, post titles).
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Read-only assessment of the Meta "Download Your Information" export — decide whether the FB gallery migration is feasible pre-launch. No DB writes, no imports, no pushes.
+
+WHAT I DID:
+- Located and verified the export: 2,343,749,826 bytes, gitignored at .gitignore:73. Checked disk (55 GB free).
+- Extracted JSON only (563 album files + 6 post files) to backups-local/fb-export/, 8.4 MB, gitignored. Deliberately did NOT extract the 2.2 GB of media — all byte figures read from the ZIP index instead.
+- Parsed all 563 album JSONs after repairing the latin-1/utf-8 mojibake; derived album dates from photo creation timestamps because last_modified_timestamp is export-era for 558/563.
+- Detected album- and photo-level credits, consolidated the photographer roster, checked each name against the 411-row WP user list.
+- Sampled 31 albums across 2012–2021 for per-photo metadata.
+- Matched albums to the 261 B1 posts with IDF-weighted similarity + date proximity; matched the remainder against all 4,233 posts; cross-matched the whole export against recovery-inventory.csv.
+- Measured uploads (originals vs derivatives, file counts, registered subsizes) and projected two import scenarios.
+
+EVIDENCE (key counts and percentages):
+- Export: 563 albums, 15,888 media files, 15,871 photo entries, 2,215 MB, dates 2012-02-27 → 2021-10-23.
+- Mojibake: PRESENT, 1,047 strings, fully repaired by encode('latin-1').decode('utf-8').
+- Album-level credit: 479/563 = 85.1%. Any parsed credit: 544/563 = 96.6%. Any by-line: 553/563 = 98.2%. The 10 without = 7 photos of junk. Credit on the matched-to-261 subset: 98.9%.
+- Roster: 37 photographers; 5 without WP accounts (6 albums, 265 photos). Alix Critchley and JustJash BOTH already have accounts — two corrections to the brief.
+- Per-photo: 83.8% have a description; 61.7% credit-line-only; 1–4 distinct strings per album = no usable captions. 65 albums rescued by photo-level credit.
+- MATCHING THE 261: confident (title + ≤45d) 54 = 20.7%; plausible (46–400d) 19 = 7.3%; likely-wrong (>400d) 18 = 6.9%; any title match 91 = 34.9%; NO MATCH 170 = 65.1%.
+- Structural gap: only 14 albums dated ≥2019-01-01 vs 159 of 261 posts. 141/170 misses (83%) are 2019–2020. 2014–2016 coverage 59/70 = 84%; 2019–2020 coverage 18/159 = 11%.
+- Albums matching no post at all: 163 (4,226 photos, 627 MB).
+- recovery-inventory.csv cross-match: 137/1,764 = 7.8%, 2,421 dead images vs 3,714 available photos, median ratio 1.08 (Metallica 255 dead / 254 photos).
+- Disk: uploads 16.46 GB / 263,106 files; 30 subsizes; 16 derivatives per original; 2.74× multiplier. Scenario A +1.4 GB / ~43,600 files. Scenario B +8.1 GB / ~270,000 files.
+
+FILES CHANGED:
+- fb-gallery-migration-assessment.md (new)
+- PROJECT-LOG.md (this entry)
+- backups-local/fb-export/ — extracted JSON, gitignored, never added
+- DB: ZERO writes
+
+VERIFIED:
+- Export size and gitignore status by git check-ignore -v (exit 0, rule .gitignore:73); same confirmed for backups-local/fb-export/.
+- Mojibake repair verified by round-trip on sampled strings (Nguyá»n → Nguyễn).
+- Matcher soundness verified by rejecting an earlier naive run: the first pass reported 71.3% matched, and inspection showed false positives driven by shared venue tokens (Michael Bublé ↔ Post Malone, Thomas Rhett ↔ Harry Styles). Rebuilt with IDF weighting; the corrected figure is 34.9% ceiling / 20.7% confident.
+- Match correctness independently corroborated against recovery-inventory.csv dead-image counts: median album-photos/dead-images ratio 1.08, 64/137 within ±10%, with exact-adjacent pairs (255/254, 110/109, 85/84, 78/77, 65/64).
+- WP account claims verified by substring search against the 411-row user list, not by fuzzy score alone.
+- Disk figures measured directly (du/find/stat on uploads; unzip -l index for the export), not estimated.
+- Working tree was clean before the two file writes; git status checked.
+
+OUTSTANDING / RISKS:
+- The 2019-Q1 coverage cliff is unexplained. The export path is this_profile's_activity_across_facebook; a Page-level or second-admin export may hold the missing 2019–2020 albums. If it does, the 261 recovery rate could rise from ~21% toward the ~84% seen for 2014–2016, which WOULD change the recommendation. Not investigated — flagged in the report.
+- The 19 "plausible" (46–400 day) matches are unresolved by machine and need a human who knows the publication; I did not attempt to adjudicate them.
+- Similarity thresholds (0.55 match, 45/400-day date gates) are my choice, not a validated constant. The 10 fuzzy examples are printed in the report specifically so the fuzz can be judged.
+- The Cloudways DO 2 GB droplet's actual disk size was NOT verified on the server; the 50 GB figure is the plan's standard and is assumed, not measured.
+- Derivative projections apply the existing 2.74× multiplier to FB photos that average 145 KB vs the existing 299 KB, so they are conservative (high) — real generated volume will likely be lower.
+- 163 orphan albums (4,226 photos) have no editorial decision attached; they are neither a gap nor a plan.
+- The 30 registered image subsizes (16 derivatives per original) were noted but not audited for actual usage.
+- Media was never extracted, so no image file was opened or validated — photo counts come from JSON entries and the ZIP index, not from decoding images.
+- NOT PUSHED
+=== END HANDOFF ===
+```
