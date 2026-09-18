@@ -5204,3 +5204,64 @@ OUTSTANDING / RISKS:
 ## Decision: publishing round Phase 2 deferred (2026-09-17)
 
 2026-09-17: Publishing round Phase 2 (PUBLISHING.md tutorial) deferred to post-launch at Ricardo's call. Phase 1 findings 1–9 preserved above as tutorial input. Next: staging deploy.
+
+---
+
+## B1 executed: 261 JIG gallery posts retired to draft (2026-09-17)
+
+The Facebook-gallery posts whose galleries sit inside `<noscript>` are retired ahead of the staging migration. The measured count is **261**, not the ~230 the launch decision recorded.
+
+**Selection (exact, final):** `post_type=post AND post_status=publish AND post_content LIKE '%justified-image-grid%'`.
+
+**Reversible by construction.** Status and one meta key only — no content edits, no deletions, nothing trashed, so WordPress cannot purge anything on its 30-day trash cycle.
+- Pre-write dump: `backups-local/pre-b1-retirement-20260917.sql.gz` (26M from 207M raw, sha256 `569b52294a91fb866284a2f7224358b70aa73c63a491d545363d96c93a032184`), mirrored to iCloud and hash-matched.
+- Reversal key: `backups-local/b1-retirement-manifest-20260917.csv` — 261 rows of ID, title, prior_status, mirrored to iCloud.
+- **To restore:** set every post carrying `_vw_retired_jig_b1 = 1` back to `publish`.
+
+Published 3,371 → **3,110** exactly. `backups-local/` was not gitignored; that was fixed before any backup file existed.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: B1 retirement — retire every published post carrying Justified Image Grid markup to draft, reversibly, before the staging migration. Criterion exact and final: post_type=post, post_status=publish, post_content LIKE '%justified-image-grid%'; expected 261, STOP if the count differs. Status + meta only, nothing trashed or edited. Gated: read-only collection → backup → manifest → write in batches of 50 with checkpoints → verification → doc corrections → one scoped commit. No push.
+
+WHAT I DID:
+- Read-only collection: the criterion returns exactly 261 posts, all post_status=publish; published total 3,371 as expected; none already carried _vw_retired_jig_b1; the getty-rights-hold draft (85536) is NOT in the selection
+- FLAGGED AND FIXED BEFORE WRITING: `backups-local/` was NOT gitignored. `*.sql` covered a raw dump, but a `.sql.gz` or the manifest `.csv` there would have been committable, and the dump carries user emails and password hashes. Added `backups-local/` to .gitignore (one line, included in this commit) and re-checked with git check-ignore before creating any file
+- Backup: wp db export → 207M raw, gzipped to 26M, sha256 recorded, copied to the iCloud backup dir and the copy's hash compared byte-for-byte against the local file
+- Manifest written BEFORE any write: 261 rows + header, columns ID, post_title, prior_status; every prior_status is "publish"; copied to iCloud
+- Write: one runner reading the manifest, re-checking each post still matches the criterion, then wp_update_post(status=draft) + update_post_meta(_vw_retired_jig_b1, 1), verifying both return values and the resulting status/meta per post, printing a checkpoint after each batch of 50 and aborting at the first failure
+- Verification, doc corrections (CLAUDE.md), this log entry
+
+EVIDENCE:
+- Counts before: selection 261, published 3,371, status breakdown {"publish":261}, existing _vw_retired_jig_b1 rows 0
+- Backup: backups-local/pre-b1-retirement-20260917.sql.gz, 26M (207M raw), sha256 569b52294a91fb866284a2f7224358b70aa73c63a491d545363d96c93a032184; iCloud copy hash identical (MATCH)
+- Manifest: backups-local/b1-retirement-manifest-20260917.csv, 262 lines (261 + header), first ID 222, last ID 68947, rows with prior_status != publish: 0; mirrored to iCloud
+- Batch checkpoints (published count after each): batch 1 → 50/261, 3,321 | batch 2 → 100/261, 3,271 | batch 3 → 150/261, 3,221 | batch 4 → 200/261, 3,171 | batch 5 → 250/261, 3,121 | batch 6 → 261/261, 3,110. No batch aborted; no failed return value
+- Counts after: published 3,110 (3,371 − 261, exact); posts flagged _vw_retired_jig_b1 = 261, statuses {"draft":261}; published posts still matching the criterion = 0; trashed posts = 0; drafts matching the criterion = 262 (the 261 plus one pre-existing draft that already carried the markup)
+- Content untouched: total post_content length across all JIG-matching posts is 6,604,009 bytes after the run; only post_status and one meta key were written
+- Sample URLs logged out, all 404: /chantal-kraviazuk-the-massey-theatre-in-new-westminster/, /photos-the-strokes-rogers-arena/, /photos-wwe-friday-night-smackdown-rogers-arena/
+- Surfaces load clean (HTTP 200, zero PHP warnings/notices/fatals in the HTML): /, /category/photography/, /category/a-la-music/, /archive/, /?s=photos
+- Fronts repopulated after the removal: homepage lead 65350 "Sigur Rós Bring an Immersive Orchestral Experience to Vancouver"; photography anchor 65945 "Down at The Commodore Ballroom"
+
+FILES CHANGED:
+- CLAUDE.md — Archive count 3,371 → 3,110 with the B1 provenance; B1 launch decision rewritten as EXECUTED with the measured 261, the criterion, the manifest and dump filenames, and the reversal instruction
+- PROJECT-LOG.md — this entry
+- .gitignore — added backups-local/ (security fix, see above)
+- Untracked by design, never added: backups-local/pre-b1-retirement-20260917.sql.gz (+ .sha256), backups-local/b1-retirement-manifest-20260917.csv
+- DB: 522 writes — 261 post_status publish → draft, 261 meta _vw_retired_jig_b1 = 1. No content edits, no deletions, nothing trashed.
+
+REVERSAL (when the FB gallery migration runs post-launch): flip every post carrying _vw_retired_jig_b1 = 1 back to post_status=publish — the manifest CSV lists all 261 IDs with their prior status, and the pre-write dump is the fallback. The posts were never trashed, so nothing can be purged by WordPress's 30-day trash cycle.
+
+VERIFIED: selection count and published total before; backup integrity by sha256 on both copies; manifest completeness and prior_status uniformity; per-post return values and resulting status/meta during the write; post-write counts, statuses, zero remaining matches, zero trashed, unchanged content bytes; 404s on three sample URLs and 200s with no PHP errors on five surfaces; curation fronts still resolving.
+
+OUTSTANDING / RISKS:
+- 261 stories are now invisible to readers until the FB gallery migration runs; their URLs 404 rather than redirect, so any external links to them are dead in the interim
+- The measured count (261) was higher than the ~230 in the launch decision; CLAUDE.md now records 261 as the executed figure
+- One pre-existing draft also contains JIG markup and was NOT part of B1 (it was never published); it carries no _vw_retired_jig_b1 flag, so the reversal set stays exactly 261
+- Only 5 of the 261 were content-free shells (measured in the prior read-only audit); the rest carry a caption or standfirst that is now unpublished along with the trapped gallery
+- backups-local/ was unignored until this commit; if any earlier session had committed a dump, it would be in history — not checked in this round
+- Sitemap/feed regeneration for the removed URLs was not audited beyond the surfaces listed
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it
+- NOT PUSHED
+=== END HANDOFF ===
+```

@@ -6,7 +6,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 
 ## CURRENT STATE *(overwrite this section each session — do not append)*
 
-**Archive:** 3,371 published posts (3,373 until 2026-09-12, when review posts 6435 and 7489 were retired to draft with `_vw_retired_review = 1`). **85536 (getty-rights-hold) is the only held draft** — never publish without license confirmation; flagged via `_vw_publish_exclude` + `db-backups/publish-exclusions.json`.
+**Archive:** 3,110 published posts (3,371 until 2026-09-17, when **B1 retired 261 JIG gallery posts** to draft with `_vw_retired_jig_b1 = 1`; 3,373 until 2026-09-12, when review posts 6435 and 7489 were retired with `_vw_retired_review = 1`). **85536 (getty-rights-hold) is the only held draft** — never publish without license confirmation; flagged via `_vw_publish_exclude` + `db-backups/publish-exclusions.json`.
 
 **Done and verified:**
 - Phases 1–3: 2,789 posts imported, 3,585 images, child theme + 4 section fronts. Spam cleanup, photographer account consolidation, album classification (563 albums).
@@ -42,7 +42,7 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - Rollback assets valid: `pre-publish` + `pre-chrome-cleanup` dumps + reversal manifests, local + iCloud.
 
 **Launch decisions (Ricardo):**
-- **B1:** retire the **230 JIG/noscript posts** to draft pre-launch (their galleries are inside `<noscript>` and never render).
+- **B1 EXECUTED 2026-09-17:** the JIG gallery posts are retired to draft (their galleries are inside `<noscript>` and never render). The measured count is **261**, not the ~230 previously recorded — criterion `post_type=post AND post_status=publish AND post_content LIKE '%justified-image-grid%'`. Each carries `_vw_retired_jig_b1 = 1`; **nothing was trashed or edited**. Reversal key: `backups-local/b1-retirement-manifest-20260917.csv` (261 rows, ID + title + prior_status), pre-write dump `backups-local/pre-b1-retirement-20260917.sql.gz` (26M, sha256 `569b5229…a032184`), both mirrored to iCloud. **To restore when the FB gallery migration runs post-launch:** flip every post with `_vw_retired_jig_b1 = 1` back to `publish`.
 - **THIS WEEK strip hidden at launch.**
 - **Rights transfer does not gate launch.**
 - **Hosting DECIDED AND PROVISIONED: Cloudways, server `bmm-server-1`, DigitalOcean 2 GB Basic, Toronto, app `vancouverweekly`.** Domains at **GoDaddy** (incl. the sister-city set); **Namecheap Stellar Plus cPanel alive**. Payload: 388 MB DB, 4.4 GB originals (12 GB regenerable thumbnails), 263k files — needs 20 GB+.
