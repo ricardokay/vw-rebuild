@@ -5701,3 +5701,255 @@ OUTSTANDING-RISKS:
 - NOT PUSHED.
 === END HANDOFF ===
 ```
+
+---
+
+## 2026-09-18 — Staging Round 2b: TOTP 2FA, login hardening, cache cutover, post-launch register
+
+Server artefacts: `/home/master/vw-round2b/` (outside the web root, mode 700). Code built locally, deployed by rsync, never edited on the server.
+
+### 2FA KILL SWITCH (recorded before enforcement was ever enabled)
+If anyone is locked out by two-factor, run over SSH:
+
+```
+ssh bmmmaster@138.197.142.198
+cd /home/1670431.cloudwaysapps.com/zqnrzcfryt/public_html && wp option update vw_2fa_enforced 0
+```
+
+With `vw_2fa_enforced` = `0` nobody is asked for a code and nobody is refused, enrolled or not. Login-throttle lockouts live in Redis; `wp cache flush` (same directory) clears every lock. To wipe one user's 2FA entirely: `wp user meta delete <ID> _vw_2fa_secret`.
+
+### Part 1 — TOTP two-factor (vw-security, no plugins)
+**Files:**
+- `plugins/vw-security/inc/two-factor.php`
+- `plugins/vw-security/inc/qr.php`
+- both loaded from `vw-security.php` (v1.1.0)
+
+**How it works:**
+- **TOTP** per RFC 6238: SHA-1, 6 digits, 30 s step, ±1 step tolerance. A code's time step can never be reused.
+- **Secret:** 160-bit per user, in usermeta `_vw_2fa_secret`. Stored unencrypted, as in the standard WordPress 2FA plugins; encrypting it with the salts would lock everyone out on a salt rotation.
+- **Enrollment** is on the user's own profile page:
+  - a server-rendered SVG QR, from our own encoder; nothing leaves the server;
+  - the manual key and the `otpauth://` link;
+  - a confirm-code field.
+- **Backup codes:** 8 single-use codes, hashed with `wp_hash_password` and shown once. They can be regenerated from the profile.
+- **Admin controls:** an admin can reset another user's 2FA. Users can turn their own off with a current code, except when it is required for their role.
+- **Login flow:**
+  1. The password succeeds.
+  2. The auth cookies are withheld (`send_auth_cookies`) and the new session token is destroyed.
+  3. A 10-minute single-use login token is stored as an HMAC.
+  4. The code screen appears (`wp-login.php?action=vw_2fa`).
+  5. A valid TOTP or backup code issues the real session and fires `wp_login`.
+  6. Five wrong codes void the token and send the user back to the password.
+- **Other doors closed:** application passwords and Newspack magic links are off for any challenged user. A challenged account can only log in through wp-login.php.
+- **`vw_2fa_enforced` modes:**
+  - `0` — off; the kill switch.
+  - `test` — only enrolled users are challenged.
+  - `1` — enrolled users are challenged; administrators and editors who have not enrolled are refused.
+
+**Verification:**
+- **QR:** 8 payloads (versions 1/3/6/8/9/10) decoded by macOS CoreImage, 8/8 exact.
+- **Local, in-process:** 39/39 PASS, including the RFC 6238 vectors, the kill switch, the refusal and the throttle.
+- **Local, email-login tests:** 7/7 PASS.
+- **Local, HTTP on the code step:** empty and wrong codes rejected with no cookie; valid → 302 plus a working session; token reuse → expired; a replayed code rejected; a backup code works once.
+- **Password step:** 0 sessions survive it.
+- **Bug found and fixed in testing:** Newspack applies `send_auth_cookies` with one argument, so the callback now has defaults.
+
+**Staging sequence:**
+1. Deployed with enforcement off.
+2. `vw_2fa_enforced` absent → `test`, approved. Before-values saved to `/home/master/vw-round2b/vw_2fa_enforced.before.txt`.
+3. Ricardo enrolled **user 200** (his daily account; he logs in by email) at 22:45 and passed the code step at 22:49 from 24.86.214.87. Server check: enrolled, 8 hashed backup codes, no leftover pending state.
+4. Ricardo confirmed "ENROLLED, TEST LOGIN OK".
+5. `test` → **`1`**.
+
+**Post-flip checks:**
+- **Decisions:** user 200 → challenge; ID 1 `admin` → refused (`vw_2fa_required`), approved as intended; the kill switch, simulated in-process, releases both.
+- **HTTP check with a temporary editor probe** (created with plugins skipped so no mail fired, deleted afterwards, 0 usermeta left):
+  - an unenrolled editor is refused;
+  - missing code → 200, error, no cookie;
+  - wrong code → 200, error, no cookie;
+  - valid code → 302 to /wp-admin/, cookie set, dashboard 200;
+  - reused token → expired.
+- **Email logins:**
+  - `ricardo@…` resolves to ID 200.
+  - The throttle keys the lowercase email, the uppercase email and the login name all to `id200`.
+  - A code failure counts against the same per-account counter.
+- **Security log:** now written to `private_html/vw-security-logs/`, outside the web root; the old wp-content path returns 403.
+
+### Part 2 — Login hardening and scrub items 3–6
+**a. Rate limiting** (replaces the IP-only throttle, which never reset after a lockout ended):
+
+| Counter | Trigger | Lock |
+|---|---|---|
+| Per IP | 5 failures in 15 min | that IP, 30 min |
+| Per account | 10 failures in 15 min, from any IPs | that account, 15 min |
+
+- Login name and email share one account counter.
+- Wrong 2FA codes count as failures.
+- The username limit is set higher so a single IP cannot lock a real editor out before its own IP lock trips.
+- The counters are transients in Redis; `wp cache flush` clears every lock.
+- PHP sees the real client IP: nginx `real_ip` from X-Forwarded-For, confirmed in `php-app.access.log`.
+
+**b. User enumeration (items 3 + 6):**
+- `/?author=N` → 404.
+- `/wp-json/wp/v2/users*` and `?rest_route=/wp/v2/users` → 401 for visitors; logged-in users still get 200, so the block editor is unaffected.
+- The users sitemap provider is disabled.
+- Remaining exposure (by design): `/author/admin/` still resolves, because ID 1 authors 1,914 posts. That login is refused by 2FA anyway; the week-one user round decides its future.
+
+**c. Version (item 5):**
+- The generator meta and the feed `<generator>` are removed.
+- Asset `?ver=7.1.1` becomes a site-specific hash (`89c76d9270`), which still changes on every core update.
+- On the login page only, WordPress's combined-file loaders (`load-styles`/`load-scripts`, which print the version with no filter) are switched off so every file goes through the filter; all 20 login assets return 200.
+- `readme.html` and `license.txt` are **deleted from the server copy** (moved to `/home/master/vw-round2b/core-files/`). A `_core_updated_successfully` hook deletes them again after every core update. One had been rewritten at 02:44 by the 7.1.1 update, so they do come back.
+- Plugin versions (e.g. Newspack `ver=6.42.2`) are left alone.
+
+**d. Theme previews (item 4):**
+- `previews/*.html` removed from the **deployed** theme on staging (moved to `/home/master/vw-round2b/theme-previews/`; the `previews/` directory is gone); kept in the repo.
+- **Future theme deploys must exclude `previews/`.**
+- No other non-code files are in the theme or plugin.
+
+**e. Verified by HTTP, cache-busted AND plain after URLPURGE:**
+- readme.html, license.txt, both previews, `?author=1`, `?author=200` → 404.
+- users, users/1 and the `rest_route` form → 401 with `rest_forbidden`.
+- /wp-json/wp/v2/posts → 200, with 0 author slugs leaking through `_embed`.
+- "7.1.1" count 0 on home, the plain cached home, the feed, an article and wp-login.
+
+### Part 3 — Cache: Breeze removed, purge-on-publish added
+**Cutover:**
+- `wp-config.php` backed up to `/home/master/vw-round2b/wp-config.php.before` (mode 600).
+- `advanced-cache.php` moved to `/home/master/vw-round2b/`; Breeze's disk cache (8 files) moved to `…/breeze-cache/`.
+- `WP_CACHE` true → false. The wp-config diff is that line only.
+- Redis/OCP kept (`object-cache.php` present, Redis on). Varnish kept.
+- The Breeze plugin files remain, inactive; they go in the ghost-plugin cleanup.
+- **Reversal:** move the drop-in back and set `WP_CACHE` true.
+
+**Purge-on-publish** (`vw-security.php` §9):
+- **Triggers:** a post or page published, updated while published, or taken out of publish.
+- **Method:** Cloudways' own `URLPURGE <path>` to 127.0.0.1 with the site's Host header, which drops one object (a bare `PURGE` empties the whole domain). This is how Breeze did it, read from its source.
+- **URL set:**
+  - the post URL, plus its old URL if the slug changed;
+  - the homepage, `/feed/` and `/archive/`;
+  - all 7 nav section fronts (fronts pull from categories that are not their children, e.g. hungry-social (14, top-level) on food-drink);
+  - the post's categories and their ancestors.
+- **Timing:** collected during the request and sent at shutdown, after the block editor's term save.
+- **Where it runs:** only on the Cloudways path, never locally.
+
+**Test method:** no content was saved. The real hook path was fired in-process — `transition_post_status` publish→publish on published post 1626 — and the purges ran at shutdown as they would on a real update.
+- 12 URLPURGEs, each answered 200.
+- Before: HIT (ages 5–223 s) on /, the article, /category/food-drink/, /category/hungry-social/ and /category/photography/.
+- After: MISS with age 0 on all five, then HIT again.
+
+**Renders with Breeze gone** (cache-busted): all 200, child theme, masthead and footer present, noindex present, 0 Breeze markers, 0 PHP errors, 0 new PHP errors in the backend log:
+- `/`
+- two articles
+- `/category/food-drink/`, `/category/a-la-music/`, `/category/must-see-films/`
+- `/archive/`
+- search
+- `/category/food-drink/page/2/`
+
+Plain requests: HIT / HIT / MISS (an article that was not yet warm).
+
+### Part 4 — Backup verification
+- **The Cloudways off-site backup is not visible over SSH**; there is no local backup directory on the app. Size and time must be read in the panel: Server → Backups, or Application → Backup and Restore.
+- **Expected post-migration size:** app files about 18 GB (uploads 17 GB) plus the DB at 453 MB (38 `wptg_` tables).
+- **PENDING Ricardo's panel read.** If it is still about 38 MB (fresh install), escalate to Cloudways support before DNS.
+- **Scheduled for deletion at staging sign-off (not deleted this round):**
+  - `/home/master/vw-migration/` (239 MB: the raw 222 MB dump, its .gz and the pre-import backup);
+  - `/home/master/vw-round2a/`, including the moved `wp-config.php.bak-20260918` with credentials;
+  - `/home/master/vw-round2b/`, including `wp-config.php.before`;
+  - the stray `/home/master/*.sh` scratch scripts.
+
+### Part 5 — Records
+- `POST-LAUNCH.md` (new, repo root) holds everything deferred past DNS: PRE-DNS DECISIONS / WEEK ONE / CONTENT-ARCHIVE / PRODUCT-DESIGN / BUSINESS-LEGAL.
+
+### POST-LAUNCH UPDATE POLICY (standing)
+- **Content** is edited live in WordPress. Drafts and preview are the safety layer; nothing content-side goes through staging.
+- **Small display fixes** (CSS, a template tweak, a copy string in code): change and verify on the local site → deploy the changed files by rsync (server copy backed up first, outside `public_html`) → purge.
+- **Structural changes** (new templates, plugin/vw-security logic, DB migrations, anything touching URLs, login or caching): build and verify on a **Cloudways staging clone** of the live app first, then repeat on live with the same gates.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Staging Round 2b.
+- TOTP 2FA + login hardening in vw-security.
+- Scrub fixes 3–6.
+- Breeze removal with purge-on-publish.
+- Backup verification.
+- POST-LAUNCH.md.
+No DNS/mail changes, no plugin installs, no push.
+
+WHAT I DID:
+1. 2FA (custom, in vw-security: inc/two-factor.php + inc/qr.php).
+   - TOTP: RFC 6238, 30 s step, ±1 step, replay guard.
+   - Enrollment on the user's profile: server-rendered QR, manual key, otpauth URI, confirm code.
+   - 8 hashed single-use backup codes.
+   - A code step after the password; the session is withheld until the code passes.
+   - Application passwords and Newspack magic links are off for challenged users.
+   - Option vw_2fa_enforced: 0 / test / 1.
+   - Kill switch written to PROJECT-LOG before enforcement.
+   - Order of events: deployed OFF → test mode (approved) → Ricardo enrolled user 200 → "ENROLLED, TEST LOGIN OK" → enforced = 1.
+2. Throttle rewritten. Per IP: 5 failures / 15 min → 30 min lock. Per account: 10 failures / 15 min → 15 min lock; login and email share one key; 2FA failures count.
+3. Scrub items:
+   - 3 and 6: ?author=N 404; REST users 401 for visitors; users sitemap off.
+   - 5: generator, feed and asset ver= masked; login-page concatenation off. readme.html and license.txt deleted from the server copy (moved out), with a re-delete hook on core updates.
+   - 4: theme previews/ removed from the staging copy (moved out), kept in the repo.
+4. Cache cutover.
+   - wp-config backed up outside the web root.
+   - advanced-cache.php and the Breeze cache moved out.
+   - WP_CACHE false. Redis and Varnish kept.
+   - Purge-on-publish added to vw-security (Cloudways URLPURGE to 127.0.0.1 with the Host header).
+5. POST-LAUNCH.md written. PROJECT-LOG: Round 2b entry + post-launch update policy. CLAUDE.md CURRENT STATE updated.
+
+EVIDENCE:
+- 2FA
+  - QR: 8/8 CoreImage decode MATCH (versions 1/3/6/8/9/10, including user 200's 172-char URI).
+  - Local tests: 39/39 PASS (RFC vectors, kill switch, refusal, throttle) and 7/7 email-login PASS.
+  - Staging after the flip:
+    - user 200 → challenge; ID 1 → vw_2fa_required.
+    - Probe editor over HTTP: missing code 200 + error, 0 cookies; wrong code 200 + error, 0 cookies; valid code 302 to /wp-admin/ + logged_in cookie, dashboard 200; reused token 302 expired.
+    - Probe deleted, 0 usermeta left.
+  - Ricardo's live test in test mode: log line "2FA_OK user=200 ip=24.86.214.87"; 8 hashed backup codes.
+  - The kill switch, simulated in-process, releases both accounts.
+- Hardening (HTTP, cache-busted and plain):
+  - readme.html, license.txt, both previews, ?author=1, ?author=200 → 404.
+  - /wp-json/wp/v2/users, users/1, ?rest_route=/wp/v2/users → 401.
+  - posts API 200, embed slug leak 0.
+  - "7.1.1" count 0 on home, cached home, feed, article, wp-login; 20/20 login assets 200.
+  - PHP REMOTE_ADDR = real client IP.
+- Cache
+  - WP_CACHE=false; advanced-cache absent; object-cache present, Redis on.
+  - Hook fired in-process (publish→publish on post 1626, no DB write): 12 URLPURGEs → 200.
+  - Before: HIT (age 5–223) on 5 URLs. After: MISS age 0. Then HIT.
+  - 9 surfaces render 200 with the child theme, masthead, footer and noindex; 0 Breeze markers, 0 PHP errors; 0 new backend PHP errors.
+- Backup: Cloudways off-site backup NOT visible over SSH → pending Ricardo's panel read. Expected about 18 GB of files + a 453 MB DB. If it is about 38 MB, escalate before DNS.
+
+FILES CHANGED:
+- Repo:
+  - plugins/vw-security/vw-security.php
+  - plugins/vw-security/inc/two-factor.php (new)
+  - plugins/vw-security/inc/qr.php (new)
+  - POST-LAUNCH.md (new)
+  - PROJECT-LOG.md
+  - CLAUDE.md
+- Staging:
+  - Plugin files, md5 = local.
+  - Options: vw_2fa_enforced = 1; usermeta for user 200 (his own enrollment).
+  - wp-config.php: WP_CACHE false.
+  - Moved to /home/master/vw-round2b/: advanced-cache.php, cache/breeze, readme.html, license.txt, theme previews/*.html.
+  - Backups in /home/master/vw-round2b/: wp-config.php.before, vw-security.php.before, vw-security.php.after-part1, vw_2fa_enforced.before.txt.
+- Local site: the same plugin files. Temporary test users were created and deleted.
+
+VERIFIED: everything above by HTTP (cache-busted plus plain after purge), WP-CLI, server md5s, logs and wp-config diffs.
+
+OUTSTANDING-RISKS:
+- Off-site backup size unconfirmed (panel read pending).
+- ID 1 admin is refused under 2FA (intended). The user_login rename for user 200 and the admin2 / admin_email clean-up are in POST-LAUNCH week one.
+- TOTP secrets are unencrypted in usermeta (industry-standard trade-off against salt-rotation lockout).
+- The purge covers the post, home, feed, /archive/, 7 fronts and the post's categories. Paginated pages (/page/2/+), tag and author archives and search are not purged; Varnish TTL covers them. Panel-purge after deploys.
+- Future core updates re-create readme.html and license.txt; the hook deletes them after an update. If Cloudways updates core outside WordPress's upgrader, re-check.
+- Future theme rsyncs must exclude previews/.
+- Breeze plugin files remain, inactive (ghost-plugin cleanup).
+- Deployed files are owned by bmmmaster; run Reset File Permissions if you want uniform ownership.
+- VW-MASTER-PLAN.md not updated (outside the scoped add).
+- Commit SHA reported in chat.
+- NOT PUSHED.
+=== END HANDOFF ===
+```

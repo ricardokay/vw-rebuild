@@ -46,6 +46,16 @@ This file governs all Claude Code sessions on this project. Rules here override 
 - **THIS WEEK strip hidden at launch.**
 - **Rights transfer does not gate launch.**
 - **Hosting DECIDED AND PROVISIONED: Cloudways, server `bmm-server-1`, DigitalOcean 2 GB Basic, Toronto, app `vancouverweekly`.** Domains at **GoDaddy** (incl. the sister-city set); **Namecheap Stellar Plus cPanel alive**. Payload: 388 MB DB, 4.4 GB originals (12 GB regenerable thumbnails), 263k files — needs 20 GB+.
+- **STAGING LIVE on Cloudways (rounds 1, 2a, 2b, 2026-09-17/18):** https://wordpress-1670431-6668298.cloudwaysapps.com, `bmmmaster@138.197.142.198`, app path `/home/1670431.cloudwaysapps.com/zqnrzcfryt/public_html`, parity with local (3,110 published), noindex (`blog_public=0`). Code is changed locally and rsynced, never edited on the server; **config/DB backups never inside `public_html`**, they go to `/home/master/<round>/`.
+  - **2a:** comments + pings closed on all 24,601 rows and in the defaults; comment feeds are empty. "Corp" entity wording removed from 6 pages. Public-surface scrub done; the web-root `wp-config` `.bak` leak was fixed.
+  - **2b 2FA:** TOTP two-factor lives in `vw-security` (`inc/two-factor.php`, `inc/qr.php`) with **`vw_2fa_enforced = 1`**. Administrators and editors must use a code. **User 200** (Ricardo, logs in by email) is enrolled. **ID 1 `admin` is refused** (intended).
+  - **KILL SWITCH:** `wp option update vw_2fa_enforced 0` (in public_html over SSH). `wp cache flush` clears throttle locks.
+  - **2b throttle:** per-IP 5 failures/15 min → 30-min lock; per-account 10 failures/15 min → 15-min lock (login and email share one counter).
+  - **2b scrub:** `/?author=N` → 404; REST users → 401 for visitors; WP version hidden (generator, feeds, `ver=`, login page); readme.html, license.txt and the theme `previews/` removed from the server. **Exclude `previews/` from theme deploys.**
+  - **2b cache:** the Breeze drop-in is removed and `WP_CACHE` is false. Varnish + Redis are kept. **vw-security purges Varnish on publish** (URLPURGE of the post, home, feed, /archive/, all 7 fronts and the post's categories). A panel purge is still needed after deploys.
+  - **PENDING:** Ricardo's read of the Cloudways off-site backup size. If it is about 38 MB, escalate before DNS.
+  - Server dumps (`/home/master/vw-migration`, `vw-round2a`, `vw-round2b`) are deleted at staging sign-off.
+  - Everything deferred past DNS is in **`POST-LAUNCH.md`**.
 - **Entity wording "Vancouver Weekly" everywhere**, pending legal advice (Privacy + Terms currently say "Vancouver Weekly Corp.").
 - **Jobs page = simple email-us** (currently a FreshGigs affiliate iframe).
 - **Newsletter = re-consent** (19 legacy subscribers, signup dates lost).
@@ -69,15 +79,15 @@ This file governs all Claude Code sessions on this project. Rules here override 
 8. Mobile round — **part 1 (mobile nav + search minimal + 44px targets) DONE 2026-09-14**, follow-up (compact masthead A2, light bar, motto retired) DONE 2026-09-14; **part 2 (L1 lead + setting, S2 focused search, article/section/archive mobile typography, tall case-A cap, token groundwork) DONE 2026-09-14**; still open: real-iPhone check
 9. ~~Rollouts (article header, masthead)~~ — **DONE 2026-09-12, `d417a70`**
 10. Operator tutorial + walkthrough
-11. Staging deploy + sweep
-12. Cutover + 301s
+11. ~~Staging deploy + sweep~~ — **DONE 2026-09-18 (rounds 1, 2a, 2b)**; open: off-site backup size check
+12. **Cutover + 301s — NEXT** (DNS at GoDaddy, launch-day flip list in PROJECT-LOG Round 1, PRE-DNS DECISIONS in POST-LAUNCH.md)
 
 **STANDING RULES FOR ALL NEW WORK: mobile-first is mandatory. NO new third-party plugins — custom child-theme code only.**
 
 **Environment:** local MySQL socket run-ID changes when Local restarts — **use `tools/wp.sh`**, which re-detects it. Working tree clean.
 - **Plugin reality (measured 2026-09-17):** `active_plugins` lists **19** plugins (inherited from the production DB) but only **3 exist on disk locally** — `newspack-blocks`, `newspack-plugin`, `vw-security`. WordPress silently skips the rest, so locally the **block editor** is what an editor gets, Elementor never runs, and LiteSpeed caches nothing (`advanced-cache.php` absent, `WP_CACHE` false). **Classic Editor, Elementor + Pro, LiteSpeed Cache, Justified Image Grid, Custom Permalinks, Newsletter, UpdraftPlus and the rest are listed-but-absent** — whichever are installed on the launch host will change the editor and add page caching. Decide the production plugin set before the operator tutorial is final.
 - **Local PHP is 2 workers** (`pm = static`, `pm.max_children = 2`). Parallel headless-browser runs wedged the socket on 2026-09-17 and every page 502'd; recovered with a graceful `kill -USR2` on the php-fpm master (no data touched). Keep browser verification sequential.
-- **Publishing round: Phase 1 closed, Phase 2 (tutorial) deferred post-launch.** Phase 1 verified the path end to end 2026-09-17 (see PROJECT-LOG): draft → publish → edit → schedule → retire, across homepage, section fronts, article, archive and search. Test posts **86017 / 86019 / 86021 / 86024 are retired** (draft + `_vw_retired_review = 1`, marked `_vw_test_content`), so `_vw_retired_review` now covers 6 posts. **`PUBLISHING.md` is NOT to be written until Ricardo calls for it post-launch**; Phase 1 findings 1–9 in PROJECT-LOG are its input. **Next step: staging deploy.**
+- **Publishing round: Phase 1 closed, Phase 2 (tutorial) deferred post-launch.** Phase 1 verified the path end to end 2026-09-17 (see PROJECT-LOG): draft → publish → edit → schedule → retire, across homepage, section fronts, article, archive and search. Test posts **86017 / 86019 / 86021 / 86024 are retired** (draft + `_vw_retired_review = 1`, marked `_vw_test_content`), so `_vw_retired_review` now covers 6 posts. **`PUBLISHING.md` is NOT to be written until Ricardo calls for it post-launch**; Phase 1 findings 1–9 in PROJECT-LOG are its input. **Next step: DNS cutover + 301s.**
 
 ---
 
