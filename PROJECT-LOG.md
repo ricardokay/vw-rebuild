@@ -5358,3 +5358,151 @@ OUTSTANDING / RISKS:
 - NOT PUSHED
 === END HANDOFF ===
 ```
+
+---
+
+## 2026-09-17 — Staging Round 1: local site migrated to Cloudways (bmm-server-1)
+
+The full local site (wp-content + DB) now runs on the staging URL **https://wordpress-1670431-6668298.cloudwaysapps.com**, at parity with local: 3,110 published posts, vancouver-weekly child theme, `/%postname%/`. It is set to noindex. No DNS, mail or live-host changes. The only hostname replaced is `vancouverweekly-local.local`; `vancouverweekly.com` row counts are identical local vs server.
+
+**Server facts (measured in preflight):**
+- Resolved app path: `/home/1670431.cloudwaysapps.com/zqnrzcfryt/public_html` (via `/home/master/applications/zqnrzcfryt`).
+- WP 7.1.1 on both sides; PHP 8.2.29 local / 8.2.33 server; MySQL 8.4.0 local / 8.4.11 server, so no MariaDB risk.
+- Disk: **50 GB, verified**. The FB assessment above had assumed that figure. It went from 38 GB free to 20 GB free after the transfer.
+- SSH as `bmmmaster` lands in `/home/master`. SFTP (and so modern `scp`) is chrooted to `/`, so file copies go over rsync.
+
+**Database.**
+- Local `wp db export`: 50 tables, completion marker present.
+- `backups-local/staging-migration-20260917.sql`: 222,383,725 B, sha256 `ef77a9500f6d5d988eff11009bf17565369aa1f06f9539f2dd4d28a612bc83cd`.
+- `.gz`: 27,905,819 B, sha256 `1933f58ff5bbccc28e967cf418a7d3bc043812826cd5701c6fa881b0224e1ac0`. Hash identical in iCloud and on the server.
+- Server pre-import backup of the fresh DB: `/home/master/vw-migration/pre-import-backup-20260918.sql` (+ `.gz`, sha256 `9d054e6e99c721b90ad2587b2fcb60aa0cc736d0dc9af9d7478f98843b579d3b`), outside the web root. The server clock is UTC, hence the 0918 date.
+
+**Table prefix fix.**
+- Local uses `wptg_`; Cloudways' fresh install used `wp_`. The local DB also carries a **stray `wp_*` stub set**: 12 tables, 1 user, 4 posts.
+- After the import, `wp-config.php` was backed up to `wp-config.php.bak-20260918`. Line 42 changed from `$table_prefix  = 'wp_';` to `'wptg_'`. Diff = that line only.
+- The first sed missed the line because of the double space and changed nothing (verified with cmp); the second applied.
+- The stub `wp_*` tables and Cloudways' four `wp_actionscheduler_*` tables are inert junk. Cleanup is a separate week-one round.
+
+**Files.**
+- rsync of `wp-content/`, no `--delete`: **17,723,312,707 B** transferred, 263,104 uploads files (local = server).
+- A second dry-run rsync lists 0 files pending.
+- Exit 23 came only from 6 "failed to set times" on pre-existing app-owned directories.
+- **Excludes were anchored to the wp-content root.** An unanchored `cache/` would have dropped `plugins/newspack-plugin/vendor/psr/cache`, a PHP library Newspack needs.
+- Final list: `/cache/ /upgrade/ /ai1wm-backups/ /updraft/ /backups/ /vw-security-logs/ /plugins/all-in-one-wp-migration/ /*.zip .git/ node_modules/ *.log *.wpress .DS_Store fm_backup/ /themes/twentytwenty*/`.
+- `ai1wm-backups/` (1.5 GB) holds a 2024 full production backup with user emails and password hashes. Nginx would have served it publicly; it did not move.
+- Ricardo ran Reset File Permissions afterwards; 0 `bmmmaster`-owned files remain in wp-content.
+
+**Search-replace (server, `--all-tables`, dry run then real).**
+- `http://vancouverweekly-local.local` → `https://wordpress-1670431-6668298.cloudwaysapps.com`: **27,829 dry = 27,829 real**:
+
+  | Table.column | Rows |
+  |---|---|
+  | wptg_posts.guid | 21,384 |
+  | wptg_posts.post_content | 4,396 |
+  | wptg_postmeta | 1,790 |
+  | comment_author_url | 154 |
+  | wptg_posts.pinged | 44 |
+  | loginizer_logs | 24 |
+  | comment_content | 21 |
+  | wptg_options | 4 |
+  | wp_posts.guid (stub) | 4 |
+  | wp_options (stub) | 2 |
+  | wp_posts.post_content (stub) | 2 |
+  | e_submissions, newsletter, wptg_users, wp_users | 1 each |
+
+- The `https://` variant: 0 dry, 0 real.
+- Residual local hostname in any table: 0.
+- `vancouverweekly.com` rows, local = server: posts 341, postmeta 2,700, options 9, guid 1,239.
+
+**Plugins (report only, nothing changed).**
+- Active: newspack-plugin 6.42.2, newspack-blocks 4.26.3, vw-security 1.0.0.
+- Inactive: akismet, breeze, hello, object-cache-pro. Breeze and OCP were active on the fresh install; our imported `active_plugins` list replaced theirs.
+- Drop-ins `advanced-cache.php` (Breeze) and `object-cache.php` (OCP) are still present.
+- The 16 ghost `active_plugins` entries remain; WordPress skips them silently.
+- **The Breeze drop-in only checks that `breeze.php` exists, not that Breeze is active**, and `WP_CACHE` is true. It can therefore still serve cached pages.
+
+**Caches.**
+- The first smoke test served the fresh-install homepage (Varnish HIT).
+- Ricardo purged Varnish from the panel, which also emptied `wp-content/cache/breeze/`. The approved deletion of 3 Breeze cache files was therefore not needed and nothing was deleted.
+- Re-test clean.
+
+**Smoke test (sequential curl):**
+
+| URL | Result |
+|---|---|
+| `/` | 200, MISS, vancouver-weekly refs 16, twentytwentyfive 0 |
+| `/archive/` | 200 |
+| `/sigur-ros-bring-an-immersive-orchestral-experience-to-vancouver/` (ID 65350) | 200 |
+| `/wp-login.php` | 200 |
+
+All four pages have 0 local-hostname references. The front-end pages carry noindex.
+
+### LAUNCH-DAY FLIP LIST
+
+At DNS cutover, in this order:
+- **(a)** Set `blog_public` back to **1**. It was set to 0 on staging 2026-09-17.
+- **(b)** Search-replace `https://wordpress-1670431-6668298.cloudwaysapps.com` → `https://vancouverweekly.com`: dry run first, backup first, `--all-tables`.
+- **(c)** Issue the SSL certificate for the real domain on Cloudways.
+- **(d)** Turn Cloudways password protection off, if Ricardo enabled it.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Staging Round 1 — migrate the local site (files + DB) to Cloudways bmm-server-1, app zqnrzcfryt, and smoke test on https://wordpress-1670431-6668298.cloudwaysapps.com. Only vancouverweekly-local.local replaced. No DNS/mail/live-host changes, no plugin/theme changes, no --delete, no push.
+
+WHAT I DID:
+- Phase A read-only preflight → four findings approved as amendments:
+  1. table_prefix fix;
+  2. extra rsync excludes;
+  3. cache handling;
+  4. permissions checkpoint.
+- Local export + gzip + sha256 + iCloud copy.
+- Server pre-import backup.
+- Import; wp-config.php backed up, table_prefix wp_ → wptg_.
+- Cache flush.
+- Search-replace, both pairs, dry run then real.
+- Rewrite flush.
+- Plugin report.
+- blog_public = 0.
+- Parity checks.
+- rsync of wp-content with verification.
+- Permissions checkpoint (Ricardo reset).
+- Sequential smoke test; stale homepage → stop → Ricardo purged Varnish → re-test clean.
+- PROJECT-LOG entry.
+
+EVIDENCE:
+- Search-replace http pair: dry run 27,829 = real run 27,829 (wptg_posts.guid 21,384 · post_content 4,396 · postmeta 1,790 · comment_author_url 154 · pinged 44 · loginizer 24 · comment_content 21 · wptg_options 4 · wp_posts.guid 4 · wp_options 2 · wp_posts.post_content 2 · e_submissions/newsletter/wptg_users/wp_users 1 each). https pair: dry run 0 / real run 0. Residual local host: 0.
+- vancouverweekly.com guard, local = server: 341 / 2,700 / 9 / 1,239.
+- Parity: published 3,110 local = 3,110 server. Theme vancouver-weekly (parent newspack-theme) on both. home = siteurl = https://wordpress-1670431-6668298.cloudwaysapps.com. Permalink /%postname%/. Retired markers _vw_retired_jig_b1 261 / _vw_retired_review 6 / _vw_publish_exclude 1 on both.
+- Plugin status:
+  - Active: newspack-plugin 6.42.2, newspack-blocks 4.26.3, vw-security 1.0.0.
+  - Inactive: akismet 5.7.2, breeze 2.5.15, hello 1.7.2, object-cache-pro 1.25.5.
+  - Drop-ins: advanced-cache.php, object-cache.php.
+  - 16 ghost entries in active_plugins; not listed by WP-CLI, skipped silently.
+- Smoke test: / 200 (first run HIT = stale fresh install; after purge 200 MISS, clean). /archive/ 200. /sigur-ros-bring-an-immersive-orchestral-experience-to-vancouver/ 200. /wp-login.php 200.
+- Article tested: https://wordpress-1670431-6668298.cloudwaysapps.com/sigur-ros-bring-an-immersive-orchestral-experience-to-vancouver/
+- Files: 17,723,312,707 B sent; uploads 263,104 files = 263,104; verification dry run 0 pending.
+- Checksums: dump sha256 ef77a950…c83cd; .gz 1933f58f…e1ac0 (local = iCloud = server); server pre-import .gz 9d054e6e…79d3b.
+
+FILES CHANGED:
+- PROJECT-LOG.md — this entry + LAUNCH-DAY FLIP LIST (the only repo change).
+- Server:
+  - DB replaced with the local import.
+  - wp-config.php line 42 (table_prefix); backup wp-config.php.bak-20260918.
+  - blog_public 0.
+  - wp-content populated by rsync.
+  - /home/master/vw-migration/ (dump + pre-import backup).
+- Local, untracked by design: backups-local/staging-migration-20260917.sql, .sql.gz, .sql.gz.sha256 (also in iCloud).
+
+VERIFIED: every step above against WP-CLI output or HTTP responses. Content checks on each smoke page (child theme present, fresh-install theme absent, no local-host strings, noindex present). Ownership after the permission reset (0 bmmmaster-owned files).
+
+OUTSTANDING-RISKS:
+- The Breeze advanced-cache drop-in stays armed (WP_CACHE true, gated only on breeze.php existing) with Breeze inactive. Together with Varnish, any page cached before a content change can go stale; purge after every staging change. The production cache/plugin set is still undecided.
+- 16 ghost active_plugins entries and the stub wp_* tables + Cloudways' wp_actionscheduler_* tables are inert junk → week-one cleanup round.
+- Smoke test was HTTP-level only (4 URLs). No visual/browser sweep, no section fronts, no search, no admin login, no gallery/lightbox check, no mobile check.
+- guid now holds the staging host for 21,384 posts; flip-list step (b) moves it to the real domain.
+- /home/master/vw-migration/ keeps the raw 222 MB dump (user emails, password hashes) on the server outside the web root; delete it once staging is signed off.
+- The local wp-content still holds ai1wm-backups/ (2024 production dump with PII) and the uploads zips; they were excluded, not removed.
+- Commit SHA reported in chat — a SHA cannot appear in the commit that creates it.
+- NOT PUSHED
+=== END HANDOFF ===
+```
