@@ -6440,3 +6440,112 @@ OUTSTANDING-RISKS:
 - The screen-reader labels still read "Search Vancouver Weekly" (unchanged, and accurate).
 - Not pushed.
 ```
+
+## 2026-09-18 — FB export gap-check: 2026-09-17 export vs June
+Read-only. No DB writes, no imports, no media extracted, neither zip deleted. JSON only was extracted to `backups-local/fb-export-0917/` (8.4 MB, gitignored). Full report: `fb-gallery-migration-gapcheck.md`.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Read-only gap-check. Does the 2026-09-17 Meta export contain the 2019-2020 albums the June export was missing? No DB writes, no imports, no pushes; JSON extraction inside backups-local/ + a short report + a scoped commit of the report.
+
+WHAT I DID:
+- Confirmed the new zip is present and gitignored (.gitignore:73), with 36 GB free.
+- Extracted JSON only (569 files, 8.4 MB) to backups-local/fb-export-0917/.
+- Loaded both exports with the mojibake repair and dated albums by the earliest photo creation_timestamp.
+- Diffed the albums on (name, date, photo count).
+- Re-ran the June assessment's matcher verbatim. As calibration it reproduced June's 54/19/18/170 exactly; I then ran it on the new export against the 261 B1 posts plus the 22 B1b IDs from the manifest.
+- Checked profile_posts and uncategorized_photos by year, and compared credit coverage.
+- Wrote fb-gallery-migration-gapcheck.md.
+
+EVIDENCE:
+- Albums per year, June / Sept: 2012 2/2, 2013 14/14, 2014 106/106, 2015 88/88, 2016 65/65, 2017 133/133, 2018 133/133, 2019 13/13, 2020 0/0, 2021 1/1, undated 8/8; total 563/563.
+- Album diff: 0 albums only in Sept, 0 only in June. Photo entries 15,871 in both; the media file counts are identical.
+- 9 JSON files differ only by the file-number order within same-named album groups.
+- The zip is 164 entries smaller because the Sept export has no messages/ folder.
+- 2019+ albums: 14 in Sept vs 14 in June (13 from 2019-01-13..2019-02-09, 1 from 2021-10-23). None from 2019-03 through 2021-09.
+- Match on the 261:
+  - confident 53 in Sept vs 54 in June. The -1 is a tie-break artifact: post 67767 now resolves to a same-named 2018 Folk Fest album instead of the 2016 one, which is still present. Effective: 54/261 (20.7%) in both.
+  - plausible 19, far 19, none 170.
+- The 159 posts from 2019-20: confident 3 (1.9%), unchanged.
+- The 283 (B1 + B1b): confident 74 (26.1%); B1b is 21/22 confident and almost entirely pre-2019.
+- Credit coverage unchanged: 544/563; all 14 albums from 2019 on are credited.
+- VERDICT: NOT closed. Still ~21%; a Business Suite / Graph API pull (or an export from the profile that posted the 2019-20 albums) is needed.
+
+FILES CHANGED:
+- fb-gallery-migration-gapcheck.md (new, committed)
+- PROJECT-LOG.md (this entry; NOT committed, because the task scoped the commit to the report only)
+- backups-local/fb-export-0917/ (gitignored JSON extraction + gapcheck-results.json)
+
+VERIFIED: the calibration run on the June export reproduces the prior 54/19/18/170; all 15,871 album photo URIs are present in each zip; the local DB was read only (the 261 _vw_retired_jig_b1 posts + 22 B1b IDs).
+NOT verified: whether the 2019-2020 albums still exist on Facebook.
+
+OUTSTANDING-RISKS:
+- The _vw_retired_jig_b1b meta exists on the server only (0 rows locally); B1b dates and titles were read from the local posts by manifest ID.
+- The matcher picks the first top-scoring album. Same-named albums (Folk Fest Day 1 ×3, Bahamas ×2, Passenger ×2) need a date tie-break in any real importer.
+- The cause of the 2019-02 cliff (a different uploading profile or tool) is inferred, not confirmed.
+- Not pushed.
+```
+
+## 2026-09-18 — Post-date audit (read-only)
+Read-only. No DB writes and no corrections. Full report: `date-audit.md` (commit `1a8c154`, not pushed).
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Read-only investigation of wrong post dates. Scope, cause, and the best recoverable true-date source. No writes. Report + scoped commit.
+
+WHAT I DID:
+- On the server (SELECT only): the two confirmed posts (1390, 1016), with dates, all postmeta, revisions and comments. Year/month/day/exact-timestamp distributions. Date-like meta keys sitewide.
+- Parsed wp_posts from 3 dumps into a scratchpad:
+  - the Feb 2019 production SQL (~/Downloads/vanctcjx_vweekly2016a.sql, 2,960 published);
+  - the off-site dump vw-db-20260918.sql.gz;
+  - the earliest local dump (2026-06-16).
+- Joined all 3,088 live published posts to the 2019 SQL by slug, then by title. Classified each post by date provenance using the 2026 recovery JSONs (vw-rebuild-starter-kit (1)/recovery/recovered_posts, which record data.date and the CDX timestamp).
+- Scored every source against the 2019 truth over the full cohorts.
+- Queried the Wayback CDX earliest capture for 20 sample posts.
+
+EVIDENCE:
+- By year: 2010 1, 2011 3, 2012 481, 2013 604, 2014 305, 2015 395, 2016 297, 2017 353, 2018 334, 2019 170, 2020 94, 2021 3, 2024 47, 2025 1 (3,088 total). The month grid is in date-audit.md; 2024-06 has 46.
+- No exact post_date value repeats: the top-15 all have count 1.
+- The June 2024 cluster is 46 published posts:
+  - 06-14 7, 06-24 12, 06-25 17, 06-26 9, 06-27 1;
+  - IDs 629-1813, guid vancouverweekly4.test;
+  - post_modified 2024-08-01 for 45 and 2024-07-31 for 1.
+- The hypothesis is REFINED. Cohort A is hand re-entry by the 2024 agency, not a restore:
+  - attachments and revisions are interleaved seconds apart;
+  - slugs were renamed (25 of 33 match only by title);
+  - _edit_last=1, with Elementor meta.
+- A SECOND COHORT was found. B = 528 posts dated by our June 2026 Wayback importer's fallback (import_to_wordpress.py:164-177):
+  - post_date equals the CDX capture timestamp when the page had no date;
+  - all 528 are later than the truth: median 8 days, 160 more than 30 days, 70 in the wrong year, 38 more than a year.
+- Total wrong: about 574 of 3,088. 65340 (2024-09) and 65350 (2025-11) look like genuine new posts.
+- Source table (coverage A / B; reliability):
+  - Feb 2019 SQL: 33/46 and 517/528. Exact to the second.
+  - Live correctly dated twin: 22 of A's 33. Exact; these are duplicate pairs.
+  - Upload path in body: 27/46 and ~520/528. Month level: A 18/18 correct month, B 381/511 (74%).
+  - Slug/title year: 2 and 84. Year only.
+  - Postmeta legacy date: 0 and 0. The two posts have none.
+  - Disqus/comments: 0 and 0. Only spam from 2024-26 on affected posts.
+  - guid/URL: 0 and 0.
+  - Wayback earliest capture:
+    - A: a bound only when the slug is original (663 same day; 629 +6 mo; 667 +4 yr; renamed slugs show only 2024+);
+    - B: circular, 9/9 equal to the current wrong date.
+- Dump comparison: the off-site 2026-09-18 dump matches live on 3,088/3,088 post_date; the earliest local dump (2026-06-16) matches on 3,088/3,088. Staging, migration and launch did not change any date.
+- The two known posts, per the 2019 SQL:
+  - Fall of Patriarchy 2017-12-27 09:07:09 (twin 65402 is already live with that date);
+  - Inside the Incubator 2015-04-09 19:34:58 (twin 65465 is live, dated 2015-05-18, cohort B).
+
+FILES CHANGED:
+- date-audit.md (new, committed 1a8c154, not pushed)
+- PROJECT-LOG.md (this entry; NOT committed, because the task scoped the commit to the report; an earlier uncommitted entry was already in the working tree)
+
+VERIFIED: every figure is from SELECTs against the server DB or from parses of the dumps, at full-cohort scale, not only the sample. The Wayback CDX API is reachable from the Mac and the server (slow; one timeout was retried).
+NOT verified: the 13 A + 11 B posts with no 2019 match; dates after Feb 2019 in the agency lineage (68 low-ID posts, 2019-03..2021, no cluster); the 7 residual mismatches outside A/B.
+
+OUTSTANDING-RISKS:
+- A repair decision is needed before any batch run. Redating 22 A posts creates exact duplicate pairs with their live twins; the alternative is to retire the 2024 copies, and the two options have different URL outcomes.
+- A matches by title (25). The dry-run list needs an eyeball before writing.
+- About 24 posts can only be dated to the month or by the author.
+- 10 of B's unmatched posts are navigation pages imported as published posts (advertise, events, film, jobs, music, ...).
+- The existing ~104 duplicate-pair count overlaps cohort A.
+- Not pushed.
+```
