@@ -6387,3 +6387,56 @@ OUTSTANDING-RISKS:
 - rsync exits 23 on these deploys: it cannot set times/perms on the app-owned directories. The files themselves are verified by sha256.
 - Not pushed.
 ```
+
+## 2026-09-18 — Search placeholder copy: "Search the archive"
+Display-layer copy change only: theme code, no DB writes, no plugins. "Search 20 years of Vancouver Weekly" was inaccurate (the masthead says Independent since 2012). Every search field now reads exactly **Search the archive**.
+
+**Where the placeholder lived (3 inputs, 2 sources):**
+- `theme/inc/masthead.php:79`: desktop masthead search (`#vw-dsearch-s`), a hard-coded copy.
+- `theme/inc/masthead.php:252`: mobile panel search (`#vw-mnav-s`), a **second hard-coded copy** of the same string (not shared).
+- The /?s= results page also renders the parent's `newspack-theme/searchform.php` (`#search-form-1`), whose placeholder was `Search …` via `esc_attr_x( 'Search &hellip;', 'placeholder', 'newspack-theme' )`.
+
+**Change:**
+- masthead.php: both attributes changed to the new string, and nothing else on those lines changed.
+- functions.php: the parent form is changed by a `gettext_with_context_newspack-theme` filter (`vw_search_placeholder`), matched on context `placeholder` + text `Search &hellip;`. This is the same seam as the existing "Powered by Newspack" filter, so the parent searchform.php is not forked.
+
+**Backups:** local pre-edit copies in `backups-local/search-placeholder-20260918/`; server pre-deploy copies in `/home/master/vw-search-placeholder/` (outside the web root). Server pre-deploy sha256 = local pre-edit sha256 (functions.php `bbe6ced2…`, masthead.php `da2e39d6…`).
+
+**To revert:** restore the two files from either backup, rsync, then purge.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Change every search-field placeholder to exactly "Search the archive" (desktop masthead search, mobile panel search, /?s= results-page form). Display-layer copy only, reversible, server backed up before overwrite, rsync deploy, scoped commit, no push.
+
+WHAT I DID:
+- Grepped the theme. The old string appears in 2 hard-coded copies in theme/inc/masthead.php (desktop :79, mobile :252; two copies, not one shared string).
+- The /?s= page has a third input from the parent searchform.php with placeholder "Search …".
+- Replaced both masthead strings.
+- Added a context-scoped gettext_with_context filter in functions.php for the parent form's placeholder.
+- Backed up locally and on the server, rsynced the 2 files, and checked sha256.
+
+EVIDENCE:
+- Before: placeholder="Search 20 years of Vancouver Weekly" (masthead.php:79, :252) and placeholder="Search &hellip;" (parent searchform.php:15, results page).
+- After: placeholder="Search the archive" in all three.
+- grep "20 years of Vancouver" over the repo theme, the local site theme and the server masthead.php: 0 matches.
+- The git diff is exactly 2 changed lines in masthead.php (the placeholder attribute only) and +7 lines in functions.php (the filter). No other markup changed.
+- Rendered local and server (cache-busted ?vwcb=sp1): / → vw-dsearch-s and vw-mnav-s both show "Search the archive"; /?s=music → vw-dsearch-s, search-form-1 and vw-mnav-s all show "Search the archive".
+- sha256 local = server: functions.php 64975a9d…f276, masthead.php 47cbe2f4…d00.
+- PHP lint clean.
+
+FILES CHANGED:
+- theme/inc/masthead.php (lines 79, 252)
+- theme/functions.php (vw_search_placeholder, after vw_drop_newspack_credit)
+- PROJECT-LOG.md
+- Server: the same 2 theme files; backup /home/master/vw-search-placeholder/
+
+VERIFIED: local and server via cache-busted curl of / and /?s=music; sha256 parity; grep-clean.
+NOT verified: the purged plain URL (it still serves the old string from Varnish), or a human looking in a real browser.
+
+OUTSTANDING-RISKS:
+- PURGE NEEDED: plain https://vancouverweekly.com/ still returns 2× the old placeholder until a Cloudways panel purge.
+- The desktop and mobile placeholders remain two hard-coded copies in masthead.php; a future copy change must touch both (and the functions.php filter for the results-page form).
+- The filter matches the parent's source string 'Search &hellip;'. If a Newspack update changes that string or its context, the results-page form silently falls back to the parent copy.
+- The screen-reader labels still read "Search Vancouver Weekly" (unchanged, and accurate).
+- Not pushed.
+```

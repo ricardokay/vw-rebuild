@@ -76,7 +76,7 @@ function vw_masthead_search_render(): void {
 		<a href="<?php echo esc_url( home_url( '/?s=' ) ); ?>" class="vwh2-masthead__search-toggle" aria-controls="vw-dsearch-form" aria-expanded="false" aria-label="Search"><?php echo vw_mobile_icon( 'search' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup. ?></a>
 		<form role="search" method="get" id="vw-dsearch-form" class="vwh2-masthead__search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>" hidden>
 			<label class="screen-reader-text" for="vw-dsearch-s">Search Vancouver Weekly</label>
-			<input type="search" id="vw-dsearch-s" class="vwh2-masthead__search-input" name="s" placeholder="Search 20 years of Vancouver Weekly" value="<?php echo esc_attr( get_search_query() ); ?>">
+			<input type="search" id="vw-dsearch-s" class="vwh2-masthead__search-input" name="s" placeholder="Search the archive" value="<?php echo esc_attr( get_search_query() ); ?>">
 			<button type="submit" class="vwh2-masthead__search-submit">Search</button>
 		</form>
 	</div>
@@ -249,7 +249,7 @@ function vw_mobile_nav_render(): void {
 
 			<form role="search" method="get" class="vw-mnav-search" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 				<label class="screen-reader-text" for="vw-mnav-s">Search Vancouver Weekly</label>
-				<input type="search" id="vw-mnav-s" class="vw-mnav-search__input" name="s" placeholder="Search 20 years of Vancouver Weekly" value="<?php echo esc_attr( get_search_query() ); ?>">
+				<input type="search" id="vw-mnav-s" class="vw-mnav-search__input" name="s" placeholder="Search the archive" value="<?php echo esc_attr( get_search_query() ); ?>">
 				<button type="submit" class="vw-mnav-search__submit" aria-label="Search"><?php echo vw_mobile_icon( 'search' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup. ?></button>
 			</form>
 

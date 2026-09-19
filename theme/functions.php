@@ -106,6 +106,13 @@ function vw_drop_newspack_credit( $translated, $text ) {
 	return 'Powered by Newspack' === $text ? '' : $translated;
 }
 
+// The parent searchform.php (the /?s= results-page form) takes its placeholder
+// from this call; the masthead inputs in inc/masthead.php carry the same copy.
+add_filter( 'gettext_with_context_newspack-theme', 'vw_search_placeholder', 10, 3 );
+function vw_search_placeholder( $translated, $text, $context ) {
+	return ( 'placeholder' === $context && 'Search &hellip;' === $text ) ? 'Search the archive' : $translated;
+}
+
 add_action( 'wp_enqueue_scripts', 'vw_enqueue_styles' );
 function vw_enqueue_styles() {
 	$dir = get_stylesheet_directory();
