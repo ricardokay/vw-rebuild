@@ -6666,3 +6666,57 @@ OUTSTANDING-RISKS:
 - The twin decision for 657/1465/1813 and the dating of 992 remain for the date-repair round; that round must also delete these 4 flags.
 - Not pushed.
 ```
+
+## 2026-09-18 — Date-repair + de-dup prep (read-only)
+Read-only. No DB writes, no date/status changes, nothing deleted. Report: `date-repair-plan.md`. Data: `backups-local/date-repair-prep/` (gitignored).
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Read-only prep for the date-repair + exact-duplicate round. Three review lists (date-fix dry run from the 2019 SQL, content-duplicate pairs, post-2020-03 posts) + an execution order. Report + data files only; scoped commit; no push.
+
+WHAT I DID:
+- One SELECT on the server via wp eval-file: all 3,088 published posts with content, dates, comment counts (all/approved), _vw_front_suppress, thumbnail and categories. Nothing written.
+- Took the 574 wrong-dated posts from the audit's saved classification (A 46 = the 42 + the 4 deferred; B 528). Matched each to the Feb 2019 SQL (~/Downloads/vanctcjx_vweekly2016a.sql, parsed wp_posts) by exact slug, then slug minus a numeric suffix, then normalized title.
+- For posts with no match: upload-path months, in-body dates, slug/title year, content twin, and Wayback earliest capture (IA was offline today; prior audit captures used).
+- Duplicates over all 3,088 published posts:
+  - candidates by title, text hash, and shared sampled shingles;
+  - scored on normalized text (5-gram Jaccard, containment, unique words per side) plus media identity (image basenames, embed IDs);
+  - title alone is never enough;
+  - gallery pairs that share boilerplate text but have different photos are excluded.
+- Wrote date-repair-plan.md and 5 CSVs + 1 JSON.
+
+EVIDENCE:
+- 2019 SQL coverage of the 574: 550 (95.8%).
+  - 524 high: exact slug (516 B, 8 A).
+  - 26 medium: 25 A title, 1 B title.
+  - 0 low. Every proposed date is earlier than the current one. The match counts equal date-audit.md's (A 33, B 517).
+  - How far they move back: ≤1 d 35, 2–30 d 322, 31–365 d 122, >1 yr 71.
+- 24 need secondary/manual dating (13 A, 11 B). All 13 A have a live content twin; a suggested date exists for all 13, and twin date = upload month 9/9 where both exist. The 11 B are mostly navigation pages (advertise, jobs, signup, event calendars).
+- Posts outside the 574 that disagree with the 2019 SQL: 5.
+- Content-duplicate pairs: 84 (168 posts, all 1:1). EXACT 2 (1634/13779, 1637/13204). NEAR 82, of which 78 differ only by scrape chrome (one side has 0 unique words).
+- TITLE-ONLY: 6. Excluded boilerplate/different-photo pairs: 264.
+- Pairs involving wrong-dated posts: 40. Approved comments on pair members: 0.
+- Published posts dated ≥ 2020-03-01: 119 = 46 cohort A + 2 allowlist (65340, 65350) + 71 other. The 71 read as genuine 2020 content (COVID-era livestreams, album releases).
+- All 574 carry _vw_front_suppress=1 (0 missing, 0 unflagged).
+- Recommended order:
+  1. Ricardo's decisions (allowlist, survivors, medium rows).
+  2. Mechanical fix of 518 high-confidence posts not in any pair (512 B, 6 A).
+  3. De-dup: retire losers to draft with a flag + 301.
+  4. Dates for the survivors in pairs + medium + 1b rows; drop flags; purge.
+
+FILES CHANGED:
+- date-repair-plan.md (new)
+- PROJECT-LOG.md (this entry)
+- backups-local/date-repair-prep/: list1-date-fix-dryrun.csv, list1b-no-2019-match.csv, list1c-other-2019-mismatches.csv, list2-duplicate-pairs.csv, list3-post-2020-03.csv, date-repair-prep.json (gitignored)
+
+VERIFIED: the match counts reproduce the audit's; the flag state of the 574; pair classes checked by hand on samples (diffs of near pairs are author-bio/byline/credit chrome; different-title "exact" gallery pairs were rejected after inspection).
+NOT verified: Wayback captures for 20 of the 24 unmatched posts (IA offline); the true dates of the 71 post-2020-03 posts (no source).
+
+OUTSTANDING-RISKS:
+- The "publishing stopped around March 2020" premise conflicts with the content of the 71 post-2020-03 posts; Ricardo to confirm before any is treated as wrong.
+- NEAR pairs are not byte-exact; survivor choice needs an eyeball (the chrome side may carry the author bio you want).
+- 1016/65465 and 1007/67344 map to the same 2019 row; de-dup decides which one keeps the date.
+- The duplicate scan covers published posts only (drafts such as B1-retired galleries are not compared).
+- The earlier "~104 duplicate-title pairs" figure was title-based. By content there are 84 real pairs; most other same-title pairs are different galleries.
+- Not pushed.
+```
