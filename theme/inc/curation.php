@@ -27,6 +27,18 @@ const VW_CURATION_MODES  = [ 'pin', 'auto', 'hidden' ];
 /** How deep auto-fill scans for a candidate meeting a slot's image requirement. */
 const VW_CURATION_SCAN = 150;
 
+/**
+ * meta_query clause keeping _vw_front_suppress posts out of the fronts' "recent"
+ * picks. 570 posts carry the flag (2026-09-18): the June 2024 re-entries and the
+ * Wayback-importer fallback dates, which sort as newer than they are. It is a
+ * holding measure until their dates are repaired; the repair round deletes the
+ * flag. Archive, search, feeds and single posts never read it, and a pinned
+ * slot still shows a flagged post, because a pin is an editor's explicit choice.
+ */
+function vw_front_suppress_clause(): array {
+	return [ 'key' => '_vw_front_suppress', 'compare' => 'NOT EXISTS' ];
+}
+
 
 /* ── Capability ─────────────────────────────────────────────────────────────
  *
@@ -220,6 +232,7 @@ function vw_curation_candidates( array $cats, string $prefer_meta = '', bool $re
 		'ignore_sticky_posts'    => true,
 		'no_found_rows'          => true,
 		'update_post_term_cache' => false,
+		'meta_query'             => [ vw_front_suppress_clause() ], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 	];
 	if ( $cats ) {
 		$base['category__in'] = $cats;
@@ -228,7 +241,7 @@ function vw_curation_candidates( array $cats, string $prefer_meta = '', bool $re
 	$preferred = [];
 	if ( $prefer_meta ) {
 		$preferred = get_posts( array_merge( $base, [
-			'meta_query' => [ [ 'key' => $prefer_meta, 'compare' => 'EXISTS' ] ], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query' => [ vw_front_suppress_clause(), [ 'key' => $prefer_meta, 'compare' => 'EXISTS' ] ], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		] ) );
 	}
 

@@ -6549,3 +6549,75 @@ OUTSTANDING-RISKS:
 - The existing ~104 duplicate-pair count overlaps cohort A.
 - Not pushed.
 ```
+
+## 2026-09-18 — Front suppression of 570 mis-dated posts (pending date repair)
+A holding measure on the live site (vancouverweekly.com). Posts found by the date audit (`date-audit.md`) sort as newer than they are, so they were taking the "recent" slots on the homepage and section fronts. No dates, statuses or content changed, and nothing was deleted. Each of the 570 posts got one postmeta row, `_vw_front_suppress = 1`. The fronts' auto-fill and "recent" queries now skip posts with that flag. Archive, search, feeds, category page 2+ and single posts do not read the flag.
+
+**Scope:**
+- Cohort A (June 2024 agency re-entries): 42 of 46.
+- Cohort B (June 2026 Wayback-importer fallback dates, including the 4 other-snapshot rows): 528.
+- **Protected, not flagged:** 65340 (AIR "Moon Safari"), 65350 (Sigur Rós).
+- **Deferred, not flagged:** 657, 992, 1465, 1813. These are A posts with no 2019-SQL match; 657, 1465 and 1813 each have an earlier-dated live twin. They go to the date-repair/de-dup round.
+
+**Theme:**
+- `vw_front_suppress_clause()` in `inc/curation.php` (a `NOT EXISTS` meta_query).
+- It is applied in `vw_curation_candidates()`, which feeds every homepage zone and each section's Lead block auto-fill (on the `prefer_meta` pool as well).
+- It is also applied in the 3 zone queries of each of the 7 `section-parts/*.php` files (21 queries).
+- A pinned slot still shows a flagged post.
+
+**Reversal:** after the date repair, delete the flag, then purge Varnish:
+- `wp post meta delete <id> _vw_front_suppress` for each ID in the manifest,
+- or `DELETE FROM wptg_postmeta WHERE meta_key='_vw_front_suppress'`.
+
+The theme clause becomes inert once no post carries the flag, so it can be removed at leisure.
+
+**Files and backups:**
+- Manifest (570 rows: ID, cohort, post_date, status, title), MD5 `293dbd5c156c460c75dbe0f1b6325086`:
+  - `/home/master/vw-frontsuppress/frontsuppress-manifest-20260918.csv`
+  - `backups-local/frontsuppress-manifest-20260918.csv`
+- Pre-write DB dump: `/home/master/vw-frontsuppress/pre-frontsuppress-20260918.sql.gz`, 27,890,205 bytes, sha256 `5d7730456b47f839d7941be17ede31b0f4fb681c483a31f378d0eff805611291`. Passes `gzip -t`; the dump completed.
+- Server theme files before the deploy: `/home/master/vw-frontsuppress/before/theme-8files-prefrontsuppress.tgz`, sha256 `0806dd7f…9230465`. There is a local copy of the HEAD versions in `backups-local/frontsuppress-before/`.
+- Write runner: `/home/master/vw-frontsuppress/fs_write.php`.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Reversibly suppress mis-dated posts from homepage/section-front "recent" queries. Meta flag _vw_front_suppress=1 + a theme meta_query. No date/status/content changes, no deletions. Gated. Live DB. Scoped commit, no push.
+
+WHAT I DID:
+- Built the list from the date audit's saved classification (A_2024plus 48, B_cdx_fallback 524, B?_nodate_other 4). Removed the protect-list (65340, 65350) and the 4 deferred posts (657, 992, 1465, 1813), leaving 570: A 42 + B 528.
+- Re-read all IDs on the server first: all publish, 0 pre-existing flags.
+- Backed up the DB with wp db export to /home/master/vw-frontsuppress/ (gzip, sha256, gzip -t OK). Wrote the manifest CSV there and to backups-local/; the MD5s match.
+- Wrote the flags with fs_write.php in batches of 50. Before writing, it asserts: 570 unique IDs, no excluded ID in the list, every post publish, no existing flag. Each add_post_meta return is checked. After each batch it compares the post rows (status, post_date, post_date_gmt, post_modified) with the before-snapshot and reconciles the flag count.
+- Theme: added vw_front_suppress_clause() to inc/curation.php and applied it in vw_curation_candidates() and the 21 zone queries in 7 section-parts. php -l clean. Local render of the homepage + 7 fronts: all 200, no PHP notices.
+- Backed up the 8 server files as a tgz, rsynced, and checked sha256 server = local (server = HEAD before the deploy).
+
+EVIDENCE:
+- Batches: 12 checkpoints (11×50 + 20), total flagged 570, "rows unchanged" on every batch. Published count 3,088 before and 3,088 after.
+- Live fronts before → after (cache-busted, x-cache MISS), counting flagged posts linked:
+  - home 8 → 0; food-drink 18 → 0; political-megaphone 12 → 0; must-see-films 2 → 0; a-la-music 1 → 0;
+  - book-reviews, out-n-about, photography 0 → 0;
+  - total 0. No fatals.
+- Protect-list: 65340 and 65350 still linked on the homepage and a-la-music; both direct URLs render.
+- Direct URL for all 570: 569 × 200, 1 × 301. The 301 is /events/ (66177, a B navigation page), redirected to home by vw-security's pre-existing cutover redirect list (x-redirect-by: vw-security; redirects.php:26). This change did not cause it.
+- /archive/ page 1 still lists 9 flagged posts (1580–1626, the 2024-dated A posts).
+- Search finds 6/6 sampled flagged posts (1390, 1626, 663, 68895, 68481, 67345).
+- Food & Drink front shrinks from 23 links to 11. The categories (13 + 14) hold 29 posts, 20 of them flagged cohort A, so the front shows the 9 remaining stories. "Browse all 27" is unchanged and still leads to the full archive.
+
+FILES CHANGED:
+- theme/inc/curation.php
+- theme/section-parts/{a-la-music,book-reviews,food-drink,must-see-films,out-n-about,photography,political-megaphone}.php
+- PROJECT-LOG.md
+- Live DB: +570 wptg_postmeta rows (_vw_front_suppress=1). No other DB change.
+
+VERIFIED: every item under EVIDENCE, against the live DB and live cache-busted pages.
+NOT verified: the cached (un-busted) public pages. A Varnish purge is required.
+
+OUTSTANDING-RISKS:
+- PURGE Varnish (Cloudways panel) and Cloudflare if caching HTML. Until then, cached fronts still show the old picks.
+- Food & Drink is now a thin front (9 stories) until its A posts are re-dated.
+- Deferred to the date-repair/de-dup round: 657, 992, 1465, 1813. They still surface: homepage (all 4), political-megaphone (657, 992), food-drink (1465), book-reviews (1813).
+- Reversal = delete every _vw_front_suppress row after the date repair (manifest has the IDs), then purge.
+- Pins bypass the flag by design.
+- The Local site DB has no flags, so the local fronts are unaffected (the theme files are synced).
+- Not pushed.
+```
