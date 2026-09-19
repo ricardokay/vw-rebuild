@@ -6621,3 +6621,48 @@ OUTSTANDING-RISKS:
 - The Local site DB has no flags, so the local fronts are unaffected (the theme files are synced).
 - Not pushed.
 ```
+
+## 2026-09-18 — Front suppression of the 4 deferred posts
+This uses the same flag as the 570 above, now on 657, 992, 1465 and 1813. They were held back from that run because no 2019-SQL date exists for them. They carry `_vw_front_suppress = 1` and nothing else changed: dates, status and content are untouched. **Their duplicate-twin decision is still open for the date-repair/de-dup round:** 657 ↔ 68209, 1465 ↔ 68641, 1813 ↔ 65854, and 992 has no twin. No theme change; the existing clause picks them up. There are now 574 flagged posts in total.
+
+**Backup and manifest:**
+- Pre-write dump: `/home/master/vw-frontsuppress/pre-frontsuppress4-20260918.sql.gz`, 27,894,260 bytes, sha256 `8b55825a1bb78e54cca8ef0c51acc7b2ff73ee9c2d9628e3b545eecd3012292b`. Passes `gzip -t`.
+- Manifest, MD5 `8800270ba23b6e6bf66d3bfa1c8a5bfb` in both places:
+  - `/home/master/vw-frontsuppress/frontsuppress-manifest-deferred4-20260918.csv`
+  - `backups-local/frontsuppress-manifest-deferred4-20260918.csv`
+- Runner: `/home/master/vw-frontsuppress/fs_write4.php`.
+
+**Reversal:** the same as for the 570. Delete the `_vw_front_suppress` rows for these IDs, then purge.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Add _vw_front_suppress=1 to the 4 deferred posts (657, 992, 1465, 1813) so they leave homepage/section-front "recent" queries. No date/status/content change, no deletion. Backup, checkpoint, verify, scoped commit, no push.
+
+WHAT I DID:
+- Wrote a manifest of the 4 (ID, date, status, title) to the server and backups-local.
+- wp db export → gzip → gzip -t → sha256.
+- fs_write4.php ran these steps and checks:
+  - pre-checked all 4 are publish and not already flagged;
+  - add_post_meta(..., true) per post, with the return checked;
+  - a flag-count checkpoint after each write;
+  - compared the post rows (status, post_date, post_date_gmt, post_modified) before and after;
+  - checked the published count.
+
+EVIDENCE:
+- Prechecks: 657 publish 2024-06-14; 992 publish 2024-06-24; 1465 publish 2024-06-25; 1813 publish 2024-06-27.
+- Checkpoints: 571, 572, 573, 574. Rows unchanged. Published 3088 → 3088.
+- Live, cache-busted: homepage + 7 fronts all 200. 0 of the 4 linked (before: home had all 4, political-megaphone 657+992, food-drink 1465, book-reviews 1813). 0 of all 574 flagged posts linked anywhere. No fatals.
+- 65340 and 65350 are still on the homepage and a-la-music.
+- Direct URLs: all 4 → 200.
+
+FILES CHANGED: PROJECT-LOG.md. Live DB: +4 wptg_postmeta rows. No theme change.
+
+VERIFIED: every item under EVIDENCE.
+NOT verified: cached (un-busted) pages; a Varnish purge is required.
+
+OUTSTANDING-RISKS:
+- PURGE Varnish (and Cloudflare if caching HTML).
+- Food & Drink is now 10 links (it lost 1465).
+- The twin decision for 657/1465/1813 and the dating of 992 remain for the date-repair round; that round must also delete these 4 flags.
+- Not pushed.
+```
