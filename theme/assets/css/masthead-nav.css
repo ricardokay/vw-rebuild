@@ -52,7 +52,8 @@ body {
 
 /* ── Compact mobile masthead (below 960px) ─────────────────────── */
 
-.vwh2-masthead__icon {
+.vwh2-masthead__icon,
+.vwh2-masthead__search {
 	display: none;
 }
 
@@ -618,5 +619,154 @@ html:not(.vw-js) .vw-here {
 		min-height: 0;
 		padding-block: 13.5px;
 		margin-block: -13.5px;
+	}
+}
+
+
+/* ── Desktop search (960px and up) ─────────────────────────────────
+   An icon at the right end of the nav row; the field drops from the heavy
+   rule. Out of flow, so the centred links keep their exact positions. */
+
+@media (min-width: 960px) {
+	.vwh2-masthead {
+		position: relative;
+	}
+
+	/* .vwh2-page's overflow-x: hidden makes header.php's masthead wrapper a
+	   scroll box, so the dropdown gave it its own scrollbar and squeezed the
+	   masthead 15px. clip keeps the horizontal guard without a scroll box. */
+	.vwh2-page.vw-masthead {
+		overflow-x: clip;
+	}
+
+	/* The nav's content row: its 14px bottom padding sits below, and 1lh at
+	   the nav items' font size is their line box. */
+	.vwh2-masthead__search {
+		position: absolute;
+		right: 0;
+		bottom: 14px;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		height: 1lh;
+		font-family: 'Inter', sans-serif;
+		font-size: 10.5px;
+		text-align: left;
+	}
+
+	/* 44px target around an 18px glyph; the negative margin puts the glyph's
+	   right edge on the container edge, where the heavy rule ends. */
+	.vwh2-masthead .vwh2-masthead__search-toggle {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		margin-right: -13px;
+		color: var(--vw-ink);
+		text-decoration: none;
+	}
+
+	.vwh2-masthead .vwh2-masthead__search-toggle:hover,
+	.vwh2-masthead .vwh2-masthead__search-toggle[aria-expanded="true"] {
+		color: var(--vw-red);
+	}
+
+	.vwh2-masthead .vwh2-masthead__search-toggle:focus-visible {
+		outline: 2px solid var(--vw-red);
+		outline-offset: -8px;
+	}
+
+	/* The parent theme fills every svg with currentColor. */
+	.vwh2-masthead__search-toggle .vw-icon {
+		width: 18px;
+		height: 18px;
+		fill: none;
+		stroke: currentColor;
+	}
+
+	/* Hangs from the heavy rule: 14px of nav padding plus the rule's 3px. */
+	.vwh2-masthead__search-form {
+		position: absolute;
+		top: calc(100% + 17px);
+		right: 0;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		box-sizing: border-box;
+		width: 380px;
+		padding: 10px 16px;
+		border: 1px solid var(--vw-border);
+		border-top: 0;
+		background: var(--vw-bg-subtle);
+		box-shadow: 0 6px 16px var(--vw-shadow-soft);
+	}
+
+	.vwh2-masthead__search-form[hidden] {
+		display: none;
+	}
+
+	.vwh2-masthead .vwh2-masthead__search-input {
+		flex: 1;
+		min-width: 0;
+		height: 40px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		border-bottom: 1px solid var(--vw-ink);
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+		color: var(--vw-ink);
+		font-family: 'Inter', sans-serif;
+		font-size: 15px;
+		-webkit-appearance: none;
+		appearance: none;
+	}
+
+	.vwh2-masthead .vwh2-masthead__search-input:focus {
+		outline: none;
+		border-bottom-color: var(--vw-red);
+		box-shadow: 0 1px 0 var(--vw-red);
+	}
+
+	.vwh2-masthead__search-input::placeholder {
+		color: var(--vw-ink-muted);
+		opacity: 1;
+	}
+
+	.vwh2-masthead__search-input::-webkit-search-cancel-button {
+		-webkit-appearance: none;
+		appearance: none;
+	}
+
+	/* Set like a nav item: the field reads as part of the masthead. */
+	.vwh2-masthead .vwh2-masthead__search-submit {
+		flex: none;
+		min-height: 40px;
+		margin: 0;
+		padding: 0 2px;
+		border: 0;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+		color: var(--vw-ink);
+		font-family: 'Inter', sans-serif;
+		font-size: 10.5px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.vwh2-masthead .vwh2-masthead__search-submit:hover,
+	.vwh2-masthead .vwh2-masthead__search-submit:focus {
+		background: none;
+		color: var(--vw-red);
+	}
+
+	.vwh2-masthead .vwh2-masthead__search-submit:focus-visible {
+		outline: 2px solid var(--vw-red);
+		outline-offset: 2px;
 	}
 }

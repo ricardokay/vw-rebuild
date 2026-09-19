@@ -141,3 +141,78 @@
 		header.classList.toggle( 'is-stuck', ! entries[ 0 ].isIntersecting );
 	} ).observe( sentinel );
 } )();
+
+/**
+ * Desktop search (960px and up). The icon is a link to the search page
+ * without JavaScript; here it toggles the field under the heavy rule. Enter
+ * submits the form natively. Escape, a second click, or a click elsewhere
+ * closes it.
+ */
+( function () {
+	var wrap = document.querySelector( '[data-vw-dsearch]' );
+	if ( ! wrap ) return;
+
+	var toggle = wrap.querySelector( '.vwh2-masthead__search-toggle' );
+	var form   = wrap.querySelector( '.vwh2-masthead__search-form' );
+	var input  = form.querySelector( 'input[name="s"]' );
+
+	toggle.setAttribute( 'role', 'button' );
+
+	function isOpen() {
+		return ! form.hidden;
+	}
+
+	function open() {
+		form.hidden = false;
+		toggle.setAttribute( 'aria-expanded', 'true' );
+		input.focus();
+		input.select();
+	}
+
+	function close( refocus ) {
+		if ( ! isOpen() ) return;
+		form.hidden = true;
+		toggle.setAttribute( 'aria-expanded', 'false' );
+		if ( refocus ) toggle.focus();
+	}
+
+	toggle.addEventListener( 'click', function ( e ) {
+		e.preventDefault();
+		if ( isOpen() ) {
+			close( true );
+		} else {
+			open();
+		}
+	} );
+
+	// A link with role=button: Space activates it, as it would a button.
+	toggle.addEventListener( 'keydown', function ( e ) {
+		if ( e.key === ' ' ) {
+			e.preventDefault();
+			toggle.click();
+		}
+	} );
+
+	wrap.addEventListener( 'keydown', function ( e ) {
+		if ( e.key === 'Escape' && isOpen() ) {
+			e.preventDefault();
+			close( true );
+		}
+	} );
+
+	document.addEventListener( 'click', function ( e ) {
+		if ( isOpen() && ! wrap.contains( e.target ) ) close( false );
+	} );
+
+	// Closing when the window narrows past the breakpoint keeps aria-expanded
+	// honest; below 960px the whole control is hidden.
+	var wide = window.matchMedia( '(min-width: 960px)' );
+	var onNarrow = function ( e ) {
+		if ( ! e.matches ) close( false );
+	};
+	if ( wide.addEventListener ) {
+		wide.addEventListener( 'change', onNarrow );
+	} else if ( wide.addListener ) {
+		wide.addListener( onNarrow );
+	}
+} )();

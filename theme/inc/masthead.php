@@ -59,6 +59,28 @@ function vw_masthead_nav_render(): void {
 		<?php endforeach; ?>
 	</nav>
 	<?php
+	vw_masthead_search_render();
+}
+
+/**
+ * Desktop search (960px and up): an icon at the right end of the nav row that
+ * drops a field down from the heavy rule. It is positioned out of flow, so the
+ * centred section links do not move. Same endpoint as the mobile panel's form:
+ * GET home_url('/') with s. Without JavaScript the icon is a link to the search
+ * page and the field stays hidden. Hidden below 960px, where the compact
+ * masthead and the bottom bar carry search.
+ */
+function vw_masthead_search_render(): void {
+	?>
+	<div class="vwh2-masthead__search" data-vw-dsearch>
+		<a href="<?php echo esc_url( home_url( '/?s=' ) ); ?>" class="vwh2-masthead__search-toggle" aria-controls="vw-dsearch-form" aria-expanded="false" aria-label="Search"><?php echo vw_mobile_icon( 'search' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup. ?></a>
+		<form role="search" method="get" id="vw-dsearch-form" class="vwh2-masthead__search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>" hidden>
+			<label class="screen-reader-text" for="vw-dsearch-s">Search Vancouver Weekly</label>
+			<input type="search" id="vw-dsearch-s" class="vwh2-masthead__search-input" name="s" placeholder="Search 20 years of Vancouver Weekly" value="<?php echo esc_attr( get_search_query() ); ?>">
+			<button type="submit" class="vwh2-masthead__search-submit">Search</button>
+		</form>
+	</div>
+	<?php
 }
 
 /**

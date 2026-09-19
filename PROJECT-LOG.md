@@ -6290,3 +6290,100 @@ OUTSTANDING-RISKS:
 - The gallery block keeps "sizeSlug":"large" (the other 363 lack it); it has no effect on the page, and it was kept to limit the edit to what was approved.
 - scp to /home/master fails (the Cloudways SFTP root differs from SSH); files were sent over ssh stdin instead.
 ```
+
+## 2026-09-18 — Desktop masthead search icon (option 1)
+Display layer only: theme code, no plugins, no DB writes. Built and verified locally, then deployed to the server by rsync. The server copies are backed up in `/home/master/vw-dsearch/before/theme-3files-predsearch.tgz` (outside the web root, folder mode 700), sha256 `15380685…cf379961f`. Before the deploy, the server's three files matched HEAD byte for byte.
+
+**What it is:**
+- At 960px and up, a magnifier sits at the right end of the nav row.
+- Clicking it drops a 380px field down from the heavy rule, right-aligned to the rule's end.
+- The field is the same endpoint as the mobile panel's form: GET `home_url('/')` with `s`. No new backend.
+- Keyboard:
+  - Enter on the icon opens the field, and focus moves into the input.
+  - Enter in the field submits.
+  - Escape closes the field and returns focus to the icon.
+  - A second click, or a click anywhere else, also closes it.
+- On the results page the field is pre-filled with the query.
+- Styling:
+  - Inter throughout: the SEARCH submit is set like a nav item (10.5px, 600, uppercase).
+  - The input has an ink underline that turns crimson on focus.
+  - The icon is crimson on hover and while open.
+  - The dropdown sits on the page ground with a hairline and `--vw-shadow-soft`.
+  - No colour literals.
+- **No JavaScript:** the icon is a plain link to `/?s=` and the field stays `hidden`.
+
+**How it avoids shifting the links:**
+- The control is `position: absolute` inside `.vwh2-masthead`, so it is out of flow and the centred links are pixel-identical with it (1280: 223.66 → 1056.34; 1440: 303.66 → 1136.34, open or closed).
+- It is vertically centred on the links' line box: `bottom: 14px` (the nav's padding) and `height: 1lh`.
+- The glyph's right edge sits on the container edge, where the heavy rule ends.
+- Clearance between MUST SEE FILMS and the glyph: 960px 21.7px (hit area 8.7px), 1024px 37.7, 1100px 75.7, 1280px 165.7. One row at every width, no horizontal overflow.
+
+**A bug found and fixed during the build:** `.vwh2-page { overflow-x: hidden }` (homepage-v2.css) turns header.php's masthead wrapper into a scroll box. The open dropdown gave that wrapper its own 15px scrollbar and squeezed the whole masthead, links included. At 960px and up that one wrapper (`.vwh2-page.vw-masthead`) is now `overflow-x: clip`, which keeps the horizontal guard without creating a scroll box. The homepage wrapper is untouched.
+
+**Mobile unchanged:**
+- Below 960px the new control is `display: none`.
+- 375px renders, HEAD vs new code, were pixel-diffed: the photography front, the bottom-bar search panel, /?s=commodore and the no-JS fallback are **pixel-identical**.
+- The homepage differs only inside the lead photo's box (max 15/255 per channel; the box and everything around it are identical). That is JPEG decode variance from a differently cached image: the same code rendered twice is identical.
+- Bottom-bar Search → panel in search mode → typing + Enter → /?s=commodore works (local 294 results, server 289).
+
+**Evidence:** `~/vw-screenshots/dsearch-20260918/`
+- local desktop, 1280: closed / open / results
+- local desktop: 1440 open, 960 closed, homepage 1440 open
+- local mobile 375: front and panel
+- server: 1280 open and 375 panel
+
+The tests were real-keyboard headless Chrome (Playwright). The in-app browser pane's synthetic Enter sends no keypress, so it cannot trigger form submission; that is a harness limit, not the page.
+
+**Server (cache-busted `?vwcb=`):** the same suite passes on https://vancouverweekly.com: links unchanged, the field opens, Escape closes, Enter submits to `/?s=commodore` (289 results), the homepage works, the no-JS fallback links to `/?s=`, and mobile is unchanged. **The plain URL still serves the Varnish copy (0 occurrences of the control) until a panel purge.**
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Desktop masthead search icon (option 1). A magnifier at the right end of the desktop nav row reveals a field that submits to the existing /?s= search. Enter submits, Escape closes, focus moves into the input on open. Desktop only, display layer, no plugins, no DB writes; mobile bottom-bar search unchanged. Deploy by rsync with a server backup, scoped commit, no push.
+
+WHAT I DID:
+- Read-only: the desktop nav is vw_masthead_nav_render() (inc/masthead.php), called by vw_masthead_render() (header.php, every non-front surface) and by section-parts/homepage-v2.php. The mobile search is the panel form: GET home_url('/'), name=s. Its no-JS fallback is a link to /?s=.
+- Added vw_masthead_search_render(), printed by vw_masthead_nav_render() after </nav>, so both surfaces get it from one place.
+  - Markup: a toggle <a href="/?s="> (aria-controls, aria-expanded) plus a role=search form with the same action and field name as the mobile form, hidden by default.
+- CSS (masthead-nav.css):
+  - The control is display:none in the base.
+  - A new min-width:960px block positions it out of flow at the nav row's right end and styles the dropdown with tokens.
+  - That block also sets overflow-x: clip on .vwh2-page.vw-masthead (fix for a squeeze found during the build: the dropdown created a scrollbar inside the overflow-x:hidden wrapper).
+- JS (masthead-nav.js): a separate IIFE.
+  - The toggle becomes role=button, and Space activates it.
+  - On open: focus into the input with the text selected.
+  - Escape (inside the control) closes and refocuses the toggle; an outside click or a second click also closes.
+  - Narrowing past 960 closes it.
+  - The existing mobile panel code is untouched.
+- Deployed 3 files by rsync after a tar backup; sha256 local = server.
+
+EVIDENCE:
+- 1440 / 1280 (local and server): nav links identical closed vs open (1280: 223.66→1056.34; 1440: 303.66→1136.34), one row, scrollWidth = viewport. The icon centre is on the links' centre line and the glyph ends at the rule's end. The open field hangs from the rule's bottom edge, flush right.
+- Behaviour (real keyboard):
+  - click → open, focus in #vw-dsearch-s, aria-expanded=true
+  - type "commodore", Escape → closed, focus back on the toggle
+  - Enter on the toggle → reopens
+  - outside click → closes
+  - Enter in the field → /?s=commodore: local 294 results, server 289; 12 articles on page 1, first result "Local Natives show their charm at the Commodore Ballroom"; field pre-filled.
+- Narrow desktop: clearance glyph ↔ MUST SEE FILMS is 21.7px at 960, 37.7 at 1024, 75.7 at 1100, one row each.
+- No JS at 1280: the icon navigates to /?s=.
+- Mobile 375: the control computes display:none. Bottom-bar Search opens the panel in search mode with focus in #vw-mnav-s; Enter → /?s=commodore. Pixel diff HEAD vs new: front, panel, results and no-JS are IDENTICAL; the homepage differs only inside the lead photo (max 15/255, JPEG decode variance; same code twice = identical).
+- Screenshots: ~/vw-screenshots/dsearch-20260918/ (10 files).
+
+FILES CHANGED:
+- theme/inc/masthead.php: vw_masthead_search_render() plus its call from vw_masthead_nav_render().
+- theme/assets/css/masthead-nav.css: base hide plus the 960px+ desktop search block (including the overflow-x: clip fix).
+- theme/assets/js/masthead-nav.js: desktop search toggle IIFE.
+- PROJECT-LOG.md: this entry.
+- Server: the 3 theme files; backup /home/master/vw-dsearch/before/theme-3files-predsearch.tgz.
+
+VERIFIED: local and server (cache-busted) with real-keyboard headless Chrome at 1440/1280/1100/1024/960 and 375, the homepage and a section front, and no-JS; sha256 local = server; PHP lint local and server.
+NOT verified: the purged live URL, a real browser by a human, Safari/Firefox.
+
+OUTSTANDING-RISKS:
+- PURGE NEEDED: plain URLs serve the Varnish copy without the icon until a Cloudways panel purge.
+- At 960–~1000px the glyph sits 21.7px after MUST SEE FILMS (hit area 8.7px): no overlap and no wrap, but visually close. Ricardo to judge at laptop widths.
+- `height: 1lh` needs Safari 16.4+ / Firefox 120+ / Chrome 109+. In an older browser the icon would sit a few px off the link line but still work. `overflow-x: clip` needs Safari 16+; in an older Safari the open field would be clipped inside the masthead wrapper.
+- The mobile panel form and the desktop form are two renders of the same endpoint (the mobile markup was left byte-identical on purpose); a future change to the search action must touch both.
+- rsync exits 23 on these deploys: it cannot set times/perms on the app-owned directories. The files themselves are verified by sha256.
+- Not pushed.
+```
