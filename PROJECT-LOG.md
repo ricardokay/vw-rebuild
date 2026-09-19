@@ -6720,3 +6720,53 @@ OUTSTANDING-RISKS:
 - The earlier "~104 duplicate-title pairs" figure was title-based. By content there are 84 real pairs; most other same-title pairs are different galleries.
 - Not pushed.
 ```
+
+## 2026-09-18 — Featured image shown twice: dedup by uploads path (107 posts)
+Display layer only: no DB writes, `post_content` untouched, no inline image removed. `vw_ah_thumb_in_opening_gallery()` (`theme/inc/article-header.php`) keeps its `wp-image-{id}` check. It now also matches when the thumbnail's uploads path (`YYYY/MM/name`, lowercased, `-WxH` / `-scaled` removed) is one of the first 3 body `<img>` sources, measured after the dead-media filter. On a match, the header drops to case C and the body keeps the image with its caption and link, exactly as the ID-matched posts already did.
+
+**A deviation from the spec (bare basename):** it was measured, not assumed.
+- A bare-basename matcher adds 114 posts. **7 of them are false positives:** 14578, 14096, 12960, 11473, 9409, 8474, 62778.
+- In each, the thumbnail and the inline image only share a generic filename (`1.jpg`, `5.jpg`, `images.jpeg`, `maxresdefault.jpg`, …) from a different upload month.
+- In all 7 the inline file is missing on disk (HTTP 404 live), so these posts show their image **once** today, in the header. Basename dedup would have removed that header image and left no working image.
+- The path matcher adds exactly the other **107**, a strict subset of the approved 114.
+- This also corrects the audit's "118 render twice": it is 111. That is the 107 fixed now, plus the 4 deep-body stragglers (4788, 5206, 5423, 67693: the image sits at body position #4–5), which stay doubled by design.
+
+**Reversal:** restore `/home/master/vw-ahdedup/before/article-header-preahdedup.tgz` (sha256 `3860b615…3687`), or `backups-local/ahdedup-before/inc/article-header.php` (= the pre-change HEAD); rsync; purge.
+
+```
+=== REVIEWER HANDOFF ===
+TASK: Fix the posts that render the featured image twice by extending the existing header dedup (vw_ah_thumb_in_opening_gallery) to match by file as well as by attachment id. Display layer only, no DB/content writes, reversible, gated, live. Scoped commit, no push, no Co-Authored-By.
+
+WHAT I DID:
+- Read-only probe on the server with wp eval-file. It ran the live function and two candidate matchers (bare basename; uploads path) over all 1,284 published posts with a thumbnail file on disk.
+  - Live rule already catches 364.
+  - Basename adds 114. Path adds 107 (a subset); the 7 basename-only posts were checked file by file and are false positives (inline file missing, generic names, different months; live inline 404).
+  - The basename set equals the audit's predicted 114 exactly.
+- Implemented the path matcher: +vw_ah_upload_key() normalizer. php -l clean.
+- Server file = HEAD before the deploy (sha256 4219142a…). Backed it up to /home/master/vw-ahdedup/before/ (tgz sha256 3860b615…3687) and to backups-local/ahdedup-before/.
+- rsynced to live; sha256 local = server (5174f18f…e4c6). Synced the Local site copy (local render 200).
+- Measured the live pages before and after (cache-busted): the image counted in the article header vs the body. Recounted sitewide on the server with the deployed function.
+
+EVIDENCE (live, per post: header+body = total, before → after):
+- Samples, all B → C, 2 → 1: 14637 (1+1 → 0+1), 14633 (1+1 → 0+1), 14162 (1+1 → 0+1), 14166 (1+1 → 0+1), 2774 (1+1 → 0+1).
+- Captioned samples, B → C, 2 → 1, body captions unchanged: 2075 (10 → 10), 3444 (2 → 2).
+- Control (no inline copy): 258 B 1+0, unchanged.
+- Already-deduped group: 66059 / 67721 / 67608 case C, unchanged (0 / 1 / 1; captions 24 and 21 unchanged).
+- web.archive group: 68387 / 68535 case B 1+0, unchanged.
+- Basename false positives: 14096 / 12960 case B, unchanged. Their header image is kept; the body copy is a 404.
+- Deep stragglers: 4788 / 5206 case B 1+1, unchanged (by design).
+- All pages HTTP 200.
+- Sitewide, on the server with the deployed code: dedup true on 471 = 364 + 107. All 107 are in. 0 of the 7 false positives. 0 of the 4 stragglers.
+
+FILES CHANGED: theme/inc/article-header.php; PROJECT-LOG.md. No DB change.
+
+VERIFIED: every item under EVIDENCE, on the live domain (cache-busted) and via a server-side recount.
+NOT verified: the cached (un-busted) public pages. A purge is required.
+
+OUTSTANDING-RISKS:
+- PURGE Varnish (Cloudways) and Cloudflare if it caches HTML.
+- Out of scope, still doubled: 4788, 5206, 5423, 67693 (image #4–5 in the body).
+- 14578, 14096, 12960, 11473, 9409, 8474 and 62778 keep a broken (404) inline image with a generic-named thumbnail. 12960 and 9409 share the thumbnail 2013/05/1.jpg, which may be the wrong photo (media-import basename collision); worth a look in the image-recovery work.
+- The commit says 107, not the 114 in the brief, because of the false positives above.
+- Not pushed.
+```

@@ -81,7 +81,29 @@ function vw_ah_thumb_in_opening_gallery( WP_Post $post, int $thumb_id ): bool {
 		}
 	}
 
+	// The 2026 media import gave re-uploaded files new attachment ids while the
+	// body kept the old wp-image-N, so the id check misses the same file. Match
+	// its uploads path (YYYY/MM/name, size suffix ignored). The bare filename is
+	// not enough: generic names like 1.jpg recur across months as different,
+	// often missing, files, and dropping the header there leaves no image at all.
+	$file = (string) get_post_meta( $thumb_id, '_wp_attached_file', true );
+	if ( $file && preg_match_all( '#<img\b[^>]*\bsrc=["\']([^"\']+)["\']#i', $html, $m ) ) {
+		$want = vw_ah_upload_key( $file );
+		foreach ( array_slice( $m[1], 0, 3 ) as $src ) {
+			$at = strpos( $src, '/wp-content/uploads/' );
+			if ( false !== $at && vw_ah_upload_key( substr( $src, $at + 20 ) ) === $want ) {
+				return true;
+			}
+		}
+	}
+
 	return false;
+}
+
+/** Uploads-relative path, lowercased, with -WxH / -scaled size suffixes removed. */
+function vw_ah_upload_key( string $path ): string {
+	$path = strtolower( rawurldecode( html_entity_decode( (string) strtok( $path, '?#' ) ) ) );
+	return (string) preg_replace( '#-(\d+x\d+|scaled)(?=\.[a-z0-9]+$)#', '', $path );
 }
 
 function vw_ah_render( WP_Post $post ): string {
